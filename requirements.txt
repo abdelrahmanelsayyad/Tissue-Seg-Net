@@ -1,6 +1,14 @@
-streamlit
-torch
-gdown
-segmentation-models-pytorch
-pillow
-numpy
+streamlit==1.29.0
+numpy==1.26.4
+opencv-python-headless==4.9.0.80
+matplotlib==3.8.4
+Pillow==10.3.0
+gdown==5.2.0
+
+# --- For PyTorch segmentation model (CPU version) ---
+torch==2.2.2
+torchvision==0.17.2
+segmentation-models-pytorch==0.3.3
+
+# --- For TensorFlow wound mask model (CPU version) ---
+tensorflow==2.13.0
