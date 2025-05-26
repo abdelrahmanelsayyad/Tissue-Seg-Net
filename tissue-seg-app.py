@@ -1,4 +1,3 @@
-
 # streamlit_app.py
 
 import io
@@ -699,6 +698,13 @@ if uploaded:
 
             st.success("✅ Basic analysis complete!")
             st.markdown('<div class="results-header">Wound Segmentation Results</div>', unsafe_allow_html=True)
+
+            # Display results
+            col1, col2 = st.columns(2)
+
+            # Prepare images for display
+            if len(wound_mask.shape) == 2:
+                display_mask = cv2.cvtColor
 
             # Display results
             col1, col2 = st.columns(2)
