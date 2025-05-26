@@ -72,28 +72,19 @@ THRESHOLD = 0.5
 ALPHA = 0.4
 
 # ──── Model Download Functions ──────────────────────────────────
-def download_models():
-    """Download both models if they don't exist"""
-    if not BINARY_MODEL_PATH.exists():
-        st.info("Downloading binary segmentation model...")
+def download_model_if_needed(model_path, model_url, model_name):
+    """Download a specific model if it doesn't exist"""
+    if not model_path.exists():
+        st.info(f"Downloading {model_name}...")
         try:
-            gdown.download(BINARY_MODEL_URL, str(BINARY_MODEL_PATH), quiet=False)
-            st.success("✅ Binary segmentation model downloaded")
+            with st.spinner(f"Downloading {model_name}..."):
+                gdown.download(model_url, str(model_path), quiet=False)
+            st.success(f"✅ {model_name} downloaded successfully")
+            return True
         except Exception as e:
-            st.error(f"❌ Failed to download binary model: {e}")
-            st.stop()
-    
-    if not TISSUE_MODEL_PATH.exists():
-        st.info("Downloading tissue classification model...")
-        try:
-            gdown.download(TISSUE_MODEL_URL, str(TISSUE_MODEL_PATH), quiet=False)
-            st.success("✅ Tissue classification model downloaded")
-        except Exception as e:
-            st.error(f"❌ Failed to download tissue model: {e}")
-            st.stop()
-
-# Ensure models are available
-download_models()
+            st.error(f"❌ Failed to download {model_name}: {e}")
+            return False
+    return True
 
 # ──── Color Palette & CSS ────────────────────────────────────────
 COL = {
@@ -352,41 +343,51 @@ def iou_metric(y_true, y_pred, smooth=1):
     union = K.sum(y_true_f) + K.sum(y_pred_f) - inter
     return (inter + smooth) / (union + smooth)
 
-@st.cache_resource
 def load_binary_model():
     """Load the binary wound segmentation model"""
-    with st.spinner("Loading binary segmentation model..."):
-        return tf.keras.models.load_model(
-            str(BINARY_MODEL_PATH),
-            custom_objects={"dice_coefficient": dice_coefficient, "iou_metric": iou_metric},
-            compile=False
-        )
+    if not download_model_if_needed(BINARY_MODEL_PATH, BINARY_MODEL_URL, "Binary Segmentation Model"):
+        st.stop()
+    
+    try:
+        with st.spinner("Loading binary segmentation model..."):
+            model = tf.keras.models.load_model(
+                str(BINARY_MODEL_PATH),
+                custom_objects={"dice_coefficient": dice_coefficient, "iou_metric": iou_metric},
+                compile=False
+            )
+        return model
+    except Exception as e:
+        st.error(f"❌ Failed to load binary model: {e}")
+        st.stop()
 
-@st.cache_resource
 def load_tissue_model():
     """Load the tissue classification model"""
-    with st.spinner("Loading tissue classification model..."):
-        model = smp.Unet(
-            encoder_name=ENCODER,
-            encoder_weights=None,
-            in_channels=3,
-            classes=N_CLASSES,
-            decoder_attention_type='scse',
-            activation=None,
-        )
-        state_dict = torch.load(str(TISSUE_MODEL_PATH), map_location="cpu")
-        model.load_state_dict(state_dict)
-        model.eval()
+    if not download_model_if_needed(TISSUE_MODEL_PATH, TISSUE_MODEL_URL, "Tissue Classification Model"):
+        st.stop()
+    
+    try:
+        with st.spinner("Loading tissue classification model..."):
+            model = smp.Unet(
+                encoder_name=ENCODER,
+                encoder_weights=None,
+                in_channels=3,
+                classes=N_CLASSES,
+                decoder_attention_type='scse',
+                activation=None,
+            )
+            state_dict = torch.load(str(TISSUE_MODEL_PATH), map_location="cpu")
+            model.load_state_dict(state_dict)
+            model.eval()
         return model
+    except Exception as e:
+        st.error(f"❌ Failed to load tissue model: {e}")
+        st.stop()
 
-# Load models
-try:
-    binary_model = load_binary_model()
-    tissue_model = load_tissue_model()
-    st.success("✅ All models loaded successfully")
-except Exception as e:
-    st.error(f"❌ Failed to load models: {e}")
-    st.stop()
+# Initialize session state for models
+if 'models_loaded' not in st.session_state:
+    st.session_state.models_loaded = False
+    st.session_state.binary_model = None
+    st.session_state.tissue_model = None
 
 # ──── Processing Functions ─────────────────────────────────────
 
@@ -398,7 +399,7 @@ def preprocess_for_binary(img_bgr: np.ndarray) -> np.ndarray:
 
 def predict_wound_mask(img_bgr: np.ndarray) -> np.ndarray:
     """Predict binary wound mask"""
-    prob = binary_model.predict(preprocess_for_binary(img_bgr), verbose=0)[0, ..., 0]
+    prob = st.session_state.binary_model.predict(preprocess_for_binary(img_bgr), verbose=0)[0, ..., 0]
     mask = (prob > THRESHOLD).astype("uint8")
     return mask
 
@@ -451,11 +452,14 @@ def calculate_wound_area(mask):
 
 # Header
 if LOGO_PATH.exists():
-    st.markdown(f"""
-    <div class="logo-container">
-        <img src="data:image/png;base64,{base64.b64encode(open(str(LOGO_PATH), 'rb').read()).decode()}" class="logo">
-    </div>
-    """, unsafe_allow_html=True)
+    try:
+        st.markdown(f"""
+        <div class="logo-container">
+            <img src="data:image/png;base64,{base64.b64encode(open(str(LOGO_PATH), 'rb').read()).decode()}" class="logo">
+        </div>
+        """, unsafe_allow_html=True)
+    except:
+        pass  # Skip logo if file doesn't exist
 
 st.markdown("""
 <div class="header">
@@ -511,6 +515,14 @@ if uploaded:
     # Analysis button
     if st.button("🔬 Analyze Wound", help="Click to run comprehensive AI analysis"):
         
+        # Load models if not already loaded
+        if not st.session_state.models_loaded:
+            st.info("Loading AI models for the first time...")
+            st.session_state.binary_model = load_binary_model()
+            st.session_state.tissue_model = load_tissue_model()
+            st.session_state.models_loaded = True
+            st.success("✅ All models loaded successfully")
+        
         # Progress tracking
         progress_bar = st.progress(0)
         status_text = st.empty()
@@ -540,7 +552,7 @@ if uploaded:
         # Run tissue classification
         input_tensor = preprocess_for_tissue(Image.fromarray(img_masked))
         with torch.no_grad():
-            tissue_output = tissue_model(input_tensor)
+            tissue_output = st.session_state.tissue_model(input_tensor)
         
         tissue_color_mask, class_map = postprocess_tissue_mask(tissue_output)
         
