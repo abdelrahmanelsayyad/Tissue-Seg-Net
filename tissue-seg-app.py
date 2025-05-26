@@ -44,20 +44,29 @@ ENCODER = "mit_b3"
 CLASS_NAMES = [
     "background", "fibrin", "granulation", "callus", "necrotic", "eschar", "neodermis", "tendon", "dressing"
 ]
-PALETTE = [
-    (0, 0, 0),         # background (Black)
-    (255, 255, 0),     # fibrin (Yellow)
-    (255, 0, 0),       # callus (Red)
-    (0, 0, 255),       # granulation (Blue)
-    (255, 165, 0),     # necrotic (Orange)
-    (128, 0, 128),     # eschar (Purple)
-    (0, 255, 255),     # neodermis (Cyan)
-    (255, 192, 203),   # tendon (Pink)
-    (0, 255, 0),       # dressing (Green)
-]
 
+# ──── CENTRALIZED COLOR CONTROL ────────────────────────────────────────────────
+# Define tissue colors (RGB format for display)
+TISSUE_COLORS_RGB = {
+    "background": (0, 0, 0),         # Black
+    "fibrin": (255, 255, 0),         # Yellow  
+    "granulation": (255, 0, 0),      # Red
+    "callus": (0, 0, 255),           # Blue
+    "necrotic": (255, 165, 0),       # Orange
+    "eschar": (128, 0, 128),         # Purple
+    "neodermis": (0, 255, 255),      # Cyan
+    "tendon": (255, 192, 203),       # Pink
+    "dressing": (0, 255, 0),         # Green
+}
 
+# Convert to BGR for OpenCV processing
+TISSUE_COLORS_BGR = {name: (color[2], color[1], color[0]) for name, color in TISSUE_COLORS_RGB.items()}
 
+# Create palette array for model processing (BGR order)
+PALETTE = [TISSUE_COLORS_BGR[name] for name in CLASS_NAMES]
+
+# Color hex codes for HTML display
+TISSUE_COLORS_HEX = {name: f"rgb({color[0]}, {color[1]}, {color[2]})" for name, color in TISSUE_COLORS_RGB.items()}
 
 # Tissue health scoring weights
 TISSUE_HEALTH_WEIGHTS = {
@@ -111,7 +120,7 @@ COL = {
     "danger"     : "#dc3545",
 }
 
-# Enhanced CSS with better responsiveness and new features
+# Enhanced CSS with larger images
 st.markdown(f"""
 <style>
   /* Base Styles */
@@ -214,7 +223,7 @@ st.markdown(f"""
     background-color: rgba(59, 108, 83, 0.25);
   }}
   
-  /* Image Container */
+  /* Image Container - MADE MUCH LARGER */
   .img-container {{ 
     background-color: {COL['dark']}; 
     padding: 25px; 
@@ -232,10 +241,10 @@ st.markdown(f"""
     width: 100% !important;
   }}
   
-  /* Make images larger and centered */
+  /* Make images much larger and centered */
   .img-container img,
   .stImage img {{ 
-    max-height: 700px !important;
+    max-height: 800px !important;
     max-width: 100% !important;
     width: auto !important; 
     height: auto !important;
@@ -341,31 +350,41 @@ st.markdown(f"""
     font-weight: 600;
   }}
   
-  /* Health Score Styling */
-  .health-excellent {{ background: linear-gradient(135deg, {COL['success']}, #20c997); }}
-  .health-good {{ background: linear-gradient(135deg, #28a745, #20c997); }}
-  .health-moderate {{ background: linear-gradient(135deg, {COL['warning']}, #fd7e14); }}
-  .health-poor {{ background: linear-gradient(135deg, {COL['danger']}, #e74c3c); }}
-  
   /* Tissue Composition */
   .tissue-item {{
     background-color: {COL['dark']};
-    padding: 12px 18px;
-    margin: 8px 0;
-    border-radius: 8px;
+    padding: 15px 20px;
+    margin: 10px 0;
+    border-radius: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+    border-left: 5px solid transparent;
+    transition: all 0.3s ease;
+  }}
+  .tissue-item:hover {{
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
   }}
   .tissue-name {{
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     text-transform: capitalize;
+    display: flex;
+    align-items: center;
+  }}
+  .tissue-color-indicator {{
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    margin-right: 12px;
+    border: 2px solid rgba(255,255,255,0.3);
+    display: inline-block;
   }}
   .tissue-percent {{
     font-weight: 700;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: {COL['highlight']};
   }}
   
@@ -411,19 +430,20 @@ st.markdown(f"""
     .header h1 {{ font-size: 1.8rem; }}
     .header p {{ font-size: 1rem; }}
     .instructions {{ padding: 20px; }}
-    .img-container img, .stImage img {{ max-height: 500px !important; }}
+    .img-container img, .stImage img {{ max-height: 600px !important; }}
     .metric-value {{ font-size: 1.6rem; }}
     .results-header {{ font-size: 1.5rem; }}
   }}
   
   @media screen and (min-width: 769px) and (max-width: 1024px) {{
     .header h1 {{ font-size: 2.2rem; }}
-    .img-container img, .stImage img {{ max-height: 600px !important; }}
+    .img-container img, .stImage img {{ max-height: 700px !important; }}
   }}
   
   @media screen and (min-width: 1025px) {{
     .content-wrapper {{ max-width: 1400px; margin: 0 auto; }}
     .section-wrapper {{ max-width: 95%; margin: 0 auto; }}
+    .img-container img, .stImage img {{ max-height: 900px !important; }}
   }}
 </style>
 """, unsafe_allow_html=True)
@@ -527,9 +547,13 @@ def postprocess_tissue(mask):
     if mask.ndim == 4:
         mask = mask.squeeze(0)
     mask = mask.argmax(0).cpu().numpy()
+    
+    # Create color mask using our centralized color system
     color_mask = np.zeros((mask.shape[0], mask.shape[1], 3), dtype=np.uint8)
-    for idx, color in enumerate(PALETTE):
-        color_mask[mask == idx] = color
+    for idx, class_name in enumerate(CLASS_NAMES):
+        color_bgr = TISSUE_COLORS_BGR[class_name]
+        color_mask[mask == idx] = color_bgr
+    
     return color_mask, mask
 
 def calculate_tissue_percentages(mask, class_names):
@@ -541,34 +565,15 @@ def calculate_tissue_percentages(mask, class_names):
             percentages[name] = (class_pixels / total_pixels) * 100
     return percentages
 
-def calculate_wound_health_score(tissue_percentages):
-    """Calculate overall wound health score based on tissue composition"""
-    score = 0
-    total_weight = 0
-    
-    for tissue, percentage in tissue_percentages.items():
-        if tissue in TISSUE_HEALTH_WEIGHTS:
-            weight = TISSUE_HEALTH_WEIGHTS[tissue]
-            score += weight * (percentage / 100)
-            total_weight += abs(weight) * (percentage / 100)
-    
-    if total_weight > 0:
-        normalized_score = (score + total_weight) / (2 * total_weight) * 100
-        return max(0, min(100, normalized_score))
-    return 50  # Neutral score if no tissue detected
-
-def get_health_status(score):
-    """Convert health score to status and color class"""
-    if score >= 80:
-        return "Excellent", "health-excellent"
-    elif score >= 65:
-        return "Good", "health-good"
-    elif score >= 40:
-        return "Moderate", "health-moderate"
+def get_dominant_tissue(tissue_percentages):
+    """Get dominant tissue excluding background"""
+    non_background = {k: v for k, v in tissue_percentages.items() if k != "background" and v > 0}
+    if non_background:
+        return max(non_background.items(), key=lambda x: x[1])
     else:
-        return "Poor", "health-poor"
+        return ("background", tissue_percentages.get("background", 0))
 
-def generate_recommendations(tissue_percentages, health_score):
+def generate_recommendations(tissue_percentages):
     """Generate healing recommendations based on tissue analysis"""
     recommendations = []
     
@@ -583,11 +588,6 @@ def generate_recommendations(tissue_percentages, health_score):
     
     if tissue_percentages.get("neodermis", 0) > 0:
         recommendations.append("🌟 New skin formation detected - excellent progress")
-    
-    if health_score < 40:
-        recommendations.append("🩺 Consult healthcare provider - wound requires attention")
-    elif health_score > 80:
-        recommendations.append("🎉 Wound showing excellent healing progress")
     
     if tissue_percentages.get("fibrin", 0) > 20:
         recommendations.append("💧 Maintain moist wound environment")
@@ -612,7 +612,7 @@ st.markdown("""
     <li><b>Upload</b> a clear wound image (PNG/JPG/JPEG)</li>
     <li><b>Choose</b> analysis mode: Basic segmentation or Complete analysis</li>
     <li><b>Analyze</b> to get precise wound boundaries + detailed tissue composition</li>
-    <li><b>View</b> comprehensive results with health scoring and healing recommendations</li>
+    <li><b>View</b> comprehensive results with tissue breakdown and healing recommendations</li>
   </ol>
 </div>
 """, unsafe_allow_html=True)
@@ -628,7 +628,7 @@ st.markdown("""
 analysis_mode = st.radio(
     "Select analysis type:",
     ["🔍 Basic Segmentation (Fast)", "🧬 Complete Analysis (Detailed)"],
-    help="Basic: Wound boundary detection only. Complete: Full tissue analysis + health scoring"
+    help="Basic: Wound boundary detection only. Complete: Full tissue analysis + recommendations"
 )
 
 # ──── Upload & Analysis ────────────────────────────────────────
@@ -698,7 +698,7 @@ if uploaded:
                 st.image(display_mask, caption="Wound Boundary Mask", 
                          use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
-            
+
             with col2:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
                 st.image(overlay_display, caption="Segmentation Overlay", 
