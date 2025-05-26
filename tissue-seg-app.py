@@ -809,10 +809,17 @@ if uploaded:
                          use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
 
+            alpha = 0.5  # transparency of the overlay (adjust as you like) 
+            orig_bgr_resized = cv2.resize(orig_bgr, (IMG_SIZE, IMG_SIZE))  # Make sure they are same size!
+            tissue_overlay = cv2.addWeighted(orig_bgr_resized, 1 - alpha, tissue_mask_bgr, alpha, 0)
+            tissue_overlay_rgb = cv2.cvtColor(tissue_overlay, cv2.COLOR_BGR2RGB)
+
             with col2:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
-                st.image(tissue_display, caption="🧬 Tissue Composition Analysis", 
-                         use_container_width=True, clamp=True, output_format="PNG")
+                st.image(
+                    tissue_overlay_rgb, 
+                    caption="🧬 Tissue Composition Analysis", 
+                    use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown('</div>', unsafe_allow_html=True)
