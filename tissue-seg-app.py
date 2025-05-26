@@ -814,13 +814,18 @@ if uploaded:
                 st.image(tissue_display, caption="🎯 Wound Boundary Detection", 
                          use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
-
+   
             st.markdown('</div>', unsafe_allow_html=True)
 
             # *** SWAPPED Combined overlay - Now shows wound overlay instead of tissue ***
             st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
             st.markdown('<div class="img-container">', unsafe_allow_html=True)
-            st.image(overlay_display, caption="🔗 Combined Analysis Overlay", 
+
+            alpha = 0.5  # or any value you prefer
+            orig_bgr_resized = cv2.resize(orig_bgr, (IMG_SIZE, IMG_SIZE))
+            tissue_overlay = cv2.addWeighted(orig_bgr_resized, 1 - alpha, tissue_mask_bgr, alpha, 0)
+            tissue_overlay_rgb = cv2.cvtColor(tissue_overlay, cv2.COLOR_BGR2RGB)
+            st.image(tissue_overlay_rgb, caption="🔗 Combined Analysis Overlay", 
                      use_container_width=True, clamp=True, output_format="PNG")
             st.markdown('</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
