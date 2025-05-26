@@ -18,7 +18,7 @@ import gdown
 import segmentation_models_pytorch as smp
 
 st.set_page_config(
-    page_title="Sugar Heal – Advanced Wound Analysis",
+    page_title="Advanced Wound Analysis",
     page_icon="🩹",
     layout="wide",  # Use wide layout for PC
     initial_sidebar_state="collapsed"
@@ -89,7 +89,7 @@ def download_models():
         except ImportError:
             os.system(f"{sys.executable} -m pip install gdown")
             import gdown
-        st.info("Downloading Sugar Heal segmentation model...")
+        st.info("Downloading High accuracy segmentation model...")
         gdown.download(SUGAR_MODEL_URL, str(SUGAR_MODEL_PATH), quiet=False)
     
     if not TISSUE_MODEL_PATH.exists():
@@ -461,7 +461,7 @@ if LOGO_PATH.exists():
 
 st.markdown("""
 <div class="header">
-  <h1>Sugar Heal – Advanced Wound Analysis</h1>
+  <h1>Advanced Wound Analysis</h1>
   <p>Dual AI-powered system: Precise wound segmentation + Advanced tissue composition analysis</p>
 </div>
 """, unsafe_allow_html=True)
@@ -482,7 +482,7 @@ def iou_metric(y_true, y_pred, smooth=1):
 
 @st.cache_resource
 def load_sugar_model():
-    with st.spinner("Loading Sugar Heal segmentation model..."):
+    with st.spinner("Loading High accuracy segmentation model..."):
         return tf.keras.models.load_model(
             str(SUGAR_MODEL_PATH),
             custom_objects={"dice_coefficient": dice_coefficient, "iou_metric": iou_metric},
@@ -1003,7 +1003,7 @@ st.markdown('</div>', unsafe_allow_html=True)  # Close content-wrapper
 
 st.markdown("""
 <div class="footer">
-    <strong>Sugar Heal Advanced Wound Analysis System</strong><br>
+    <strong> Advanced Wound Analysis System</strong><br>
     Powered by dual AI models for comprehensive wound assessment and monitoring.<br>
     <em>For research and educational purposes. Always consult healthcare professionals for medical decisions.</em>
 </div>
