@@ -244,7 +244,7 @@ st.markdown(f"""
   /* Make images much larger and centered */
   .img-container img,
   .stImage img {{ 
-    max-height: 800px !important;
+    max-height: 1100px !important;
     max-width: 100% !important;
     width: auto !important; 
     height: auto !important;
