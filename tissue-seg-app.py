@@ -827,7 +827,7 @@ if uploaded:
             # *** SWAPPED Combined overlay - Now shows wound overlay instead of tissue ***
             st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
             st.markdown('<div class="img-container">', unsafe_allow_html=True)
-            st.image(tissue_display, caption="🔗 Combined Analysis Overlay",  
+            st.image(overlay_display, caption="🔗 Combined Analysis Overlay",  
                      use_container_width=True, clamp=True, output_format="PNG")
             st.markdown('</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
