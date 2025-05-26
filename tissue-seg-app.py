@@ -509,7 +509,7 @@ if uploaded:
     
     # Display original image
     st.markdown('<div class="img-container">', unsafe_allow_html=True)
-    st.image(pil_image, caption="Uploaded Wound Image", use_container_width=True)
+    st.image(pil_image, caption="Uploaded Wound Image", width=None)
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Analysis button
@@ -580,12 +580,12 @@ if uploaded:
             st.markdown('<div class="img-container">', unsafe_allow_html=True)
             # Display binary mask
             wound_mask_display = np.stack([wound_mask*255]*3, axis=-1)
-            st.image(wound_mask_display, caption="Binary Wound Mask", use_container_width=True)
+            st.image(wound_mask_display, caption="Binary Wound Mask", width=None)
             st.markdown('</div>', unsafe_allow_html=True)
         
         with col2:
             st.markdown('<div class="img-container">', unsafe_allow_html=True)
-            st.image(binary_overlay_rgb, caption="Binary Segmentation Overlay", use_container_width=True)
+            st.image(binary_overlay_rgb, caption="Binary Segmentation Overlay", width=None)
             st.markdown('</div>', unsafe_allow_html=True)
         
         # Binary Segmentation Metrics
@@ -618,7 +618,7 @@ if uploaded:
         
         with col1:
             st.markdown('<div class="img-container">', unsafe_allow_html=True)
-            st.image(tissue_color_mask, caption="Tissue Classification Map", use_container_width=True)
+            st.image(tissue_color_mask, caption="Tissue Classification Map", width=None)
             st.markdown('</div>', unsafe_allow_html=True)
         
         with col2:
@@ -627,7 +627,7 @@ if uploaded:
             tissue_overlay = (0.6 * orig_resized + 0.4 * tissue_color_mask).astype(np.uint8)
             
             st.markdown('<div class="img-container">', unsafe_allow_html=True)
-            st.image(tissue_overlay, caption="Tissue Classification Overlay", use_container_width=True)
+            st.image(tissue_overlay, caption="Tissue Classification Overlay", width=None)
             st.markdown('</div>', unsafe_allow_html=True)
         
         # Tissue Composition
