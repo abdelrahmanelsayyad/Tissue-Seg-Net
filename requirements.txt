@@ -1,0 +1,7 @@
+streamlit
+gdown
+segmentation-models-pytorch
+Pillow
+torch
+torchvision
+numpy
