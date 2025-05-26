@@ -805,13 +805,13 @@ if uploaded:
             # *** ACTUAL SWAP HERE *** - Left shows tissue, right shows wound boundary
             with col1:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
-                st.image(tissue_display, caption="🧬 Tissue Composition Analysis", 
+                st.image(display_mask, caption="🧬 Tissue Composition Analysis", 
                          use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
 
             with col2:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
-                st.image(display_mask, caption="🎯 Wound Boundary Detection", 
+                st.image(tissue_display, caption="🎯 Wound Boundary Detection", 
                          use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -820,7 +820,7 @@ if uploaded:
             # *** SWAPPED Combined overlay - Now shows wound overlay instead of tissue ***
             st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
             st.markdown('<div class="img-container">', unsafe_allow_html=True)
-            st.image(tissue_display, caption="🔗 Combined Analysis Overlay", 
+            st.image(overlay_display, caption="🔗 Combined Analysis Overlay", 
                      use_container_width=True, clamp=True, output_format="PNG")
             st.markdown('</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
