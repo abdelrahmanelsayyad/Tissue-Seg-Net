@@ -708,7 +708,7 @@ if uploaded:
             else:
                 display_mask = wound_mask
 
-            overlay_display = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
+            tissue_display = cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB)
 
             with col1:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
@@ -718,7 +718,7 @@ if uploaded:
 
             with col2:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
-                st.image(overlay_display, caption="Wound Overlay (Green)", 
+                st.image(tissue_display, caption="🧬 Tissue Composition Analysis", 
                          use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
 
