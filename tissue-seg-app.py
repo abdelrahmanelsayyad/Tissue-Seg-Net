@@ -51,10 +51,11 @@ PALETTE = [
     (0, 0, 255),       # 3: callus (Blue)
     (255, 165, 0),     # 4: necrotic (Orange)
     (128, 0, 128),     # 5: eschar (Purple)
-    (255, 255, 0),     # 6: neodermis (Cyan)
+    (0, 255, 255),     # 6: neodermis (Cyan)
     (255, 192, 203),   # 7: tendon (Pink)
     (0, 255, 0),       # 8: dressing (Green)
 ]
+
 
 # Tissue health scoring weights
 TISSUE_HEALTH_WEIGHTS = {
