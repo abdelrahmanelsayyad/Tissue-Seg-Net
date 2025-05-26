@@ -708,7 +708,7 @@ if uploaded:
             else:
                 display_mask = wound_mask
 
-            tissue_display = cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB)
+            overlay_display = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
 
             with col1:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
@@ -718,7 +718,7 @@ if uploaded:
 
             with col2:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
-                st.image(tissue_display, caption="🧬 Tissue Composition Analysis", 
+                st.image(overlay_display, caption="Wound Overlay (Green)", 
                          use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -805,21 +805,16 @@ if uploaded:
             # *** ACTUAL SWAP HERE *** - Left shows tissue, right shows wound boundary
             with col1:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
+                st.image(tissue_display, caption="🧬 Tissue Composition Analysis", 
                 st.image(display_mask, caption="🎯 Wound Boundary Detection", 
                          use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
 
-            alpha = 0.5  # transparency of the overlay (adjust as you like) 
-            orig_bgr_resized = cv2.resize(orig_bgr, (IMG_SIZE, IMG_SIZE))  # Make sure they are same size!
-            tissue_overlay = cv2.addWeighted(orig_bgr_resized, 1 - alpha, tissue_mask_bgr, alpha, 0)
-            tissue_overlay_rgb = cv2.cvtColor(tissue_overlay, cv2.COLOR_BGR2RGB)
-
             with col2:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
-                st.image(
-                    tissue_display, 
-                    caption="🧬 Tissue Composition Analysis", 
-                    use_container_width=True, clamp=True, output_format="PNG")
+                st.image(display_mask, caption="🎯 Wound Boundary Detection", 
+                st.image(tissue_display, caption="🧬 Tissue Composition Analysis", 
+                         use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown('</div>', unsafe_allow_html=True)
@@ -827,7 +822,7 @@ if uploaded:
             # *** SWAPPED Combined overlay - Now shows wound overlay instead of tissue ***
             st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
             st.markdown('<div class="img-container">', unsafe_allow_html=True)
-            st.image(tissue_display, caption="🔗 Combined Analysis Overlay",  
+            st.image(overlay_display, caption="🔗 Combined Analysis Overlay", 
                      use_container_width=True, clamp=True, output_format="PNG")
             st.markdown('</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
