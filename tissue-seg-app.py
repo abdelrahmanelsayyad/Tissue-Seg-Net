@@ -1,3 +1,5 @@
+now diffrence:
+
 # streamlit_app.py
 
 import io
@@ -802,13 +804,13 @@ if uploaded:
            tissue_display = cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB)
            with col1:
                st.markdown('<div class="img-container">', unsafe_allow_html=True)
-               st.image(overlay_display, caption="🧬 Tissue Composition Analysis", 
+               st.image(tissue_display, caption="🧬 Tissue Composition Analysis", 
                         use_container_width=True, clamp=True, output_format="PNG")
                st.markdown('</div>', unsafe_allow_html=True)
 
            with col2:
                st.markdown('<div class="img-container">', unsafe_allow_html=True)
-               st.image(tissue_display, caption="🔗 Combined Analysis Overlay", 
+               st.image(overlay_display, caption="🔗 Combined Analysis Overlay", 
                         use_container_width=True, clamp=True, output_format="PNG")
                st.markdown('</div>', unsafe_allow_html=True)
 
