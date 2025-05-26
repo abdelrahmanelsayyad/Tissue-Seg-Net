@@ -49,11 +49,6 @@ PALETTE = [
     (255, 255, 0),     # 1: fibrin (Yellow)
     (255, 0, 0),       # 2: granulation (Red)
     (0, 0, 255),       # 3: callus (Blue)
-    (255, 165, 0),     # 4: necrotic (Orange)
-    (128, 0, 128),     # 5: eschar (Purple)
-    (0, 255, 255),     # 6: neodermis (Cyan)
-    (255, 192, 203),   # 7: tendon (Pink)
-    (0, 255, 0),       # 8: dressing (Green)
 ]
 
 
