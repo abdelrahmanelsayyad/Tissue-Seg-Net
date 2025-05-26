@@ -45,10 +45,11 @@ CLASS_NAMES = [
     "background", "fibrin", "granulation", "callus", "necrotic", "eschar", "neodermis", "tendon", "dressing"
 ]
 PALETTE = [
-    (0, 0, 0),         # 0: background (Black)
+    (0, 0, 0),         # 0: background
     (255, 255, 0),     # 1: fibrin (Yellow)
     (255, 0, 0),       # 2: granulation (Red)
     (0, 0, 255),       # 3: callus (Blue)
+      # 3: callus (Blue)
 ]
 
 
