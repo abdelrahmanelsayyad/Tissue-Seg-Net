@@ -791,30 +791,29 @@ if uploaded:
             
             # ──── Image Results Display ────────────────────────────────────────────────
             st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
-            col1, col2 = st.columns(2)
+           col1, col2 = st.columns(2)
+
+# Prepare images for display
+           if len(wound_mask.shape) == 2:
+               display_mask = cv2.cvtColor(wound_mask, cv2.COLOR_GRAY2RGB)
+           else:
+               display_mask = wound_mask
+           overlay_display = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
+           tissue_display = cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB)
+           with col1:
+               st.markdown('<div class="img-container">', unsafe_allow_html=True)
+               st.image(tissue_display, caption="🧬 Tissue Composition Analysis", 
+                        use_container_width=True, clamp=True, output_format="PNG")
+               st.markdown('</div>', unsafe_allow_html=True)
+
+           with col2:
+               st.markdown('<div class="img-container">', unsafe_allow_html=True)
+               st.image(overlay_display, caption="🔗 Combined Analysis Overlay", 
+                        use_container_width=True, clamp=True, output_format="PNG")
+               st.markdown('</div>', unsafe_allow_html=True)
+
             
-            # Prepare images for display
-            if len(wound_mask.shape) == 2:
-                display_mask = cv2.cvtColor(wound_mask, cv2.COLOR_GRAY2RGB)
-            else:
-                display_mask = wound_mask
-            
-            overlay_display = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
-            tissue_display = cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB)
-            
-            with col1:
-                st.markdown('<div class="img-container">', unsafe_allow_html=True)
-                st.image(display_mask, caption="🎯 Wound Boundary Detection", 
-                         use_container_width=True, clamp=True, output_format="PNG")
-                st.markdown('</div>', unsafe_allow_html=True)
-            
-            with col2:
-                st.markdown('<div class="img-container">', unsafe_allow_html=True)
-                st.image(tissue_display, caption="🧬 Tissue Composition Analysis", 
-                         use_container_width=True, clamp=True, output_format="PNG")
-                st.markdown('</div>', unsafe_allow_html=True)
-            
-            st.markdown('</div>', unsafe_allow_html=True)
+               st.markdown('</div>', unsafe_allow_html=True)
             
             # Combined overlay
             st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
