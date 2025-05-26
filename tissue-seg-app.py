@@ -5,6 +5,9 @@ import numpy as np
 from PIL import Image
 import segmentation_models_pytorch as smp
 import os
+st.set_page_config(page_title="Wound Segmentation Demo", layout="centered")
+st.title("🩹 Wound Segmentation Model Demo")
+st.write("Upload an image of a wound to segment with the pretrained model.")
 
 # ---- MODEL CONFIG ----
 MODEL_DRIVE_ID = "1q0xk9wll0eyF3-CKEc5s6MfG0gE_jde1"  # Streamlit .pth
@@ -63,9 +66,7 @@ def postprocess(mask):
     return color_mask
 
 # ---- Streamlit App ----
-st.set_page_config(page_title="Wound Segmentation Demo", layout="centered")
-st.title("🩹 Wound Segmentation Model Demo")
-st.write("Upload an image of a wound to segment with the pretrained model.")
+
 
 uploaded_file = st.file_uploader("Upload a wound image", type=["png", "jpg", "jpeg"])
 
