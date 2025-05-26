@@ -5,3 +5,5 @@ Pillow
 torch
 torchvision
 numpy
+tensorflow
+opencv-python
