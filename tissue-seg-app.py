@@ -17,11 +17,11 @@ N_CLASSES = 9
 ENCODER = "mit_b3"
 INPUT_SIZE = 256  # Change to 512 if your model uses 512x512
 CLASS_NAMES = [
-    "background", "fibrin", "callus", "granulation", "necrotic", "eschar", "neodermis", "tendon", "dressing"
+    "background", "fibrin", "granulation", "callus", "necrotic", "eschar", "neodermis", "tendon", "dressing"
 ]
 PALETTE = [
     (0, 0, 0),         # 0: background
-    (255, 255, 0),       # 1: fibrin (Green)
+    (255, 255, 0),       # 1: fibrin (Yellow)
     (0, 0, 255),       # 2: callus (Blue)
     (255, 0, 0),       # 3: granulation (Red)
     (255, 165, 0),     # 4: necrotic (Orange)
