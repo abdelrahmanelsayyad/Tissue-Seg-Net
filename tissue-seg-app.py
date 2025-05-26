@@ -42,7 +42,7 @@ ALPHA      = 0.4
 N_CLASSES = 9
 ENCODER = "mit_b3"
 CLASS_NAMES = [
-    "background", "fibrin", "granulation", "callus", "necrotic", "eschar", "neodermis", "tendon", "dressing"
+    "background", "fibrin", "callus", "granulation", "necrotic", "eschar", "neodermis", "tendon", "dressing"
 ]
 PALETTE = [
     (0, 0, 0),         # background (Black)
