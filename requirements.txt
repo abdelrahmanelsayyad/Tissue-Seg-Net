@@ -7,3 +7,4 @@ torchvision
 numpy
 tensorflow
 opencv-python
+python-3.11
