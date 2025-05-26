@@ -1,5 +1,4 @@
-
-
+@@ -1,1010 +1,1010 @@
 # streamlit_app.py
 
 import io
@@ -93,7 +92,7 @@ def download_models():
             import gdown
         st.info("Downloading High accuracy segmentation model...")
         gdown.download(SUGAR_MODEL_URL, str(SUGAR_MODEL_PATH), quiet=False)
-    
+
     if not TISSUE_MODEL_PATH.exists():
         try:
             import gdown
@@ -509,7 +508,7 @@ def make_overlay(orig_bgr, mask):
         mask_gray = cv2.cvtColor(mask, cv2.COLOR_RGB2GRAY)
     else:
         mask_gray = mask
-    
+
     mask_r = cv2.resize(mask_gray, (w, h), cv2.INTER_NEAREST)
     overlay = orig_bgr.copy()
     overlay[mask_r==255] = (122,164,140)
@@ -549,13 +548,13 @@ def postprocess_tissue(mask):
     if mask.ndim == 4:
         mask = mask.squeeze(0)
     mask = mask.argmax(0).cpu().numpy()
-    
+
     # Create color mask using our centralized color system
     color_mask = np.zeros((mask.shape[0], mask.shape[1], 3), dtype=np.uint8)
     for idx, class_name in enumerate(CLASS_NAMES):
         color_bgr = TISSUE_COLORS_BGR[class_name]
         color_mask[mask == idx] = color_bgr
-    
+
     return color_mask, mask
 
 def calculate_tissue_percentages(mask, class_names):
@@ -579,13 +578,13 @@ def calculate_health_score(tissue_percentages):
     """Calculate overall wound health score based on tissue composition"""
     score = 0
     total_weight = 0
-    
+
     for tissue, percentage in tissue_percentages.items():
         if tissue in TISSUE_HEALTH_WEIGHTS and percentage > 0:
             weight = TISSUE_HEALTH_WEIGHTS[tissue]
             score += weight * (percentage / 100)
             total_weight += abs(weight) * (percentage / 100)
-    
+
     # Normalize to 0-100 scale
     if total_weight > 0:
         normalized_score = ((score + total_weight) / (2 * total_weight)) * 100
@@ -595,22 +594,22 @@ def calculate_health_score(tissue_percentages):
 def generate_recommendations(tissue_percentages):
     """Generate healing recommendations based on tissue analysis"""
     recommendations = []
-    
+
     if tissue_percentages.get("necrotic", 0) > 5:
         recommendations.append("⚠️ Debridement recommended - significant necrotic tissue present")
-    
+
     if tissue_percentages.get("eschar", 0) > 10:
         recommendations.append("🧹 Consider eschar removal for better healing")
-    
+
     if tissue_percentages.get("granulation", 0) > 40:
         recommendations.append("✅ Good granulation tissue - wound healing well")
-    
+
     if tissue_percentages.get("neodermis", 0) > 0:
         recommendations.append("🌟 New skin formation detected - excellent progress")
-    
+
     if tissue_percentages.get("fibrin", 0) > 20:
         recommendations.append("💧 Maintain moist wound environment")
-    
+
     return recommendations if recommendations else ["📋 Continue current wound care regimen"]
 
 # ──── Load Models ────────────────────────────────────────────────
@@ -673,7 +672,7 @@ with col2:
 if uploaded:
     pil = Image.open(uploaded).convert("RGB")
     orig_bgr = cv2.cvtColor(np.array(pil), cv2.COLOR_RGB2BGR)
-    
+
     # Display uploaded image
     st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
     st.markdown('<div class="img-container">', unsafe_allow_html=True)
@@ -681,11 +680,11 @@ if uploaded:
              output_format="PNG", clamp=True, channels="RGB")
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
-    
+
     # Analysis button
     st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
     if st.button("🚀 Analyze Wound", help="Click to run AI analysis"):
-        
+
         if "Basic" in analysis_mode:
             # ──── Basic Segmentation Analysis ────────────────────────────────────
             with st.spinner("Running basic wound segmentation..."):
@@ -697,37 +696,38 @@ if uploaded:
                         overlay = make_overlay(orig_bgr, wound_mask)
                         area = calculate_wound_area(wound_mask)
                 progress.empty()
-            
+
             st.success("✅ Basic analysis complete!")
             st.markdown('<div class="results-header">Wound Segmentation Results</div>', unsafe_allow_html=True)
-            
+
             # Display results
             col1, col2 = st.columns(2)
-            
+
             # Prepare images for display
             if len(wound_mask.shape) == 2:
                 display_mask = cv2.cvtColor(wound_mask, cv2.COLOR_GRAY2RGB)
             else:
                 display_mask = wound_mask
-            
+
             overlay_display = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
-            
+
             with col1:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
                 st.image(display_mask, caption="Wound Boundary Mask", 
                          use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
-            
+
             with col2:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
+                st.image(overlay_display, caption="Wound Overlay (Sugar Heal Green)", 
                 st.image(overlay_display, caption="Wound Overlay (Green)", 
                          use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
-            
+
             # Basic metrics
             st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
             col1, col2, col3 = st.columns(3)
-            
+
             with col1:
                 st.markdown(f"""
                 <div class="metric-card">
@@ -735,7 +735,7 @@ if uploaded:
                     <div class="metric-label">Wound Pixels</div>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
             with col2:
                 wound_percentage = (area / (IMG_SIZE * IMG_SIZE)) * 100
                 st.markdown(f"""
@@ -744,7 +744,7 @@ if uploaded:
                     <div class="metric-label">Image Coverage</div>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
             with col3:
                 st.markdown(f"""
                 <div class="metric-card">
@@ -752,71 +752,72 @@ if uploaded:
                     <div class="metric-label">Analysis Mode</div>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
             st.markdown('</div>', unsafe_allow_html=True)
-            
+
         else:
             # ──── Complete Analysis (Both Models) ────────────────────────────────────
             with st.spinner("Running complete wound analysis..."):
                 progress = st.progress(0)
-                
+
                 # Step 1: Basic segmentation
                 for i in range(30):
                     progress.progress(i+1)
-                
+
                 wound_mask = predict_wound_mask(orig_bgr, sugar_model)
                 overlay = make_overlay(orig_bgr, wound_mask)
                 area = calculate_wound_area(wound_mask)
-                
+
                 # Step 2: Tissue analysis
                 for i in range(30, 70):
                     progress.progress(i+1)
-                
+
                 with torch.no_grad():
                     tensor_img = preprocess_tissue(pil)
                     tissue_pred = tissue_model(tensor_img)
                     tissue_mask_bgr, tissue_mask_indices = postprocess_tissue(tissue_pred)
                     tissue_percentages = calculate_tissue_percentages(tissue_mask_indices, CLASS_NAMES)
-                
+
                 # Step 3: Analysis completion
                 for i in range(70, 100):
                     progress.progress(i+1)
-                
+
                 health_score = calculate_health_score(tissue_percentages)
                 dominant_tissue, dominant_percent = get_dominant_tissue(tissue_percentages)
                 recommendations = generate_recommendations(tissue_percentages)
-                
+
                 progress.empty()
-            
+
             st.success("✅ Complete analysis finished!")
             st.markdown('<div class="results-header">Advanced Wound Analysis Results</div>', unsafe_allow_html=True)
-            
+
             # ──── Image Results Display ────────────────────────────────────────────────
             st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
-           col1, col2 = st.columns(2)
+            col1, col2 = st.columns(2)
 
-# Prepare images for display
-           if len(wound_mask.shape) == 2:
-               display_mask = cv2.cvtColor(wound_mask, cv2.COLOR_GRAY2RGB)
-           else:
-               display_mask = wound_mask
-           overlay_display = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
-           tissue_display = cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB)
-           with col1:
-               st.markdown('<div class="img-container">', unsafe_allow_html=True)
-               st.image(tissue_display, caption="🧬 Tissue Composition Analysis", 
-                        use_container_width=True, clamp=True, output_format="PNG")
-               st.markdown('</div>', unsafe_allow_html=True)
+            # Prepare images for display
+            if len(wound_mask.shape) == 2:
+                display_mask = cv2.cvtColor(wound_mask, cv2.COLOR_GRAY2RGB)
+            else:
+                display_mask = wound_mask
 
-           with col2:
-               st.markdown('<div class="img-container">', unsafe_allow_html=True)
-               st.image(overlay_display, caption="🔗 Combined Analysis Overlay", 
-                        use_container_width=True, clamp=True, output_format="PNG")
-               st.markdown('</div>', unsafe_allow_html=True)
+            overlay_display = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
+            tissue_display = cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB)
 
-            
-               st.markdown('</div>', unsafe_allow_html=True)
-            
+            with col1:
+                st.markdown('<div class="img-container">', unsafe_allow_html=True)
+                st.image(display_mask, caption="🎯 Wound Boundary Detection", 
+                         use_container_width=True, clamp=True, output_format="PNG")
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            with col2:
+                st.markdown('<div class="img-container">', unsafe_allow_html=True)
+                st.image(tissue_display, caption="🧬 Tissue Composition Analysis", 
+                         use_container_width=True, clamp=True, output_format="PNG")
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            st.markdown('</div>', unsafe_allow_html=True)
+
             # Combined overlay
             st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
             st.markdown('<div class="img-container">', unsafe_allow_html=True)
@@ -824,11 +825,11 @@ if uploaded:
                      use_container_width=True, clamp=True, output_format="PNG")
             st.markdown('</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
-            
+
             # ──── Key Metrics Dashboard ────────────────────────────────────────────────
             st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
             col1, col2, col3, col4 = st.columns(4)
-            
+
             with col1:
                 st.markdown(f"""
                 <div class="metric-card">
@@ -836,7 +837,7 @@ if uploaded:
                     <div class="metric-label">Health Score</div>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
             with col2:
                 st.markdown(f"""
                 <div class="metric-card">
@@ -844,7 +845,7 @@ if uploaded:
                     <div class="metric-label">Wound Area (px)</div>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
             with col3:
                 st.markdown(f"""
                 <div class="metric-card">
@@ -852,7 +853,7 @@ if uploaded:
                     <div class="metric-label">Dominant Tissue</div>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
             with col4:
                 tissue_count = len([t for t in tissue_percentages.values() if t > 1])
                 st.markdown(f"""
@@ -861,16 +862,16 @@ if uploaded:
                     <div class="metric-label">Tissue Types</div>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
             st.markdown('</div>', unsafe_allow_html=True)
-            
+
             # ──── Detailed Analysis Tabs ────────────────────────────────────────────────
             tab1, tab2, tab3 = st.tabs(["🧬 Tissue Composition", "📊 Health Assessment", "💡 Recommendations"])
-            
+
             with tab1:
                 st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
                 st.markdown('<div class="tab-title">Tissue Composition Breakdown</div>', unsafe_allow_html=True)
-                
+
                 # Color legend first
                 st.markdown("**Color Legend:**")
                 legend_cols = st.columns(3)
@@ -885,15 +886,15 @@ if uploaded:
                                 <span style="color: #E0E0E0; font-weight: 600; text-transform: capitalize;">{tissue}</span>
                             </div>
                             """, unsafe_allow_html=True)
-                
+
                 st.markdown("---")
-                
+
                 # Tissue percentages
                 sorted_tissues = sorted(
                     [(k, v) for k, v in tissue_percentages.items() if v > 0], 
                     key=lambda x: x[1], reverse=True
                 )
-                
+
                 for tissue, percentage in sorted_tissues:
                     color = TISSUE_COLORS_HEX[tissue]
                     st.markdown(f"""
@@ -905,13 +906,13 @@ if uploaded:
                         <div class="tissue-percent">{percentage:.1f}%</div>
                     </div>
                     """, unsafe_allow_html=True)
-                
+
                 st.markdown('</div>', unsafe_allow_html=True)
-            
+
             with tab2:
                 st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
                 st.markdown('<div class="tab-title">Health Assessment</div>', unsafe_allow_html=True)
-                
+
                 # Health score interpretation
                 if health_score >= 80:
                     health_status = "Excellent"
@@ -929,7 +930,7 @@ if uploaded:
                     health_status = "Poor"
                     health_color = COL['danger']
                     health_icon = "🚨"
-                
+
                 st.markdown(f"""
                 <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, {COL['dark']}, {COL['accent']}); 
                      border-radius: 15px; margin: 20px 0; color: white;">
@@ -938,13 +939,13 @@ if uploaded:
                     <div style="font-size: 1.5rem; margin-top: 10px;">Overall Health: {health_status}</div>
                 </div>
                 """, unsafe_allow_html=True)
-                
+
                 # Detailed breakdown
                 st.markdown("**Health Score Factors:**")
-                
+
                 positive_factors = []
                 negative_factors = []
-                
+
                 for tissue, percentage in tissue_percentages.items():
                     if percentage > 1:  # Only show significant tissues
                         weight = TISSUE_HEALTH_WEIGHTS.get(tissue, 0)
@@ -952,23 +953,23 @@ if uploaded:
                             positive_factors.append(f"• {tissue.title()}: {percentage:.1f}% (+{weight*100:.0f} points)")
                         elif weight < 0:
                             negative_factors.append(f"• {tissue.title()}: {percentage:.1f}% ({weight*100:.0f} points)")
-                
+
                 if positive_factors:
                     st.markdown("**Positive Factors:**")
                     for factor in positive_factors:
                         st.markdown(f"<span style='color: {COL['success']};'>{factor}</span>", unsafe_allow_html=True)
-                
+
                 if negative_factors:
                     st.markdown("**Concerning Factors:**")
                     for factor in negative_factors:
                         st.markdown(f"<span style='color: {COL['danger']};'>{factor}</span>", unsafe_allow_html=True)
-                
+
                 st.markdown('</div>', unsafe_allow_html=True)
-            
+
             with tab3:
                 st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
                 st.markdown('<div class="tab-title">Clinical Recommendations</div>', unsafe_allow_html=True)
-                
+
                 for i, rec in enumerate(recommendations, 1):
                     st.markdown(f"""
                     <div style="background-color: {COL['accent']}; padding: 15px; margin: 10px 0; 
@@ -976,7 +977,7 @@ if uploaded:
                         <strong style="color: {COL['text_light']}; font-size: 1.2rem;">{i}. {rec}</strong>
                     </div>
                     """, unsafe_allow_html=True)
-                
+
                 # Additional care guidelines
                 st.markdown("**General Wound Care Guidelines:**")
                 guidelines = [
@@ -987,16 +988,16 @@ if uploaded:
                     "👩‍⚕️ Consult healthcare provider for concerning changes",
                     "📱 Use this tool for regular monitoring and documentation"
                 ]
-                
+
                 for guideline in guidelines:
                     st.markdown(f"""
                     <div style="padding: 8px 0; color: {COL['text_light']}; font-size: 1.1rem;">
                         {guideline}
                     </div>
                     """, unsafe_allow_html=True)
-                
+
                 st.markdown('</div>', unsafe_allow_html=True)
-    
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ──── Footer ────────────────────────────────────────────────────
