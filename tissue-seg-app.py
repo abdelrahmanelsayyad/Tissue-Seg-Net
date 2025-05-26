@@ -17,7 +17,7 @@ N_CLASSES = 9
 ENCODER = "mit_b3"
 INPUT_SIZE = 256  # Change to 512 if your model uses 512x512
 CLASS_NAMES = [
-    "background", "granulation", "callus", "fibrin", "necrotic", "eschar", "neodermis", "tendon", "dressing"
+    "background", "callus", "fibrin", "granulation", "necrotic", "eschar", "neodermis", "tendon", "dressing"
 ]
 PALETTE = [
     (0, 0, 0),         # 0: background
