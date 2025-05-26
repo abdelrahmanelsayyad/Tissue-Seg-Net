@@ -1,14 +1,19 @@
+# Core dependencies with compatible versions
 streamlit==1.29.0
-numpy==1.26.4
-opencv-python-headless==4.9.0.80
-matplotlib==3.8.4
-Pillow==10.3.0
-gdown==5.2.0
+numpy==1.24.3
+opencv-python-headless==4.8.1.78
+matplotlib==3.7.5
+Pillow==10.0.1
 
-# --- For PyTorch segmentation model (CPU version) ---
-torch==2.2.2
-torchvision==0.17.2
+# PyTorch ecosystem - compatible versions
+torch==2.0.1
+torchvision==0.15.2
+
+# Segmentation models
 segmentation-models-pytorch==0.3.3
 
-# --- For TensorFlow wound mask model (CPU version) ---
+# TensorFlow ecosystem
 tensorflow==2.13.0
+
+# Additional utilities
+gdown==4.7.1
