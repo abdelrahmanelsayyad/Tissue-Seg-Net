@@ -120,7 +120,7 @@ COL = {
     "danger"     : "#dc3545",
 }
 
-# Enhanced CSS with larger images
+# Enhanced CSS with much larger images
 st.markdown(f"""
 <style>
   /* Base Styles */
@@ -241,10 +241,10 @@ st.markdown(f"""
     width: 100% !important;
   }}
   
-  /* Make images much larger and centered */
+  /* Make images MUCH larger and centered */
   .img-container img,
   .stImage img {{ 
-    max-height: 1200px !important;
+    max-height: 1400px !important;
     max-width: 100% !important;
     width: auto !important; 
     height: auto !important;
@@ -430,20 +430,20 @@ st.markdown(f"""
     .header h1 {{ font-size: 1.8rem; }}
     .header p {{ font-size: 1rem; }}
     .instructions {{ padding: 20px; }}
-    .img-container img, .stImage img {{ max-height: 700px !important; }}
+    .img-container img, .stImage img {{ max-height: 800px !important; }}
     .metric-value {{ font-size: 1.6rem; }}
     .results-header {{ font-size: 1.5rem; }}
   }}
   
   @media screen and (min-width: 769px) and (max-width: 1024px) {{
     .header h1 {{ font-size: 2.2rem; }}
-    .img-container img, .stImage img {{ max-height: 900px !important; }}
+    .img-container img, .stImage img {{ max-height: 1000px !important; }}
   }}
   
   @media screen and (min-width: 1025px) {{
     .content-wrapper {{ max-width: 1400px; margin: 0 auto; }}
     .section-wrapper {{ max-width: 95%; margin: 0 auto; }}
-    .img-container img, .stImage img {{ max-height: 1200px !important; }}
+    .img-container img, .stImage img {{ max-height: 1400px !important; }}
   }}
 </style>
 """, unsafe_allow_html=True)
@@ -704,13 +704,6 @@ if uploaded:
 
             # Prepare images for display
             if len(wound_mask.shape) == 2:
-                display_mask = cv2.cvtColor
-
-            # Display results
-            col1, col2 = st.columns(2)
-
-            # Prepare images for display
-            if len(wound_mask.shape) == 2:
                 display_mask = cv2.cvtColor(wound_mask, cv2.COLOR_GRAY2RGB)
             else:
                 display_mask = wound_mask
@@ -809,7 +802,7 @@ if uploaded:
             overlay_display = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
             tissue_display = cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB)
 
-            # SWAPPED: Tissue analysis on left, wound boundary on right
+            # *** ACTUAL SWAP HERE *** - Left shows tissue, right shows wound boundary
             with col1:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
                 st.image(tissue_display, caption="🧬 Tissue Composition Analysis", 
@@ -824,10 +817,10 @@ if uploaded:
 
             st.markdown('</div>', unsafe_allow_html=True)
 
-            # Combined overlay - SWAPPED: Now shows tissue overlay instead of wound overlay
+            # *** SWAPPED Combined overlay - Now shows wound overlay instead of tissue ***
             st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
             st.markdown('<div class="img-container">', unsafe_allow_html=True)
-            st.image(tissue_display, caption="🔗 Combined Analysis Overlay", 
+            st.image(overlay_display, caption="🔗 Combined Analysis Overlay", 
                      use_container_width=True, clamp=True, output_format="PNG")
             st.markdown('</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
