@@ -15,9 +15,17 @@ MODEL_DRIVE_ID = "1q0xk9wll0eyF3-CKEc5s6MfG0gE_jde1"
 MODEL_FILENAME = "best_model_streamlit.pth"
 N_CLASSES = 9
 ENCODER = "mit_b3"
-INPUT_SIZE = 256  # Change to 512 if your model uses 512x512
+INPUT_SIZE = 256
 CLASS_NAMES = [
-    "background", "granulation", "callus", "fibrin", "necrotic", "eschar", "neodermis", "tendon", "dressing"
+    "background",    # 0
+    "granulation",   # 1
+    "callus",        # 2
+    "fibrin",        # 3
+    "necrotic",      # 4
+    "eschar",        # 5
+    "neodermis",     # 6
+    "tendon",        # 7
+    "dressing"       # 8
 ]
 PALETTE = [
     (0, 0, 0),         # 0: background
@@ -53,7 +61,6 @@ def load_model():
     return model
 
 def preprocess(image_pil):
-    # Resize and normalize
     image = np.array(image_pil.resize((INPUT_SIZE, INPUT_SIZE))) / 255.0
     image = image.transpose(2, 0, 1)  # HWC -> CHW
     image = torch.tensor(image, dtype=torch.float32).unsqueeze(0)
@@ -63,19 +70,20 @@ def postprocess(mask):
     # mask shape: (1, C, H, W) or (C, H, W)
     if mask.ndim == 4:
         mask = mask.squeeze(0)
-    mask = mask.argmax(0).cpu().numpy()
-    color_mask = np.zeros((mask.shape[0], mask.shape[1], 3), dtype=np.uint8)
+    class_map = mask.argmax(0).cpu().numpy()  # shape: (H, W)
+    color_mask = np.zeros((class_map.shape[0], class_map.shape[1], 3), dtype=np.uint8)
     for idx, color in enumerate(PALETTE):
-        color_mask[mask == idx] = color
-    return color_mask, mask
+        color_mask[class_map == idx] = color
+    return color_mask, class_map
 
-def calculate_tissue_percentages(mask, class_names):
-    total_pixels = mask.size
+def compute_class_percentages(class_map):
     percentages = {}
-    for idx, name in enumerate(class_names):
-        class_pixels = np.sum(mask == idx)
+    total_pixels = class_map.size
+    for idx, name in enumerate(CLASS_NAMES):
+        class_pixels = np.sum(class_map == idx)
         if class_pixels > 0:
-            percentages[name] = (class_pixels / total_pixels) * 100
+            percent = 100 * class_pixels / total_pixels
+            percentages[name] = percent
     return percentages
 
 # ---- Streamlit App ----
@@ -91,17 +99,15 @@ if uploaded_file is not None:
         input_tensor = preprocess(image_pil)
         with torch.no_grad():
             output = model(input_tensor)
-        mask_img, class_mask = postprocess(output)
+        mask_img, class_map = postprocess(output)
 
     st.image(mask_img, caption="Predicted Segmentation", use_column_width=True)
 
-    # ---- Wound Tissue Composition ----
-    tissue_percent = calculate_tissue_percentages(class_mask, CLASS_NAMES)
+    # ----- Show class percentages -----
+    percentages = compute_class_percentages(class_map)
     st.markdown("### Wound Tissue Composition:")
-    comp_str = ""
-    for name, percent in sorted(tissue_percent.items(), key=lambda x: -x[1]):
-        comp_str += f"**{name}**: {percent:.2f}%  \n"
-    st.markdown(comp_str)
+    for name, percent in sorted(percentages.items(), key=lambda x: -x[1]):
+        st.write(f"**{name}**: {percent:.2f}%")
 
     # Optional: Overlay mask on original
     if st.checkbox("Show mask overlay"):
