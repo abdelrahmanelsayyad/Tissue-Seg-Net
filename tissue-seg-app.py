@@ -5,16 +5,20 @@ import numpy as np
 from PIL import Image
 import segmentation_models_pytorch as smp
 import os
+
 st.set_page_config(page_title="Wound Segmentation Demo", layout="centered")
 st.title("🩹 Wound Segmentation Model Demo")
 st.write("Upload an image of a wound to segment with the pretrained model.")
 
 # ---- MODEL CONFIG ----
-MODEL_DRIVE_ID = "1q0xk9wll0eyF3-CKEc5s6MfG0gE_jde1"  # Streamlit .pth
+MODEL_DRIVE_ID = "1q0xk9wll0eyF3-CKEc5s6MfG0gE_jde1"
 MODEL_FILENAME = "best_model_streamlit.pth"
 N_CLASSES = 9
 ENCODER = "mit_b3"
 INPUT_SIZE = 256  # Change to 512 if your model uses 512x512
+CLASS_NAMES = [
+    "background", "granulation", "callus", "fibrin", "necrotic", "eschar", "neodermis", "tendon", "dressing"
+]
 PALETTE = [
     (0, 0, 0),         # 0: background
     (255, 0, 0),       # 1: granulation
@@ -63,10 +67,18 @@ def postprocess(mask):
     color_mask = np.zeros((mask.shape[0], mask.shape[1], 3), dtype=np.uint8)
     for idx, color in enumerate(PALETTE):
         color_mask[mask == idx] = color
-    return color_mask
+    return color_mask, mask
+
+def calculate_tissue_percentages(mask, class_names):
+    total_pixels = mask.size
+    percentages = {}
+    for idx, name in enumerate(class_names):
+        class_pixels = np.sum(mask == idx)
+        if class_pixels > 0:
+            percentages[name] = (class_pixels / total_pixels) * 100
+    return percentages
 
 # ---- Streamlit App ----
-
 
 uploaded_file = st.file_uploader("Upload a wound image", type=["png", "jpg", "jpeg"])
 
@@ -79,9 +91,17 @@ if uploaded_file is not None:
         input_tensor = preprocess(image_pil)
         with torch.no_grad():
             output = model(input_tensor)
-        mask_img = postprocess(output)
+        mask_img, class_mask = postprocess(output)
 
     st.image(mask_img, caption="Predicted Segmentation", use_column_width=True)
+
+    # ---- Wound Tissue Composition ----
+    tissue_percent = calculate_tissue_percentages(class_mask, CLASS_NAMES)
+    st.markdown("### Wound Tissue Composition:")
+    comp_str = ""
+    for name, percent in sorted(tissue_percent.items(), key=lambda x: -x[1]):
+        comp_str += f"**{name}**: {percent:.2f}%  \n"
+    st.markdown(comp_str)
 
     # Optional: Overlay mask on original
     if st.checkbox("Show mask overlay"):
