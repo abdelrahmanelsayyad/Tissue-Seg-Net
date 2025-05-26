@@ -1,10 +1,6 @@
 streamlit
+torch
 gdown
 segmentation-models-pytorch
-Pillow
-torch
-torchvision
+pillow
 numpy
-tensorflow==2.15.0
-opencv-python
-python-3.11
