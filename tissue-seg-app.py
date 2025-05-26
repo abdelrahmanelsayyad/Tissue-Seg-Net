@@ -21,7 +21,7 @@ CLASS_NAMES = [
 ]
 PALETTE = [
     (0, 0, 0),         # 0: background
-    (0, 255, 0),       # 1: fibrin (Green)
+    (255, 255, 0),       # 1: fibrin (Green)
     (0, 0, 255),       # 2: callus (Blue)
     (255, 0, 0),       # 3: granulation (Red)
     (255, 165, 0),     # 4: necrotic (Orange)
