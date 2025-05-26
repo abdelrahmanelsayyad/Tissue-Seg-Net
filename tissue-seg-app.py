@@ -720,7 +720,6 @@ if uploaded:
             with col2:
                 st.markdown('<div class="img-container">', unsafe_allow_html=True)
                 st.image(overlay_display, caption="Wound Overlay (Green)", 
-                st.image(overlay_display, caption="Wound Overlay (Green)", 
                          use_container_width=True, clamp=True, output_format="PNG")
                 st.markdown('</div>', unsafe_allow_html=True)
 
