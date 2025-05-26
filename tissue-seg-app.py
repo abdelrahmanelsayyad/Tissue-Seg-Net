@@ -17,18 +17,18 @@ N_CLASSES = 9
 ENCODER = "mit_b3"
 INPUT_SIZE = 256  # Change to 512 if your model uses 512x512
 CLASS_NAMES = [
-    "background", "fibrin", "granulation", "callus", "necrotic", "eschar", "neodermis", "tendon", "dressing"
+    "background", "granulation", "callus", "fibrin", "necrotic", "eschar", "neodermis", "tendon", "dressing"
 ]
 PALETTE = [
     (0, 0, 0),         # 0: background
-    (255, 255, 0),     # 1: fibrin (Yellow)
-    (255, 0, 0),       # 2: granulation (Red)
-    (0, 0, 255),       # 3: callus (Blue)
-    (255, 165, 0),     # 4: necrotic (Orange)
-    (128, 0, 128),     # 5: eschar (Purple)
-    (0, 255, 255),     # 6: neodermis (Cyan)
-    (255, 192, 203),   # 7: tendon (Pink)
-    (0, 255, 0),     # 8: dressing (Yellow)
+    (255, 0, 0),       # 1: granulation
+    (255, 255, 0),     # 2: callus
+    (0, 255, 0),       # 3: fibrin
+    (255, 165, 0),     # 4: necrotic
+    (128, 0, 128),     # 5: eschar
+    (0, 255, 255),     # 6: neodermis
+    (255, 192, 203),   # 7: tendon
+    (0, 0, 255),       # 8: dressing
 ]
 
 # ---- Download model weights if needed ----
@@ -100,7 +100,7 @@ if uploaded_file is not None:
     st.markdown("### Wound Tissue Composition:")
     comp_str = ""
     for name, percent in sorted(tissue_percent.items(), key=lambda x: -x[1]):
-        comp_str += f"{name}: {percent:.2f}%  \n"
+        comp_str += f"**{name}**: {percent:.2f}%  \n"
     st.markdown(comp_str)
 
     # Optional: Overlay mask on original
