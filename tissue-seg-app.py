@@ -42,12 +42,15 @@ IMG_SIZE   = 256
 THRESHOLD  = 0.5
 ALPHA      = 0.4
 
-# Tissue Analysis Config
-N_CLASSES = 4
+# Tissue Analysis Config - Keep 9 classes to match the model
+N_CLASSES = 9
 ENCODER = "mit_b3"
 CLASS_NAMES = [
-    "background", "fibrin", "granulation", "callus"
+    "background", "fibrin", "granulation", "callus", "necrotic", "eschar", "neodermis", "tendon", "dressing"
 ]
+
+# Classes we'll actually display and use
+DISPLAY_CLASSES = ["background", "fibrin", "granulation", "callus"]
 
 # ──── CENTRALIZED COLOR CONTROL ────────────────────────────────────────────────
 # Define tissue colors (RGB format for display)
@@ -56,6 +59,11 @@ TISSUE_COLORS_RGB = {
     "fibrin": (255, 255, 0),         # Yellow  
     "granulation": (255, 0, 0),      # Red
     "callus": (0, 0, 255),           # Blue
+    "necrotic": (255, 165, 0),       # Orange - Not displayed
+    "eschar": (128, 0, 128),         # Purple - Not displayed
+    "neodermis": (0, 255, 255),      # Cyan - Not displayed
+    "tendon": (255, 192, 203),       # Pink - Not displayed
+    "dressing": (0, 255, 0),         # Green - Not displayed
 }
 
 # Convert to BGR for OpenCV processing
@@ -785,6 +793,9 @@ def postprocess_tissue(mask):
     # Create color mask using our centralized color system
     color_mask = np.zeros((mask.shape[0], mask.shape[1], 3), dtype=np.uint8)
     for idx, class_name in enumerate(CLASS_NAMES):
+        # Skip unused classes
+        if class_name not in DISPLAY_CLASSES:
+            continue
         color_bgr = TISSUE_COLORS_BGR[class_name]
         color_mask[mask == idx] = color_bgr
 
@@ -794,6 +805,9 @@ def calculate_tissue_percentages(mask, class_names):
     total_pixels = mask.size
     percentages = {}
     for idx, name in enumerate(class_names):
+        # Skip unused classes
+        if name not in DISPLAY_CLASSES:
+            continue
         class_pixels = np.sum(mask == idx)
         if class_pixels > 0:
             percentages[name] = (class_pixels / total_pixels) * 100
@@ -803,6 +817,9 @@ def calculate_tissue_percentages_and_areas(mask, class_names):
     total_pixels = mask.size
     data = {}
     for idx, name in enumerate(class_names):
+        # Skip unused classes
+        if name not in DISPLAY_CLASSES:
+            continue
         class_pixels = np.sum(mask == idx)
         if class_pixels > 0:
             data[name] = {
@@ -1119,6 +1136,9 @@ if uploaded:
                 st.markdown("*Color Legend:*")
                 legend_cols = st.columns(3)
                 for i, (tissue, color) in enumerate(TISSUE_COLORS_HEX.items()):
+                    # Skip unused classes
+                    if tissue not in DISPLAY_CLASSES:
+                        continue
                     if tissue in tissue_data and tissue_data[tissue]['percentage'] > 0:
                         col_idx = i % 3
                         with legend_cols[col_idx]:
