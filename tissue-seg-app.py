@@ -59,6 +59,11 @@ TISSUE_COLORS_RGB = {
     "fibrin": (255, 255, 0),         # Yellow  
     "granulation": (255, 0, 0),      # Red
     "callus": (0, 0, 255),           # Blue
+    "necrotic": (255, 165, 0),       # Orange - Not displayed
+    "eschar": (128, 0, 128),         # Purple - Not displayed
+    "neodermis": (0, 255, 255),      # Cyan - Not displayed
+    "tendon": (255, 192, 203),       # Pink - Not displayed
+    "dressing": (0, 255, 0),         # Green - Not displayed
 }
 
 # Convert to BGR for OpenCV processing
@@ -1128,7 +1133,7 @@ if uploaded:
                 st.markdown('<div class="tab-title">Tissue Composition Breakdown</div>', unsafe_allow_html=True)
 
                 # Color legend first
-                st.markdown("*Color Legend:*")
+                st.markdown("Color Legend:")
                 legend_cols = st.columns(3)
                 for i, (tissue, color) in enumerate(TISSUE_COLORS_HEX.items()):
                     # Skip unused classes
@@ -1202,7 +1207,7 @@ if uploaded:
                 """, unsafe_allow_html=True)
 
                 # Detailed breakdown
-                st.markdown("*Health Score Factors:*")
+                st.markdown("Health Score Factors:")
 
                 positive_factors = []
                 negative_factors = []
@@ -1217,12 +1222,12 @@ if uploaded:
                             negative_factors.append(f"• {tissue.title()}: {percentage:.1f}% ({weight*100:.0f} points)")
 
                 if positive_factors:
-                    st.markdown("*Positive Factors:*")
+                    st.markdown("Positive Factors:")
                     for factor in positive_factors:
                         st.markdown(f"<span style='color: {COL['success']};'>{factor}</span>", unsafe_allow_html=True)
 
                 if negative_factors:
-                    st.markdown("*Concerning Factors:*")
+                    st.markdown("Concerning Factors:")
                     for factor in negative_factors:
                         st.markdown(f"<span style='color: {COL['danger']};'>{factor}</span>", unsafe_allow_html=True)
 
@@ -1241,7 +1246,7 @@ if uploaded:
                     """, unsafe_allow_html=True)
 
                 # Additional care guidelines
-                st.markdown("*General Wound Care Guidelines:*")
+                st.markdown("General Wound Care Guidelines:")
                 guidelines = [
                     "🧼 Keep wound clean and monitor for signs of infection",
                     "💧 Maintain appropriate moisture balance",
