@@ -20,9 +20,13 @@ import segmentation_models_pytorch as smp
 st.set_page_config(
     page_title="Advanced Wound Analysis",
     page_icon="🩹",
-    layout="wide",  # Use wide layout for PC
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# Initialize session state for theme
+if 'theme' not in st.session_state:
+    st.session_state.theme = 'dark'
 
 # ──── Config ───────────────────────────────────────────────────
 # Original Sugar Heal Model (Wound Hole Segmentation)
@@ -104,31 +108,76 @@ def download_models():
 # Ensure models are available
 download_models()
 
-# ──── Color Palette & Enhanced CSS ───────────────────────────────────────────────────────
-COL = {
+# ──── Color Palette & Theme System ───────────────────────────────────────────────────────
+# Dark theme colors
+COL_DARK = {
     "primary"    : "#074225",
     "secondary"  : "#41706F",
     "accent"     : "#3B6C53",
     "dark"       : "#335F4B",
     "light"      : "#81A295",
     "surface"    : "#1a1a1a",
+    "bg_gradient_start": "#1a1a1a",
+    "bg_gradient_end": "#2a2a2a",
     "text_dark"  : "#E0E0E0",
     "text_light" : "#FFFFFF",
+    "text_primary": "#E0E0E0",
+    "text_secondary": "#B0B0B0",
     "highlight"  : "rgb(122,164,140)",
     "success"    : "#28a745",
     "warning"    : "#ffc107",
     "danger"     : "#dc3545",
     "gradient_start": "#074225",
     "gradient_end": "#3B6C53",
+    "box_bg": "rgba(59, 108, 83, 0.1)",
+    "box_bg_hover": "rgba(59, 108, 83, 0.2)",
+    "border_color": "rgba(122,164,140,0.2)",
+    "shadow_color": "rgba(0,0,0,0.4)",
 }
 
-# Enhanced CSS with modern design improvements
+# Light theme colors
+COL_LIGHT = {
+    "primary"    : "#0D5432",
+    "secondary"  : "#2B5D5C",
+    "accent"     : "#3B6C53",
+    "dark"       : "#074225",
+    "light"      : "#A8CCBD",
+    "surface"    : "#FFFFFF",
+    "bg_gradient_start": "#F5F5F5",
+    "bg_gradient_end": "#FFFFFF",
+    "text_dark"  : "#1a1a1a",
+    "text_light" : "#2a2a2a",
+    "text_primary": "#1a1a1a",
+    "text_secondary": "#4a4a4a",
+    "highlight"  : "rgb(59, 108, 83)",
+    "success"    : "#22A339",
+    "warning"    : "#FF9800",
+    "danger"     : "#D32F2F",
+    "gradient_start": "#0D5432",
+    "gradient_end": "#3B6C53",
+    "box_bg": "rgba(59, 108, 83, 0.05)",
+    "box_bg_hover": "rgba(59, 108, 83, 0.1)",
+    "border_color": "rgba(59, 108, 83, 0.3)",
+    "shadow_color": "rgba(0,0,0,0.1)",
+}
+
+# Select current theme
+COL = COL_DARK if st.session_state.theme == 'dark' else COL_LIGHT
+
+# Theme toggle button
+theme_col1, theme_col2, theme_col3 = st.columns([1, 8, 1])
+with theme_col3:
+    if st.button("🌓", help="Toggle theme"):
+        st.session_state.theme = 'light' if st.session_state.theme == 'dark' else 'dark'
+        st.rerun()
+
+# Enhanced CSS with theme support
 st.markdown(f"""
 <style>
   /* Base Styles */
   .stApp {{ 
-    background: linear-gradient(135deg, {COL['surface']} 0%, #2a2a2a 100%); 
-    color: {COL['text_dark']}; 
+    background: linear-gradient(135deg, {COL['bg_gradient_start']} 0%, {COL['bg_gradient_end']} 100%); 
+    color: {COL['text_primary']}; 
     font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; 
   }}
   
@@ -137,9 +186,9 @@ st.markdown(f"""
     text-align: center; 
     padding: 40px 30px; 
     background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 50%, {COL['dark']} 100%); 
-    color: {COL['text_light']}; 
+    color: {COL['text_light'] if st.session_state.theme == 'dark' else '#FFFFFF'}; 
     border-radius: 20px; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 50px rgba(122,164,140,0.1); 
+    box-shadow: 0 10px 30px {COL['shadow_color']}, 0 0 50px rgba(122,164,140,0.1); 
     margin-bottom: 40px; 
     transition: all 0.3s ease;
     position: relative;
@@ -184,20 +233,20 @@ st.markdown(f"""
   
   /* Enhanced Instructions Box */
   .instructions {{ 
-    background: linear-gradient(145deg, {COL['dark']} 0%, #2a4a37 100%); 
+    background: linear-gradient(145deg, {COL['dark'] if st.session_state.theme == 'dark' else COL['surface']} 0%, {'#2a4a37' if st.session_state.theme == 'dark' else '#F0F8F4'} 100%); 
     padding: 35px; 
     border-left: 8px solid {COL['highlight']}; 
     border-radius: 15px; 
     margin-bottom: 40px; 
-    color: {COL['text_light']}; 
-    box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
-    border: 1px solid rgba(122,164,140,0.2);
+    color: {COL['text_primary']}; 
+    box-shadow: 0 8px 25px {COL['shadow_color']}, inset 0 1px 0 rgba(255,255,255,0.1);
+    border: 1px solid {COL['border_color']};
   }}
   
   .instructions strong {{ 
     color: {COL['highlight']}; 
     font-size: 1.4rem; 
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px {COL['shadow_color']};
   }}
   
   .instructions ol {{ 
@@ -212,6 +261,7 @@ st.markdown(f"""
     line-height: 1.6;
     counter-increment: item;
     position: relative;
+    color: {COL['text_primary']};
   }}
   
   .instructions li::marker {{
@@ -221,19 +271,19 @@ st.markdown(f"""
   
   /* Enhanced Logo Container */
   .logo-container {{
-    background: linear-gradient(145deg, {COL['highlight']} 0%, #4a7a5c 100%); 
+    background: linear-gradient(145deg, {COL['highlight']} 0%, {'#4a7a5c' if st.session_state.theme == 'dark' else '#6B9B82'} 100%); 
     padding: 25px; 
     border-radius: 20px; 
     text-align: center; 
     margin-bottom: 35px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+    box-shadow: 0 8px 25px {COL['shadow_color']}, inset 0 1px 0 rgba(255,255,255,0.2);
     border: 2px solid rgba(255,255,255,0.1);
     transition: all 0.3s ease;
   }}
   
   .logo-container:hover {{
     transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+    box-shadow: 0 12px 35px {COL['shadow_color']}, inset 0 1px 0 rgba(255,255,255,0.2);
   }}
   
   img.logo {{ 
@@ -243,7 +293,7 @@ st.markdown(f"""
     max-width: 1000px;
     padding: 10px; 
     transition: all 0.3s ease;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+    filter: drop-shadow(0 4px 8px {COL['shadow_color']});
   }}
   
   /* Enhanced Button Styling */
@@ -255,7 +305,7 @@ st.markdown(f"""
     padding: 20px 40px; 
     font-weight: 700; 
     transition: all .4s ease; 
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3); 
+    box-shadow: 0 6px 20px {COL['shadow_color']}; 
     width: 100%;
     font-size: 1.3rem;
     letter-spacing: 1px;
@@ -282,13 +332,13 @@ st.markdown(f"""
   .stButton>button:hover {{ 
     background: linear-gradient(135deg, {COL['accent']} 0%, {COL['gradient_start']} 50%, {COL['primary']} 100%); 
     transform: translateY(-4px); 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(122,164,140,0.3); 
+    box-shadow: 0 10px 30px {COL['shadow_color']}, 0 0 20px rgba(122,164,140,0.3); 
   }}
   
   /* Enhanced File Uploader */
   .css-1cpxqw2, [data-testid="stFileUploader"] {{ 
     border: 3px dashed {COL['accent']}; 
-    background: linear-gradient(145deg, rgba(59, 108, 83, 0.1), rgba(59, 108, 83, 0.2)); 
+    background: linear-gradient(145deg, {COL['box_bg']}, {COL['box_bg_hover']}); 
     border-radius: 20px; 
     padding: 35px; 
     transition: all 0.4s ease;
@@ -297,17 +347,17 @@ st.markdown(f"""
   
   .css-1cpxqw2:hover, [data-testid="stFileUploader"]:hover {{ 
     border-color: {COL['highlight']}; 
-    background: linear-gradient(145deg, rgba(59, 108, 83, 0.2), rgba(59, 108, 83, 0.3));
+    background: linear-gradient(145deg, {COL['box_bg_hover']}, rgba(59, 108, 83, 0.3));
     box-shadow: 0 8px 25px rgba(122,164,140,0.2);
     transform: translateY(-2px);
   }}
   
   /* Enhanced Image Container */
   .img-container {{ 
-    background: linear-gradient(145deg, {COL['dark']} 0%, #2a4a37 100%); 
+    background: linear-gradient(145deg, {COL['dark'] if st.session_state.theme == 'dark' else COL['surface']} 0%, {'#2a4a37' if st.session_state.theme == 'dark' else '#F5F9F7'} 100%); 
     padding: 30px; 
     border-radius: 20px; 
-    box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1); 
+    box-shadow: 0 8px 25px {COL['shadow_color']}, inset 0 1px 0 rgba(255,255,255,0.1); 
     margin-bottom: 15px; 
     transition: all 0.4s ease;
     overflow: hidden;
@@ -318,12 +368,12 @@ st.markdown(f"""
     justify-content: center;
     align-items: center !important;
     width: 100% !important;
-    border: 1px solid rgba(122,164,140,0.2);
+    border: 1px solid {COL['border_color']};
   }}
   
   .img-container:hover {{
     transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    box-shadow: 0 12px 35px {COL['shadow_color']}, inset 0 1px 0 rgba(255,255,255,0.1);
   }}
   
   /* Enhanced Image Styling */
@@ -338,13 +388,13 @@ st.markdown(f"""
     border-radius: 12px !important;
     transition: all 0.4s ease;
     object-fit: contain !important;
-    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 8px 16px {COL['shadow_color']});
   }}
   
   .img-container img:hover,
   .stImage img:hover {{
     transform: scale(1.02);
-    filter: drop-shadow(0 12px 24px rgba(0,0,0,0.4));
+    filter: drop-shadow(0 12px 24px {COL['shadow_color']});
   }}
   
   /* Center all Streamlit images */
@@ -363,7 +413,7 @@ st.markdown(f"""
     font-weight: 700 !important;
     text-align: center !important;
     width: 100% !important;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px {COL['shadow_color']};
     letter-spacing: 0.5px;
   }}
   
@@ -377,14 +427,14 @@ st.markdown(f"""
 
   /* Enhanced Guidelines Box */
   .guidelines-box {{ 
-    background: linear-gradient(145deg, {COL['dark']} 0%, #2a4a37 100%); 
+    background: linear-gradient(145deg, {COL['dark'] if st.session_state.theme == 'dark' else COL['surface']} 0%, {'#2a4a37' if st.session_state.theme == 'dark' else '#F0F8F4'} 100%); 
     padding: 25px; 
     border-radius: 15px; 
-    color: {COL['text_light']}; 
+    color: {COL['text_primary']}; 
     margin-bottom: 30px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    box-shadow: 0 6px 20px {COL['shadow_color']}, inset 0 1px 0 rgba(255,255,255,0.1);
     border-left: 6px solid {COL['highlight']};
-    border: 1px solid rgba(122,164,140,0.2);
+    border: 1px solid {COL['border_color']};
   }}
   
   .guidelines-box h4 {{ 
@@ -392,7 +442,7 @@ st.markdown(f"""
     margin-top: 0; 
     font-size: 1.4rem; 
     font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px {COL['shadow_color']};
   }}
   
   .guidelines-box ul {{ 
@@ -407,6 +457,7 @@ st.markdown(f"""
     margin-bottom: 12px;
     font-size: 1.15rem;
     line-height: 1.5;
+    color: {COL['text_primary']};
   }}
   
   .guidelines-box ul li:before {{ 
@@ -416,7 +467,7 @@ st.markdown(f"""
     left: 0;
     font-weight: bold;
     font-size: 1.3rem;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px {COL['shadow_color']};
   }}
   
   /* Enhanced Results Section */
@@ -428,8 +479,8 @@ st.markdown(f"""
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 2px;
-    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    background: linear-gradient(45deg, {COL['highlight']}, #ffffff);
+    text-shadow: 0 4px 8px {COL['shadow_color']};
+    background: linear-gradient(45deg, {COL['highlight']}, {'#ffffff' if st.session_state.theme == 'dark' else COL['primary']});
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -437,15 +488,15 @@ st.markdown(f"""
   
   /* Enhanced Metrics Cards */
   .metric-card {{
-    background: linear-gradient(145deg, {COL['dark']} 0%, {COL['accent']} 100%);
+    background: linear-gradient(145deg, {COL['dark'] if st.session_state.theme == 'dark' else COL['primary']} 0%, {COL['accent']} 100%);
     border-radius: 15px;
     padding: 25px;
     text-align: center;
     color: white;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    box-shadow: 0 8px 25px {COL['shadow_color']}, inset 0 1px 0 rgba(255,255,255,0.1);
     transition: all 0.4s ease;
     margin-bottom: 20px;
-    border: 1px solid rgba(122,164,140,0.2);
+    border: 1px solid {COL['border_color']};
     position: relative;
     overflow: hidden;
   }}
@@ -463,7 +514,7 @@ st.markdown(f"""
   
   .metric-card:hover {{
     transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 20px rgba(122,164,140,0.2);
+    box-shadow: 0 15px 40px {COL['shadow_color']}, 0 0 20px rgba(122,164,140,0.2);
   }}
   
   .metric-card:hover::before {{
@@ -474,7 +525,7 @@ st.markdown(f"""
     font-size: 2.2rem;
     font-weight: 900;
     margin-bottom: 10px;
-    color: {COL['text_light']};
+    color: #FFFFFF;
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }}
   
@@ -487,22 +538,22 @@ st.markdown(f"""
   
   /* Enhanced Tissue Composition */
   .tissue-item {{
-    background: linear-gradient(145deg, {COL['dark']} 0%, #2a4a37 100%);
+    background: linear-gradient(145deg, {COL['dark'] if st.session_state.theme == 'dark' else COL['surface']} 0%, {'#2a4a37' if st.session_state.theme == 'dark' else '#F5F9F7'} 100%);
     padding: 20px 25px;
     margin: 15px 0;
     border-radius: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    box-shadow: 0 5px 15px {COL['shadow_color']}, inset 0 1px 0 rgba(255,255,255,0.05);
     border-left: 6px solid transparent;
     transition: all 0.4s ease;
-    border: 1px solid rgba(122,164,140,0.1);
+    border: 1px solid {COL['border_color']};
   }}
   
   .tissue-item:hover {{
     transform: translateX(8px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 25px {COL['shadow_color']};
   }}
   
   .tissue-name {{
@@ -511,7 +562,8 @@ st.markdown(f"""
     text-transform: capitalize;
     display: flex;
     align-items: center;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px {COL['shadow_color']};
+    color: {COL['text_primary']};
   }}
   
   .tissue-color-indicator {{
@@ -519,26 +571,39 @@ st.markdown(f"""
     height: 24px;
     border-radius: 6px;
     margin-right: 15px;
-    border: 2px solid rgba(255,255,255,0.4);
+    border: 2px solid {'rgba(255,255,255,0.4)' if st.session_state.theme == 'dark' else 'rgba(0,0,0,0.2)'};
     display: inline-block;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px {COL['shadow_color']};
+  }}
+  
+  .tissue-stats {{
+    display: flex;
+    gap: 30px;
+    align-items: center;
   }}
   
   .tissue-percent {{
     font-weight: 800;
     font-size: 1.4rem;
     color: {COL['highlight']};
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px {COL['shadow_color']};
+  }}
+  
+  .tissue-area {{
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: {COL['text_secondary']};
+    text-shadow: 0 1px 3px {COL['shadow_color']};
   }}
   
   /* Enhanced Analysis Tabs */
   .analysis-tab {{
-    background: linear-gradient(145deg, {COL['dark']} 0%, #2a4a37 100%);
+    background: linear-gradient(145deg, {COL['dark'] if st.session_state.theme == 'dark' else COL['surface']} 0%, {'#2a4a37' if st.session_state.theme == 'dark' else '#F5F9F7'} 100%);
     border-radius: 15px;
     padding: 30px;
     margin: 25px 0;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
-    border: 1px solid rgba(122,164,140,0.2);
+    box-shadow: 0 8px 25px {COL['shadow_color']}, inset 0 1px 0 rgba(255,255,255,0.1);
+    border: 1px solid {COL['border_color']};
   }}
   
   .tab-title {{
@@ -549,7 +614,7 @@ st.markdown(f"""
     text-align: center;
     border-bottom: 3px solid {COL['accent']};
     padding-bottom: 15px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px {COL['shadow_color']};
     letter-spacing: 1px;
   }}
   
@@ -559,10 +624,10 @@ st.markdown(f"""
     padding: 35px 0; 
     margin-top: 60px; 
     border-top: 3px solid {COL['dark']}; 
-    color: {COL['light']}; 
+    color: {COL['text_secondary']}; 
     font-size: 1.2rem; 
     font-weight: 500;
-    background: linear-gradient(145deg, rgba(7, 66, 37, 0.1), rgba(59, 108, 83, 0.1));
+    background: linear-gradient(145deg, {COL['box_bg']}, {COL['box_bg_hover']});
     border-radius: 15px 15px 0 0;
   }}
   
@@ -572,6 +637,11 @@ st.markdown(f"""
     align-items: center;
     justify-content: center;
     margin: 20px 0;
+  }}
+  
+  /* Theme-aware text colors */
+  p, span, div {{
+    color: {COL['text_primary']};
   }}
   
   /* Enhanced Responsive Design */
@@ -584,6 +654,7 @@ st.markdown(f"""
     .metric-value {{ font-size: 1.8rem; }}
     .results-header {{ font-size: 1.7rem; }}
     .stButton>button {{ padding: 15px 30px; font-size: 1.1rem; }}
+    .tissue-stats {{ flex-direction: column; gap: 10px; }}
   }}
   
   @media screen and (min-width: 769px) and (max-width: 1024px) {{
@@ -730,14 +801,16 @@ def postprocess_tissue(mask):
 
     return color_mask, mask
 
-def calculate_tissue_percentages(mask, class_names):
+def calculate_tissue_percentages_and_areas(mask, class_names):
     total_pixels = mask.size
     percentages = {}
+    areas = {}
     for idx, name in enumerate(class_names):
         class_pixels = np.sum(mask == idx)
         if class_pixels > 0:
             percentages[name] = (class_pixels / total_pixels) * 100
-    return percentages
+            areas[name] = int(class_pixels)
+    return percentages, areas
 
 def get_dominant_tissue(tissue_percentages):
     """Get dominant tissue excluding background"""
@@ -812,9 +885,9 @@ st.markdown('</div>', unsafe_allow_html=True)
 # ──── Analysis Mode Selection ────────────────────────────────────────────────
 st.markdown("""
 <div class="analysis-mode">
-  <h3>🎯 Analysis Mode</h3>
+  <h3 style="color: {} !important;">🎯 Analysis Mode</h3>
 </div>
-""", unsafe_allow_html=True)
+""".format(COL['text_primary']), unsafe_allow_html=True)
 
 analysis_mode = st.radio(
     "Select analysis type:",
@@ -921,270 +994,4 @@ if uploaded:
                 st.markdown(f"""
                 <div class="metric-card">
                     <div class="metric-value">Basic</div>
-                    <div class="metric-label">Analysis Mode</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        else:
-            # ──── Complete Analysis (Both Models) ────────────────────────────────────
-            with st.spinner("Running complete wound analysis..."):
-                progress = st.progress(0)
-
-                # Step 1: Basic segmentation
-                for i in range(30):
-                    progress.progress(i+1)
-
-                wound_mask = predict_wound_mask(orig_bgr, sugar_model)
-                overlay = make_overlay(orig_bgr, wound_mask)
-                area = calculate_wound_area(wound_mask)
-
-                # Step 2: Tissue analysis
-                for i in range(30, 70):
-                    progress.progress(i+1)
-
-                with torch.no_grad():
-                    tensor_img = preprocess_tissue(pil)
-                    tissue_pred = tissue_model(tensor_img)
-                    tissue_mask_bgr, tissue_mask_indices = postprocess_tissue(tissue_pred)
-                    tissue_percentages = calculate_tissue_percentages(tissue_mask_indices, CLASS_NAMES)
-
-                # Step 3: Analysis completion
-                for i in range(70, 100):
-                    progress.progress(i+1)
-
-                health_score = calculate_health_score(tissue_percentages)
-                dominant_tissue, dominant_percent = get_dominant_tissue(tissue_percentages)
-                recommendations = generate_recommendations(tissue_percentages)
-
-                progress.empty()
-
-            st.success("✅ Complete analysis finished!")
-            st.markdown('<div class="results-header">Advanced Wound Analysis Results</div>', unsafe_allow_html=True)
-
-            # ──── Image Results Display ────────────────────────────────────────────────
-            st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
-            col1, col2 = st.columns(2)
-
-            # Prepare images for display
-            if len(wound_mask.shape) == 2:
-                display_mask = cv2.cvtColor(wound_mask, cv2.COLOR_GRAY2RGB)
-            else:
-                display_mask = wound_mask
-
-            overlay_display = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
-            tissue_display = cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB)
-
-            # *** ACTUAL SWAP HERE *** - Left shows tissue, right shows wound boundary
-            with col1:
-                st.markdown('<div class="img-container">', unsafe_allow_html=True)
-                st.image(display_mask, caption="🧬 Tissue Composition Analysis", 
-                         use_container_width=True, clamp=True, output_format="PNG")
-                st.markdown('</div>', unsafe_allow_html=True)
-
-            with col2:
-                st.markdown('<div class="img-container">', unsafe_allow_html=True)
-                st.image(tissue_display, caption="🎯 Wound Boundary Detection", 
-                         use_container_width=True, clamp=True, output_format="PNG")
-                st.markdown('</div>', unsafe_allow_html=True)
-   
-            st.markdown('</div>', unsafe_allow_html=True)
-
-            # *** SWAPPED Combined overlay - Now shows wound overlay instead of tissue ***
-            st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
-            st.markdown('<div class="img-container">', unsafe_allow_html=True)
-
-            alpha = 0.5  # or any value you prefer
-            orig_bgr_resized = cv2.resize(orig_bgr, (IMG_SIZE, IMG_SIZE))
-            tissue_overlay = cv2.addWeighted(orig_bgr_resized, 1 - alpha, tissue_mask_bgr, alpha, 0)
-            tissue_overlay_rgb = cv2.cvtColor(tissue_overlay, cv2.COLOR_BGR2RGB)
-            st.image(tissue_overlay_rgb, caption="🔗 Combined Analysis Overlay", 
-                     use_container_width=True, clamp=True, output_format="PNG")
-            st.markdown('</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-
-            # ──── Key Metrics Dashboard ────────────────────────────────────────────────
-            st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
-            col1, col2, col3, col4 = st.columns(4)
-
-            with col1:
-                st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-value">{health_score:.0f}</div>
-                    <div class="metric-label">Health Score</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with col2:
-                st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-value">{area:,}</div>
-                    <div class="metric-label">Wound Area (px)</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with col3:
-                st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-value">{dominant_tissue.title()}</div>
-                    <div class="metric-label">Dominant Tissue</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with col4:
-                tissue_count = len([k for k, v in tissue_percentages.items() if k != "background" and v > 0])
-                st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-value">{tissue_count}</div>
-                    <div class="metric-label">Tissue Types</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            st.markdown('</div>', unsafe_allow_html=True)
-
-            # ──── Detailed Analysis Tabs ────────────────────────────────────────────────
-            tab1, tab2, tab3 = st.tabs(["🧬 Tissue Composition", "📊 Health Assessment", "💡 Recommendations"])
-
-            with tab1:
-                st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                st.markdown('<div class="tab-title">Tissue Composition Breakdown</div>', unsafe_allow_html=True)
-
-                # Color legend first
-                st.markdown("*Color Legend:*")
-                legend_cols = st.columns(3)
-                for i, (tissue, color) in enumerate(TISSUE_COLORS_HEX.items()):
-                    if tissue in tissue_percentages and tissue_percentages[tissue] > 0:
-                        col_idx = i % 3
-                        with legend_cols[col_idx]:
-                            st.markdown(f"""
-                            <div style="display: flex; align-items: center; margin: 5px 0;">
-                                <div style="width: 20px; height: 20px; background-color: {color}; 
-                                     border-radius: 4px; margin-right: 10px; border: 1px solid #fff;"></div>
-                                <span style="color: #E0E0E0; font-weight: 600; text-transform: capitalize;">{tissue}</span>
-                            </div>
-                            """, unsafe_allow_html=True)
-
-                st.markdown("---")
-
-                # Tissue percentages
-                sorted_tissues = sorted(
-                    [(k, v) for k, v in tissue_percentages.items() if v > 0], 
-                    key=lambda x: x[1], reverse=True
-                )
-
-                for tissue, percentage in sorted_tissues:
-                    color = TISSUE_COLORS_HEX[tissue]
-                    st.markdown(f"""
-                    <div class="tissue-item" style="border-left-color: {color};">
-                        <div class="tissue-name">
-                            <div class="tissue-color-indicator" style="background-color: {color};"></div>
-                            {tissue.title()}
-                        </div>
-                        <div class="tissue-percent">{percentage:.1f}%</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                st.markdown('</div>', unsafe_allow_html=True)
-
-            with tab2:
-                st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                st.markdown('<div class="tab-title">Health Assessment</div>', unsafe_allow_html=True)
-
-                # Health score interpretation
-                if health_score >= 80:
-                    health_status = "Excellent"
-                    health_color = COL['success']
-                    health_icon = "🌟"
-                elif health_score >= 60:
-                    health_status = "Good"
-                    health_color = COL['success']
-                    health_icon = "✅"
-                elif health_score >= 40:
-                    health_status = "Fair"
-                    health_color = COL['warning']
-                    health_icon = "⚠"
-                else:
-                    health_status = "Poor"
-                    health_color = COL['danger']
-                    health_icon = "🚨"
-
-                st.markdown(f"""
-                <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, {COL['dark']}, {COL['accent']}); 
-                     border-radius: 15px; margin: 20px 0; color: white;">
-                    <div style="font-size: 4rem; margin-bottom: 10px;">{health_icon}</div>
-                    <div style="font-size: 2.5rem; font-weight: 800; color: {health_color};">{health_score:.0f}/100</div>
-                    <div style="font-size: 1.5rem; margin-top: 10px;">Overall Health: {health_status}</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                # Detailed breakdown
-                st.markdown("*Health Score Factors:*")
-
-                positive_factors = []
-                negative_factors = []
-
-                for tissue, percentage in tissue_percentages.items():
-                    if percentage > 1:  # Only show significant tissues
-                        weight = TISSUE_HEALTH_WEIGHTS.get(tissue, 0)
-                        if weight > 0:
-                            positive_factors.append(f"• {tissue.title()}: {percentage:.1f}% (+{weight*100:.0f} points)")
-                        elif weight < 0:
-                            negative_factors.append(f"• {tissue.title()}: {percentage:.1f}% ({weight*100:.0f} points)")
-
-                if positive_factors:
-                    st.markdown("*Positive Factors:*")
-                    for factor in positive_factors:
-                        st.markdown(f"<span style='color: {COL['success']};'>{factor}</span>", unsafe_allow_html=True)
-
-                if negative_factors:
-                    st.markdown("*Concerning Factors:*")
-                    for factor in negative_factors:
-                        st.markdown(f"<span style='color: {COL['danger']};'>{factor}</span>", unsafe_allow_html=True)
-
-                st.markdown('</div>', unsafe_allow_html=True)
-
-            with tab3:
-                st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                st.markdown('<div class="tab-title">Clinical Recommendations</div>', unsafe_allow_html=True)
-
-                for i, rec in enumerate(recommendations, 1):
-                    st.markdown(f"""
-                    <div style="background-color: {COL['accent']}; padding: 15px; margin: 10px 0; 
-                         border-radius: 10px; border-left: 5px solid {COL['highlight']};">
-                        <strong style="color: {COL['text_light']}; font-size: 1.2rem;">{i}. {rec}</strong>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                # Additional care guidelines
-                st.markdown("*General Wound Care Guidelines:*")
-                guidelines = [
-                    "🧼 Keep wound clean and monitor for signs of infection",
-                    "💧 Maintain appropriate moisture balance",
-                    "🔄 Change dressings as recommended by healthcare provider",
-                    "📏 Document wound progress with regular measurements",
-                    "👩‍⚕ Consult healthcare provider for concerning changes",
-                    "📱 Use this tool for regular monitoring and documentation"
-                ]
-
-                for guideline in guidelines:
-                    st.markdown(f"""
-                    <div style="padding: 8px 0; color: {COL['text_light']}; font-size: 1.1rem;">
-                        {guideline}
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# ──── Footer ────────────────────────────────────────────────────
-st.markdown('</div>', unsafe_allow_html=True)  # Close content-wrapper
-
-st.markdown("""
-<div class="footer">
-    <strong> Advanced Wound Analysis System</strong><br>
-    Powered by dual AI models for comprehensive wound assessment and monitoring.<br>
-    <em>For research and educational purposes. Always consult healthcare professionals for medical decisions.</em>
-</div>
-""", unsafe_allow_html=True)
+                    <div class
