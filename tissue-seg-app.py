@@ -1,6 +1,4 @@
-I'll help you add the pixel area for each tissue type and implement a theme toggle with a light mode. Here's the updated code with the requested changes:
 
-```python
 # streamlit_app.py
 
 import io
