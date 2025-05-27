@@ -59,11 +59,6 @@ TISSUE_COLORS_RGB = {
     "fibrin": (255, 255, 0),         # Yellow  
     "granulation": (255, 0, 0),      # Red
     "callus": (0, 0, 255),           # Blue
-    "necrotic": (255, 165, 0),       # Orange - Not displayed
-    "eschar": (128, 0, 128),         # Purple - Not displayed
-    "neodermis": (0, 255, 255),      # Cyan - Not displayed
-    "tendon": (255, 192, 203),       # Pink - Not displayed
-    "dressing": (0, 255, 0),         # Green - Not displayed
 }
 
 # Convert to BGR for OpenCV processing
