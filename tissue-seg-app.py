@@ -1033,7 +1033,7 @@ if uploaded:
                 """, unsafe_allow_html=True)
 
             with col4:
-                tissue_count = len([t for t in tissue_percentages.values() if t > 0])
+                tissue_count = len([t for t in tissue_percentages.values() if t > 0.1])
                 st.markdown(f"""
                 <div class="metric-card">
                     <div class="metric-value">{tissue_count}</div>
