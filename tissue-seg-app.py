@@ -891,10 +891,51 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ──── Analysis Mode Selection ────────────────────────────────────────────────
-st.markdown("""
-<div class="analysis-mode">
-  <h3>🎯 Analysis Mode</h3>
+──── Analysis Mode Selection ────────────────────────────────────────────────
+st.markdown(f"""
+<style>
+/* Make the radio buttons text much larger */
+.stRadio > div {{
+    flex-direction: column;
+}}
+
+.stRadio > div label {{
+    font-size: 2rem !important;
+    padding: 15px !important;
+    margin: 10px 0 !important;
+    background: {COL['card_bg']} !important;
+    border-radius: 10px !important;
+    border-left: 4px solid {COL['highlight']} !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+}}
+
+.stRadio > div label:hover {{
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
+}}
+
+/* Style the label above the radio buttons */
+.stRadio > label {{
+    font-size: 1.8rem !important;
+    font-weight: 700 !important;
+    color: {COL['highlight']} !important;
+    margin-bottom: 15px !important;
+    text-align: center !important;
+    display: block !important;
+}}
+</style>
+
+<div style="
+    text-align: center;
+    margin: 30px 0 10px 0;
+">
+    <h2 style="
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: {COL['highlight']};
+        margin: 0;
+    ">🎯 Analysis Mode</h2>
 </div>
 """, unsafe_allow_html=True)
 
@@ -903,7 +944,6 @@ analysis_mode = st.radio(
     ["🔍 Basic Segmentation (Fast)", "🧬 Complete Analysis (Detailed)"],
     help="Basic: Wound boundary detection only. Complete: Full tissue analysis + recommendations"
 )
-
 # ──── Upload & Analysis ────────────────────────────────────────
 col1, col2 = st.columns([2, 1]) 
 
