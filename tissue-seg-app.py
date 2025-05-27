@@ -104,133 +104,212 @@ def download_models():
 # Ensure models are available
 download_models()
 
-# ──── Color Palette & CSS ───────────────────────────────────────────────────────
+# ──── Color Palette & Enhanced CSS ───────────────────────────────────────────────────────
 COL = {
     "primary"    : "#074225",
     "secondary"  : "#41706F",
     "accent"     : "#3B6C53",
     "dark"       : "#335F4B",
     "light"      : "#81A295",
-    "surface"    : "#202020",
+    "surface"    : "#1a1a1a",
     "text_dark"  : "#E0E0E0",
     "text_light" : "#FFFFFF",
     "highlight"  : "rgb(122,164,140)",
     "success"    : "#28a745",
     "warning"    : "#ffc107",
     "danger"     : "#dc3545",
+    "gradient_start": "#074225",
+    "gradient_end": "#3B6C53",
 }
 
-# Enhanced CSS with much larger images
+# Enhanced CSS with modern design improvements
 st.markdown(f"""
 <style>
   /* Base Styles */
-  body {{ background-color: {COL['surface']}; color: {COL['text_dark']}; font-family: 'Helvetica Neue', Arial, sans-serif; }}
+  .stApp {{ 
+    background: linear-gradient(135deg, {COL['surface']} 0%, #2a2a2a 100%); 
+    color: {COL['text_dark']}; 
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; 
+  }}
   
-  /* Header Styles */
+  /* Header Styles with enhanced gradient and animations */
   .header {{ 
     text-align: center; 
-    padding: 25px; 
-    background: linear-gradient(135deg, {COL['primary']}, {COL['dark']}); 
+    padding: 40px 30px; 
+    background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 50%, {COL['dark']} 100%); 
     color: {COL['text_light']}; 
-    border-radius: 15px; 
-    box-shadow: 0 6px 20px rgba(0,0,0,0.4); 
-    margin-bottom: 30px; 
+    border-radius: 20px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 50px rgba(122,164,140,0.1); 
+    margin-bottom: 40px; 
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
   }}
-  .header h1 {{ margin:0; font-size:2.5rem; font-weight:700; letter-spacing:1.5px; }}
-  .header p {{ font-size: 1.2rem; margin-top: 10px; opacity: 0.95; }}
   
-  /* Instructions Box */
+  .header::before {{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    animation: shimmer 3s infinite;
+  }}
+  
+  @keyframes shimmer {{
+    0% {{ left: -100%; }}
+    100% {{ left: 100%; }}
+  }}
+  
+  .header h1 {{ 
+    margin: 0; 
+    font-size: 3rem; 
+    font-weight: 800; 
+    letter-spacing: 2px; 
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    background: linear-gradient(45deg, #ffffff, {COL['highlight']});
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }}
+  
+  .header p {{ 
+    font-size: 1.3rem; 
+    margin-top: 15px; 
+    opacity: 0.95; 
+    font-weight: 400;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }}
+  
+  /* Enhanced Instructions Box */
   .instructions {{ 
-    background-color: {COL['dark']}; 
-    padding: 25px; 
-    border-left: 8px solid {COL['accent']}; 
-    border-radius: 10px; 
-    margin-bottom: 30px; 
+    background: linear-gradient(145deg, {COL['dark']} 0%, #2a4a37 100%); 
+    padding: 35px; 
+    border-left: 8px solid {COL['highlight']}; 
+    border-radius: 15px; 
+    margin-bottom: 40px; 
     color: {COL['text_light']}; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    border: 1px solid rgba(122,164,140,0.2);
   }}
-  .instructions strong {{ color:{COL['highlight']}; font-size:1.3rem; }}
-  .instructions ol {{ padding-left: 30px; margin-top: 15px; }}
-  .instructions li {{ margin-bottom: 8px; font-size: 1.1rem; }}
   
-  /* Logo and Container Styles */
+  .instructions strong {{ 
+    color: {COL['highlight']}; 
+    font-size: 1.4rem; 
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }}
+  
+  .instructions ol {{ 
+    padding-left: 35px; 
+    margin-top: 20px; 
+    counter-reset: item;
+  }}
+  
+  .instructions li {{ 
+    margin-bottom: 12px; 
+    font-size: 1.15rem; 
+    line-height: 1.6;
+    counter-increment: item;
+    position: relative;
+  }}
+  
+  .instructions li::marker {{
+    color: {COL['highlight']};
+    font-weight: bold;
+  }}
+  
+  /* Enhanced Logo Container */
   .logo-container {{
-    background-color: {COL['highlight']}; 
-    padding: 20px; 
-    border-radius: 12px; 
+    background: linear-gradient(145deg, {COL['highlight']} 0%, #4a7a5c 100%); 
+    padding: 25px; 
+    border-radius: 20px; 
     text-align: center; 
-    margin-bottom: 25px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    margin-bottom: 35px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.1);
     transition: all 0.3s ease;
   }}
+  
+  .logo-container:hover {{
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  }}
+  
   img.logo {{ 
     display: block; 
     margin: 0 auto; 
     width: 100%; 
-    max-width: 900px;
-    padding: 8px; 
+    max-width: 1000px;
+    padding: 10px; 
     transition: all 0.3s ease;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
   }}
   
-  /* Button Styling */
+  /* Enhanced Button Styling */
   .stButton>button {{ 
-    background: linear-gradient(135deg, {COL['primary']}, {COL['dark']}); 
+    background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 50%, {COL['dark']} 100%); 
     color: white; 
     border: none; 
-    border-radius: 10px; 
-    padding: 15px 35px; 
-    font-weight: 600; 
-    transition: all .3s ease; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+    border-radius: 15px; 
+    padding: 20px 40px; 
+    font-weight: 700; 
+    transition: all .4s ease; 
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3); 
     width: 100%;
-    font-size: 1.2rem;
-    letter-spacing: 0.8px;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
     text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
   }}
+  
+  .stButton>button::before {{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: all 0.5s;
+  }}
+  
+  .stButton>button:hover::before {{
+    left: 100%;
+  }}
+  
   .stButton>button:hover {{ 
-    background: linear-gradient(135deg, {COL['accent']}, {COL['primary']}); 
-    transform: translateY(-3px); 
-    box-shadow: 0 6px 18px rgba(0,0,0,0.4); 
+    background: linear-gradient(135deg, {COL['accent']} 0%, {COL['gradient_start']} 50%, {COL['primary']} 100%); 
+    transform: translateY(-4px); 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(122,164,140,0.3); 
   }}
   
-  /* Analysis Mode Toggle */
-  .analysis-mode {{
-    background: linear-gradient(135deg, {COL['dark']}, {COL['accent']});
-    padding: 20px;
-    border-radius: 12px;
-    margin: 20px 0;
-    text-align: center;
-    color: {COL['text_light']};
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  }}
-  .analysis-mode h3 {{
-    margin: 0 0 15px 0;
-    color: {COL['highlight']};
-    font-size: 1.4rem;
-  }}
-  
-  /* File Uploader */
+  /* Enhanced File Uploader */
   .css-1cpxqw2, [data-testid="stFileUploader"] {{ 
     border: 3px dashed {COL['accent']}; 
-    background-color: rgba(59, 108, 83, 0.15); 
-    border-radius: 12px; 
-    padding: 25px; 
-    transition: all 0.3s ease;
-  }}
-  .css-1cpxqw2:hover, [data-testid="stFileUploader"]:hover {{ 
-    border-color: {COL['highlight']}; 
-    background-color: rgba(59, 108, 83, 0.25);
+    background: linear-gradient(145deg, rgba(59, 108, 83, 0.1), rgba(59, 108, 83, 0.2)); 
+    border-radius: 20px; 
+    padding: 35px; 
+    transition: all 0.4s ease;
+    backdrop-filter: blur(10px);
   }}
   
-  /* Image Container - MADE MUCH LARGER */
+  .css-1cpxqw2:hover, [data-testid="stFileUploader"]:hover {{ 
+    border-color: {COL['highlight']}; 
+    background: linear-gradient(145deg, rgba(59, 108, 83, 0.2), rgba(59, 108, 83, 0.3));
+    box-shadow: 0 8px 25px rgba(122,164,140,0.2);
+    transform: translateY(-2px);
+  }}
+  
+  /* Enhanced Image Container */
   .img-container {{ 
-    background-color: {COL['dark']}; 
-    padding: 25px; 
-    border-radius: 15px; 
-    box-shadow: 0 5px 15px rgba(0,0,0,0.35); 
-    margin-bottom: 10px; 
-    transition: all 0.3s ease;
+    background: linear-gradient(145deg, {COL['dark']} 0%, #2a4a37 100%); 
+    padding: 30px; 
+    border-radius: 20px; 
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1); 
+    margin-bottom: 15px; 
+    transition: all 0.4s ease;
     overflow: hidden;
     text-align: center;
     height: 100%;
@@ -239,9 +318,15 @@ st.markdown(f"""
     justify-content: center;
     align-items: center !important;
     width: 100% !important;
+    border: 1px solid rgba(122,164,140,0.2);
   }}
   
-  /* Make images MUCH larger and centered */
+  .img-container:hover {{
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  }}
+  
+  /* Enhanced Image Styling */
   .img-container img,
   .stImage img {{ 
     max-height: 1400px !important;
@@ -250,9 +335,16 @@ st.markdown(f"""
     height: auto !important;
     margin: 0 auto !important; 
     display: block !important; 
-    border-radius: 8px !important;
-    transition: all 0.3s ease;
+    border-radius: 12px !important;
+    transition: all 0.4s ease;
     object-fit: contain !important;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+  }}
+  
+  .img-container img:hover,
+  .stImage img:hover {{
+    transform: scale(1.02);
+    filter: drop-shadow(0 12px 24px rgba(0,0,0,0.4));
   }}
   
   /* Center all Streamlit images */
@@ -263,187 +355,269 @@ st.markdown(f"""
     width: 100% !important;
   }}
   
-  /* Image Captions */
+  /* Enhanced Image Captions */
   .img-container figcaption, .stImage figcaption, .css-1b0udgb, .css-83jbox {{
-    font-size: 1.3rem !important;
-    color: {COL['text_light']} !important;
-    margin-top: 15px !important;
-    font-weight: 600 !important;
+    font-size: 1.4rem !important;
+    color: {COL['highlight']} !important;
+    margin-top: 20px !important;
+    font-weight: 700 !important;
     text-align: center !important;
     width: 100% !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    letter-spacing: 0.5px;
   }}
   
   figcaption p {{
-    font-size: 1.3rem !important;
-    margin: 10px 0 !important;
-    color: {COL['text_light']} !important;
+    font-size: 1.4rem !important;
+    margin: 15px 0 !important;
+    color: {COL['highlight']} !important;
     text-align: center !important;
+    font-weight: 700 !important;
   }}
 
-  /* Guidelines Box */
+  /* Enhanced Guidelines Box */
   .guidelines-box {{ 
-    background-color: {COL['dark']}; 
-    padding: 20px; 
-    border-radius: 12px; 
+    background: linear-gradient(145deg, {COL['dark']} 0%, #2a4a37 100%); 
+    padding: 25px; 
+    border-radius: 15px; 
     color: {COL['text_light']}; 
-    margin-bottom: 25px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    border-left: 5px solid {COL['highlight']};
+    margin-bottom: 30px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    border-left: 6px solid {COL['highlight']};
+    border: 1px solid rgba(122,164,140,0.2);
   }}
+  
   .guidelines-box h4 {{ 
     color: {COL['highlight']}; 
     margin-top: 0; 
-    font-size: 1.3rem; 
-    font-weight: 600;
+    font-size: 1.4rem; 
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }}
-  .guidelines-box ul {{ padding-left: 0.8rem; margin-bottom: 0; list-style-type: none; }}
+  
+  .guidelines-box ul {{ 
+    padding-left: 1rem; 
+    margin-bottom: 0; 
+    list-style-type: none; 
+  }}
+  
   .guidelines-box ul li {{ 
-    padding-left: 2rem; 
+    padding-left: 2.5rem; 
     position: relative;
-    margin-bottom: 10px;
-    font-size: 1.1rem;
+    margin-bottom: 12px;
+    font-size: 1.15rem;
+    line-height: 1.5;
   }}
+  
   .guidelines-box ul li:before {{ 
     content: "✓"; 
     color: {COL['highlight']};
     position: absolute;
     left: 0;
     font-weight: bold;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }}
   
-  /* Results Section */
+  /* Enhanced Results Section */
   .results-header {{
     text-align: center;
     color: {COL['highlight']};
-    margin: 30px 0 20px;
-    font-size: 2rem;
-    font-weight: 700;
+    margin: 40px 0 30px;
+    font-size: 2.2rem;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    background: linear-gradient(45deg, {COL['highlight']}, #ffffff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }}
   
-  /* Metrics Cards */
+  /* Enhanced Metrics Cards */
   .metric-card {{
-    background: linear-gradient(135deg, {COL['dark']}, {COL['accent']});
-    border-radius: 12px;
-    padding: 20px;
+    background: linear-gradient(145deg, {COL['dark']} 0%, {COL['accent']} 100%);
+    border-radius: 15px;
+    padding: 25px;
     text-align: center;
     color: white;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    transition: all 0.3s ease;
-    margin-bottom: 15px;
-  }}
-  .metric-card:hover {{
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-  }}
-  .metric-value {{
-    font-size: 2rem;
-    font-weight: 800;
-    margin-bottom: 8px;
-    color: {COL['text_light']};
-  }}
-  .metric-label {{
-    font-size: 1.1rem;
-    color: rgba(255,255,255,0.9);
-    font-weight: 600;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    transition: all 0.4s ease;
+    margin-bottom: 20px;
+    border: 1px solid rgba(122,164,140,0.2);
+    position: relative;
+    overflow: hidden;
   }}
   
-  /* Tissue Composition */
+  .metric-card::before {{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: all 0.5s;
+  }}
+  
+  .metric-card:hover {{
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 20px rgba(122,164,140,0.2);
+  }}
+  
+  .metric-card:hover::before {{
+    left: 100%;
+  }}
+  
+  .metric-value {{
+    font-size: 2.2rem;
+    font-weight: 900;
+    margin-bottom: 10px;
+    color: {COL['text_light']};
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }}
+  
+  .metric-label {{
+    font-size: 1.2rem;
+    color: rgba(255,255,255,0.9);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }}
+  
+  /* Enhanced Tissue Composition */
   .tissue-item {{
-    background-color: {COL['dark']};
-    padding: 15px 20px;
-    margin: 10px 0;
-    border-radius: 10px;
+    background: linear-gradient(145deg, {COL['dark']} 0%, #2a4a37 100%);
+    padding: 20px 25px;
+    margin: 15px 0;
+    border-radius: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
-    border-left: 5px solid transparent;
-    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    border-left: 6px solid transparent;
+    transition: all 0.4s ease;
+    border: 1px solid rgba(122,164,140,0.1);
   }}
+  
   .tissue-item:hover {{
-    transform: translateX(5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    transform: translateX(8px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
   }}
+  
   .tissue-name {{
-    font-weight: 600;
-    font-size: 1.2rem;
+    font-weight: 700;
+    font-size: 1.3rem;
     text-transform: capitalize;
     display: flex;
     align-items: center;
-  }}
-  .tissue-color-indicator {{
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    margin-right: 12px;
-    border: 2px solid rgba(255,255,255,0.3);
-    display: inline-block;
-  }}
-  .tissue-percent {{
-    font-weight: 700;
-    font-size: 1.3rem;
-    color: {COL['highlight']};
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }}
   
-  /* Analysis Tabs */
-  .analysis-tab {{
-    background-color: {COL['dark']};
-    border-radius: 12px;
-    padding: 25px;
-    margin: 20px 0;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  .tissue-color-indicator {{
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    margin-right: 15px;
+    border: 2px solid rgba(255,255,255,0.4);
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   }}
+  
+  .tissue-percent {{
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: {COL['highlight']};
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }}
+  
+  /* Enhanced Analysis Tabs */
+  .analysis-tab {{
+    background: linear-gradient(145deg, {COL['dark']} 0%, #2a4a37 100%);
+    border-radius: 15px;
+    padding: 30px;
+    margin: 25px 0;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    border: 1px solid rgba(122,164,140,0.2);
+  }}
+  
   .tab-title {{
     color: {COL['highlight']};
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 20px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 25px;
     text-align: center;
-    border-bottom: 2px solid {COL['accent']};
-    padding-bottom: 10px;
+    border-bottom: 3px solid {COL['accent']};
+    padding-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    letter-spacing: 1px;
   }}
   
-  /* Footer */
+  /* Enhanced Footer */
   .footer {{ 
     text-align: center; 
-    padding: 25px 0; 
-    margin-top: 50px; 
-    border-top: 2px solid {COL['dark']}; 
+    padding: 35px 0; 
+    margin-top: 60px; 
+    border-top: 3px solid {COL['dark']}; 
     color: {COL['light']}; 
-    font-size: 1.1rem; 
+    font-size: 1.2rem; 
     font-weight: 500;
+    background: linear-gradient(145deg, rgba(7, 66, 37, 0.1), rgba(59, 108, 83, 0.1));
+    border-radius: 15px 15px 0 0;
   }}
   
-  .section-wrapper{{
-    width:100%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+  .section-wrapper {{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
   }}
   
-  /* Responsive breakpoints */
+  /* Enhanced Responsive Design */
   @media screen and (max-width: 768px) {{
-    .header {{ padding: 20px; }}
-    .header h1 {{ font-size: 1.8rem; }}
-    .header p {{ font-size: 1rem; }}
-    .instructions {{ padding: 20px; }}
+    .header {{ padding: 25px 20px; }}
+    .header h1 {{ font-size: 2rem; }}
+    .header p {{ font-size: 1.1rem; }}
+    .instructions {{ padding: 25px; }}
     .img-container img, .stImage img {{ max-height: 800px !important; }}
-    .metric-value {{ font-size: 1.6rem; }}
-    .results-header {{ font-size: 1.5rem; }}
+    .metric-value {{ font-size: 1.8rem; }}
+    .results-header {{ font-size: 1.7rem; }}
+    .stButton>button {{ padding: 15px 30px; font-size: 1.1rem; }}
   }}
   
   @media screen and (min-width: 769px) and (max-width: 1024px) {{
-    .header h1 {{ font-size: 2.2rem; }}
-    .img-container img, .stImage img {{ max-height: 1000px !important; }}
+    .header h1 {{ font-size: 2.5rem; }}
+    .img-container img, .stImage img {{ max-height: 1200px !important; }}
   }}
   
   @media screen and (min-width: 1025px) {{
-    .content-wrapper {{ max-width: 1400px; margin: 0 auto; }}
+    .content-wrapper {{ max-width: 1500px; margin: 0 auto; }}
     .section-wrapper {{ max-width: 95%; margin: 0 auto; }}
     .img-container img, .stImage img {{ max-height: 1400px !important; }}
+  }}
+  
+  /* Smooth scrolling */
+  html {{
+    scroll-behavior: smooth;
+  }}
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {{
+    width: 12px;
+  }}
+  
+  ::-webkit-scrollbar-track {{
+    background: {COL['surface']};
+  }}
+  
+  ::-webkit-scrollbar-thumb {{
+    background: linear-gradient(135deg, {COL['accent']}, {COL['highlight']});
+    border-radius: 6px;
+  }}
+  
+  ::-webkit-scrollbar-thumb:hover {{
+    background: linear-gradient(135deg, {COL['highlight']}, {COL['primary']});
   }}
 </style>
 """, unsafe_allow_html=True)
@@ -461,8 +635,8 @@ if LOGO_PATH.exists():
 
 st.markdown("""
 <div class="header">
-  <h1>Advanced Wound Analysis</h1>
-  <p>Dual AI-powered system: Precise wound segmentation + Advanced tissue composition analysis</p>
+  <h1>🩹 Advanced Wound Analysis</h1>
+  <p>Professional AI-Powered Wound Assessment & Tissue Composition Analysis</p>
 </div>
 """, unsafe_allow_html=True)
 
