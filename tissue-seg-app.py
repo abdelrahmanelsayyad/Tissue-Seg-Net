@@ -20,7 +20,7 @@ import segmentation_models_pytorch as smp
 st.set_page_config(
     page_title="Advanced Wound Analysis",
     page_icon="🩹",
-    layout="wide",  # Use wide layout for PC
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
@@ -175,6 +175,21 @@ st.markdown(f"""
     color: {COL['text_primary']}; 
     font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; 
     transition: all 0.3s ease;
+  }}
+  
+  /* Remove default Streamlit image behavior */
+  [data-testid="stImage"] {{
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+  }}
+  
+  [data-testid="stImage"] img {{
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    display: block !important;
   }}
   
   /* Theme Toggle Button */
@@ -363,6 +378,9 @@ st.markdown(f"""
     border-radius: 12px;
     cursor: grab;
     background: {COL['surface']};
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }}
   
   .zoomable-container:active {{
@@ -377,6 +395,7 @@ st.markdown(f"""
     transform-origin: center center;
     transition: transform 0.1s ease;
     border-radius: 8px;
+    position: absolute;
   }}
   
   /* Enhanced Guidelines Box */
@@ -492,10 +511,19 @@ st.markdown(f"""
   
   .control-title {{
     color: {COL['highlight']};
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 700;
     margin-bottom: 15px;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }}
+  
+  /* Fix section spacing */
+  .section-wrapper {{
+    margin-bottom: 20px;
   }}
   
   /* Custom slider styling */
@@ -547,14 +575,17 @@ def create_zoomable_image(image_data, image_id, caption=""):
     return st.components.v1.html(f"""
     <div class="img-container">
         <div class="control-panel">
-            <div class="control-title">🔍 Image Controls</div>
+            <div class="control-title">
+                <span>🔍</span>
+                <span>Image Controls</span>
+            </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <button onclick="zoomIn('{image_id}')" style="background: {COL['accent']}; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer;">🔍 Zoom In</button>
-                <button onclick="resetZoom('{image_id}')" style="background: {COL['primary']}; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer;">🔄 Reset</button>
-                <button onclick="zoomOut('{image_id}')" style="background: {COL['dark']}; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer;">🔍 Zoom Out</button>
+                <button onclick="zoomIn('{image_id}')" style="background: {COL['accent']}; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600;">Zoom In</button>
+                <button onclick="resetZoom('{image_id}')" style="background: {COL['primary']}; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600;">Reset</button>
+                <button onclick="zoomOut('{image_id}')" style="background: {COL['dark']}; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600;">Zoom Out</button>
             </div>
             <div style="text-align: center; color: {COL['text_primary']}; font-size: 0.9rem; margin-top: 10px;">
-                Click and drag to pan • Scroll wheel to zoom
+                Click and drag to pan • Use buttons or touch gestures to zoom
             </div>
         </div>
         <div class="zoomable-container" id="container_{image_id}">
@@ -573,6 +604,19 @@ def create_zoomable_image(image_data, image_id, caption=""):
         let scale = 1;
         let isDragging = false;
         let startX, startY, initialX = 0, initialY = 0;
+        
+        // Center the image initially
+        function centerImage() {{
+            const containerRect = container.getBoundingClientRect();
+            const imgRect = img.getBoundingClientRect();
+            initialX = 0;
+            initialY = 0;
+            img.style.transform = `scale(${{scale}}) translate(${{initialX}}px, ${{initialY}}px)`;
+        }}
+        
+        // Call centerImage when loaded
+        img.onload = centerImage;
+        window.addEventListener('resize', centerImage);
         
         // Zoom functions
         window.zoomIn = function(id) {{
@@ -597,14 +641,6 @@ def create_zoomable_image(image_data, image_id, caption=""):
                 img.style.transform = 'scale(1) translate(0px, 0px)';
             }}
         }};
-        
-        // Mouse wheel zoom
-        container.addEventListener('wheel', function(e) {{
-            e.preventDefault();
-            const delta = e.deltaY > 0 ? 0.9 : 1.1;
-            scale = Math.max(0.5, Math.min(5, scale * delta));
-            img.style.transform = `scale(${{scale}}) translate(${{initialX}}px, ${{initialY}}px)`;
-        }});
         
         // Pan functionality
         img.addEventListener('mousedown', function(e) {{
@@ -912,7 +948,10 @@ if uploaded:
     st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
     st.markdown("""
     <div class="control-panel">
-        <div class="control-title">🎛️ Overlay Controls</div>
+        <div class="control-title">
+            <span>🎛️</span>
+            <span>Overlay Controls</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
