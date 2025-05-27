@@ -891,7 +891,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-──── Analysis Mode Selection ────────────────────────────────────────────────
+# ──── Analysis Mode Selection ────────────────────────────────────────────────
 st.markdown(f"""
 <style>
 /* Make the radio buttons text much larger */
