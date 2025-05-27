@@ -43,10 +43,10 @@ THRESHOLD  = 0.5
 ALPHA      = 0.4
 
 # Tissue Analysis Config
-N_CLASSES = 9
+N_CLASSES = 4
 ENCODER = "mit_b3"
 CLASS_NAMES = [
-    "background", "fibrin", "granulation", "callus", "necrotic", "eschar", "neodermis", "tendon", "dressing"
+    "background", "fibrin", "granulation", "callus"
 ]
 
 # ──── CENTRALIZED COLOR CONTROL ────────────────────────────────────────────────
@@ -56,11 +56,6 @@ TISSUE_COLORS_RGB = {
     "fibrin": (255, 255, 0),         # Yellow  
     "granulation": (255, 0, 0),      # Red
     "callus": (0, 0, 255),           # Blue
-    "necrotic": (255, 165, 0),       # Orange
-    "eschar": (128, 0, 128),         # Purple
-    "neodermis": (0, 255, 255),      # Cyan
-    "tendon": (255, 192, 203),       # Pink
-    "dressing": (0, 255, 0),         # Green
 }
 
 # Convert to BGR for OpenCV processing
@@ -75,13 +70,8 @@ TISSUE_COLORS_HEX = {name: f"rgb({color[0]}, {color[1]}, {color[2]})" for name, 
 # Tissue health scoring weights
 TISSUE_HEALTH_WEIGHTS = {
     "granulation": 0.8,    # Good healing tissue
-    "neodermis": 0.9,      # Excellent - new skin
     "fibrin": 0.6,         # Moderate - part of healing
     "callus": 0.4,         # Poor - hard tissue
-    "necrotic": -0.8,      # Very bad - dead tissue
-    "eschar": -0.6,        # Bad - scab tissue
-    "tendon": 0.2,         # Neutral - exposed but not necessarily bad
-    "dressing": 0.0,       # Neutral
     "background": 0.0      # Neutral
 }
 
@@ -852,17 +842,8 @@ def generate_recommendations(tissue_data):
     """Generate healing recommendations based on tissue analysis"""
     recommendations = []
 
-    if tissue_data.get("necrotic", {}).get('percentage', 0) > 5:
-        recommendations.append("⚠ Debridement recommended - significant necrotic tissue present")
-
-    if tissue_data.get("eschar", {}).get('percentage', 0) > 10:
-        recommendations.append("🧹 Consider eschar removal for better healing")
-
     if tissue_data.get("granulation", {}).get('percentage', 0) > 40:
         recommendations.append("✅ Good granulation tissue - wound healing well")
-
-    if tissue_data.get("neodermis", {}).get('percentage', 0) > 0:
-        recommendations.append("🌟 New skin formation detected - excellent progress")
 
     if tissue_data.get("fibrin", {}).get('percentage', 0) > 20:
         recommendations.append("💧 Maintain moist wound environment")
