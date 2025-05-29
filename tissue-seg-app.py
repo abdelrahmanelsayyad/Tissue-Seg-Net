@@ -208,7 +208,7 @@ col1, col2, col3 = st.columns([1, 8, 1])
 with col3:
     if st.button("🌓", help="Toggle theme"):
         st.session_state.dark_mode = not st.session_state.dark_mode
-        st.rerun()
+        st.experimental_rerun()
 
 # Get theme colors AFTER session state is initialized
 COL = get_theme_colors()
