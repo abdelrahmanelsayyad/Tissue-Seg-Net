@@ -20,18 +20,22 @@ import gc
 import re
 # Gemini AI Integration
 import google.generativeai as genai
-from reportlab.lib.pagesizes import letter, A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image as RLImage, Table, TableStyle, PageBreak
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
-from reportlab.graphics.shapes import Drawing, Rect
-from reportlab.graphics.charts.barcharts import VerticalBarChart
-from reportlab.graphics.charts.legends import Legend
 import tempfile
-import base64
 from datetime import datetime
+
+try:
+    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer,
+                                    Image as RLImage, Table, TableStyle,
+                                    PageBreak)
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
+    REPORTLAB_AVAILABLE = True
+except ImportError:
+    REPORTLAB_AVAILABLE = False
+
 st.set_page_config(
     page_title="Advanced Wound Analysis",
     page_icon="🩹",
@@ -340,7 +344,7 @@ def generate_clinical_recommendations(tissue_data, wound_type, health_score):
             import re
             clean_paragraph = re.sub(r'^\d+[\.\)]\s*', '', clean_paragraph)
             clean_paragraph = re.sub(r'^[•\-\*]\s*', '', clean_paragraph)
-            clean_paragraph = re.sub(r'^\w+\.\s*', '', clean_paragraph)  # Remove "1. " etc
+            #clean_paragraph = re.sub(r'^\w+\.\s*', '', clean_paragraph)  # Remove "1. " etc
             
             # Only add substantial recommendations (more than 20 characters)
             if len(clean_paragraph) > 20 and not clean_paragraph.lower().startswith('clinical'):
@@ -592,17 +596,6 @@ def generate_professional_report(tissue_data, wound_type, confidence, health_sco
     except Exception as e:
         return f"Professional report generation failed: {str(e)}"
 
-def clean_markdown_formatting(text):
-    """Clean markdown formatting from text"""
-    import re
-    cleaned = text
-    # Remove markdown patterns
-    cleaned = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned)  # Remove **bold**
-    cleaned = re.sub(r'\*(.*?)\*', r'\1', cleaned)      # Remove *italic*
-    cleaned = re.sub(r'_(.*?)_', r'\1', cleaned)        # Remove _underline_
-    cleaned = re.sub(r'#{1,6}\s*', '', cleaned)         # Remove # headers
-    cleaned = re.sub(r'`(.*?)`', r'\1', cleaned)        # Remove `code`
-    return cleaned
 
 # ──── Dynamic Color Palette Based on Theme ───────────────────────────────────────────────────────
 def get_theme_colors():
@@ -991,8 +984,11 @@ def generate_pdf_report_section(tissue_data, wound_type, confidence, health_scor
                 )
     
     with col2:
-        if st.button("📄 Generate PDF Report", help="Generate comprehensive PDF report with images"):
-            with st.spinner("Creating PDF report with images and analysis..."):
+       if not REPORTLAB_AVAILABLE:
+           st.info("Install the 'reportlab' library to enable PDF output.")
+       else:
+           if st.button("📄 Generate PDF Report", help="Generate comprehensive PDF report with images"):
+               with st.spinner("Creating PDF report with images and analysis..."):
                 try:
                     # Create PDF report
                     pdf_path = create_pdf_report(
