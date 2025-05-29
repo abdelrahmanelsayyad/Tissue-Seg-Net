@@ -1192,8 +1192,8 @@ def calculate_tissue_percentages(mask, class_names):
     return percentages
 
 def calculate_tissue_percentages_and_areas(mask, class_names):
-    total_pixels = mask.size
-    data = {}
+    wound_pixels = 0
+    tissue_pixel_counts = {}
     for idx, name in enumerate(class_names):
         # Skip unused classes
         if name not in DISPLAY_CLASSES:
@@ -1202,10 +1202,14 @@ def calculate_tissue_percentages_and_areas(mask, class_names):
             continue
         class_pixels = np.sum(mask == idx)
         if class_pixels > 0:
-            data[name] = {
-                'percentage': (class_pixels / total_pixels) * 100,
-                'area_px': int(class_pixels)
-            }
+            tissue_pixel_counts[name] = class_pixels
+            wound_pixels += class_pixels
+    data = {}
+    for name, pixels in tissue_pixel_counts.items():
+        data[name] = { 
+            'percentage': (pixels / wound_pixels) * 100 if wound_pixels > 0 else 0,
+            'area_px': int(pixels)
+        }    
     return data
 
 def get_dominant_tissue(tissue_data):
