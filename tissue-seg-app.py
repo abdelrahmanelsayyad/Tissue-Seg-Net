@@ -179,6 +179,11 @@ st.set_page_config(
 if 'dark_mode' not in st.session_state:
     st.session_state.dark_mode = True
 
+# Create session state variables for models - removed since we're using @st.cache_resource
+# Session state now only tracks theme
+if 'dark_mode' not in st.session_state:
+    st.session_state.dark_mode = True
+
 # ──── Config ───────────────────────────────────────────────────
 
 # Advanced Tissue Analysis Model
