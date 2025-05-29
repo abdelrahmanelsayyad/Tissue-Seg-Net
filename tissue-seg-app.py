@@ -953,8 +953,20 @@ def get_detailed_health_interpretation(health_score, tissue_data, wound_type):
     return interpretation
 
 # Modified Professional Report Button section (replace the existing section around line 1200-1250)
-def generate_pdf_report_section(tissue_data, wound_type, confidence, health_score, recommendations, 
-                              original_image, tissue_analysis_image, overlay_image, timestamp_str, COL):
+def generate_pdf_report_section(COL): 
+    tissue_data      = st.session_state["tissue_data"]
+    wound_type       = st.session_state["pred_class"]
+    confidence       = st.session_state["confidence"]
+    health_score     = st.session_state["ai_health_score"]
+    recommendations  = st.session_state["ai_recommendations"]
+    timestamp_str    = st.session_state["timestamp_str"]
+
+    imgs                = st.session_state["images"]
+    original_image       = imgs["original"]
+    tissue_analysis_image = imgs["tissue_analysis"]
+    overlay_image        = imgs["overlay"]
+    
+
     """Generate the PDF report section in Streamlit"""
     
     st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
@@ -2061,15 +2073,19 @@ if uploaded:
                     'tissue_analysis': cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB),
                     'overlay': cv2.cvtColor(tissue_overlay, cv2.COLOR_BGR2RGB)
                 }
-
-                # ──── Professional Report Buttons ────────────────────────────────────────────────
-                generate_pdf_report_section(
-                    tissue_data, pred_class, confidence, ai_health_score, ai_recommendations,
-                    st.session_state.analysis_images['original'],
-                    st.session_state.analysis_images['tissue_analysis'], 
-                    st.session_state.analysis_images['overlay'],
-                    timestamp_str, COL
-                )
+                 # ---------- SAVE ANALYSIS RESULTS ----------
+                st.session_state["analysis_ready"]      = True
+                st.session_state["tissue_data"]         = tissue_data
+                st.session_state["pred_class"]          = pred_class
+                st.session_state["confidence"]          = confidence
+                st.session_state["ai_health_score"]     = ai_health_score
+                st.session_state["ai_recommendations"]  = ai_recommendations
+                st.session_state["timestamp_str"]       = timestamp_str
+                st.session_state["images"] = {
+                    "original"       : st.session_state.analysis_images['original'],
+                    "tissue_analysis": st.session_state.analysis_images['tissue_analysis'],
+                    "overlay"        : st.session_state.analysis_images['overlay'],
+                }
 
 
                 # ──── Detailed Analysis Tabs with AI Enhancement ────────────────────────────────────────────────
@@ -2262,6 +2278,9 @@ if uploaded:
         st.write("Exception details:")
         st.exception(e)
         clear_memory()
+# ──── Report Buttons (stand-alone) ─────────────────────────────────
+if st.session_state.get("analysis_ready"):
+    generate_pdf_report_section(COL)
 
 # ──── Footer ────────────────────────────────────────────────────
 st.markdown('</div>', unsafe_allow_html=True)  # Close content-wrapper
