@@ -216,16 +216,20 @@ def generate_health_assessment(tissue_data, wound_type, confidence):
         
         Keep it professional and clinical, but accessible to healthcare providers.
         
-        CRITICAL: Do not use ANY markdown formatting including asterisks (), double asterisks (*), 
-        underscores (_), hash symbols (#), or any other markdown syntax. 
-        Use only plain text with clear formatting and proper paragraphs.
+        IMPORTANT: Do not use markdown formatting (##, *, _, etc.) in your response.
+        Use plain text with clear formatting and proper paragraphs.
         """
         
         chat = gemini_model.start_chat()
         response = chat.send_message(prompt)
         
-        # Clean up any markdown formatting aggressively
-        cleaned_response = clean_markdown_formatting(response.text)
+        # Clean up any markdown formatting
+        cleaned_response = response.text
+        import re
+        cleaned_response = re.sub(r'#{1,6}\s*', '', cleaned_response)
+        cleaned_response = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned_response)
+        cleaned_response = re.sub(r'\*(.*?)\*', r'\1', cleaned_response)
+        cleaned_response = re.sub(r'_(.*?)_', r'\1', cleaned_response)
         
         return cleaned_response
         
@@ -257,16 +261,20 @@ def generate_wound_classification_info(wound_type, confidence, tissue_data):
         
         Make it comprehensive for clinical reference.
         
-        CRITICAL: Do not use ANY markdown formatting including asterisks (), double asterisks (*), 
-        underscores (_), hash symbols (#), or any other markdown syntax. 
-        Use only plain text with clear formatting and proper paragraphs.
+        IMPORTANT: Do not use markdown formatting (##, *, _, etc.) in your response.
+        Use plain text with clear formatting and proper paragraphs.
         """
         
         chat = gemini_model.start_chat()
         response = chat.send_message(prompt)
         
-        # Clean up any markdown formatting aggressively
-        cleaned_response = clean_markdown_formatting(response.text)
+        # Clean up any markdown formatting
+        cleaned_response = response.text
+        import re
+        cleaned_response = re.sub(r'#{1,6}\s*', '', cleaned_response)
+        cleaned_response = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned_response)
+        cleaned_response = re.sub(r'\*(.*?)\*', r'\1', cleaned_response)
+        cleaned_response = re.sub(r'_(.*?)_', r'\1', cleaned_response)
         
         return cleaned_response
         
@@ -297,40 +305,23 @@ def generate_clinical_recommendations(tissue_data, wound_type, health_score):
         6. When to escalate care
         
         Format as numbered recommendations that healthcare providers can implement.
-        
-        CRITICAL: Do not use ANY markdown formatting including asterisks (), double asterisks (*), 
-        underscores (_), hash symbols (#), or any other markdown syntax. 
-        Use only plain text with clear numbering and proper sentences.
         """
         
         chat = gemini_model.start_chat()
         response = chat.send_message(prompt)
         
-        # Clean markdown formatting aggressively
-        cleaned_text = clean_markdown_formatting(response.text)
-        
         # Parse the response into a list of recommendations
         recommendations = []
-        lines = cleaned_text.split('\n')
+        lines = response.text.split('\n')
         for line in lines:
             line = line.strip()
             if line and (line[0].isdigit() or line.startswith('•') or line.startswith('-')):
-                # Additional cleaning for any remaining markdown
-                line = clean_markdown_formatting(line)
                 recommendations.append(line)
         
-        return recommendations if recommendations else [clean_markdown_formatting(response.text)]
+        return recommendations if recommendations else [response.text]
         
     except Exception as e:
         return [f"Clinical recommendations unavailable: {str(e)}"]
-
-def format_tissue_data_for_prompt(tissue_data):
-    """Format tissue data for AI prompts"""
-    formatted = []
-    for tissue, info in tissue_data.items():
-        if info['percentage'] > 0:
-            formatted.append(f"- {tissue.title()}: {info['percentage']:.1f}% ({info['area_px']:,} pixels)")
-    return '\n'.join(formatted)
 
 def generate_ai_health_score(tissue_data, wound_type):
     """Generate AI health score independently using Gemini AI"""
@@ -367,19 +358,13 @@ def generate_ai_health_score(tissue_data, wound_type):
         JUSTIFICATION: [detailed clinical reasoning for the score]
         
         Base your assessment purely on clinical wound healing principles and tissue analysis.
-        
-        CRITICAL: Do not use ANY markdown formatting including asterisks (), double asterisks (*), 
-        underscores (_), hash symbols (#), or any other markdown syntax.
         """
         
         chat = gemini_model.start_chat()
         response = chat.send_message(prompt)
         
-        # Clean markdown formatting
-        cleaned_response = clean_markdown_formatting(response.text)
-        
         # Parse the response to extract score and justification
-        lines = cleaned_response.split('\n')
+        lines = response.text.split('\n')
         ai_score = 50  # Default neutral score
         justification = "AI analysis completed"
         
@@ -436,33 +421,34 @@ def generate_professional_report(tissue_data, wound_type, confidence, health_sco
         Include specific measurements, percentages, and clinical terminology.
         Emphasize evidence-based recommendations and standard care protocols.
         
-        CRITICAL: Do not use ANY markdown formatting including asterisks (), double asterisks (*), 
-        underscores (_), hash symbols (#), or any other markdown syntax. 
-        Use only plain text with clear section headers and proper paragraph formatting.
+        IMPORTANT: Do not use markdown formatting (##, *, _, etc.) in your response.
+        Use plain text with clear section headers and proper paragraph formatting.
         """
         
         chat = gemini_model.start_chat()
         response = chat.send_message(prompt)
         
-        # Clean up any markdown formatting aggressively
-        cleaned_response = clean_markdown_formatting(response.text)
+        # Clean up any markdown formatting that might slip through
+        cleaned_response = response.text
+        # Remove common markdown patterns
+        import re
+        cleaned_response = re.sub(r'#{1,6}\s*', '', cleaned_response)  # Remove # headers
+        cleaned_response = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned_response)  # Remove **bold**
+        cleaned_response = re.sub(r'\*(.*?)\*', r'\1', cleaned_response)  # Remove *italic*
+        cleaned_response = re.sub(r'_(.*?)_', r'\1', cleaned_response)  # Remove _underline_
         
         return cleaned_response
         
     except Exception as e:
         return f"Professional report generation failed: {str(e)}"
 
-def clean_markdown_formatting(text):
-    """Clean markdown formatting from text"""
-    import re
-    cleaned = text
-    # Remove markdown patterns
-    cleaned = re.sub(r'\\(.?)\\', r'\1', cleaned)  # Remove **bold*
-    cleaned = re.sub(r'\(.?)\', r'\1', cleaned)      # Remove *italic
-    cleaned = re.sub(r'(.*?)', r'\1', cleaned)        # Remove underline
-    cleaned = re.sub(r'#{1,6}\s*', '', cleaned)         # Remove # headers
-    cleaned = re.sub(r'(.*?)', r'\1', cleaned)        # Remove code
-    return cleaned
+def format_tissue_data_for_prompt(tissue_data):
+    """Format tissue data for AI prompts"""
+    formatted = []
+    for tissue, info in tissue_data.items():
+        if info['percentage'] > 0:
+            formatted.append(f"- {tissue.title()}: {info['percentage']:.1f}% ({info['area_px']:,} pixels)")
+    return '\n'.join(formatted)
 
 # ──── Dynamic Color Palette Based on Theme ───────────────────────────────────────────────────────
 def get_theme_colors():
@@ -1136,10 +1122,10 @@ def load_tissue_model():
         st.warning("Using fallback mode for tissue analysis")
         
         class DummyModel:
-            def _init_(self):
+            def __init__(self):
                 pass
                 
-            def _call_(self, x):
+            def __call__(self, x):
                 # Create a dummy tensor with the right shape
                 batch_size = x.shape[0]
                 h, w = IMG_SIZE, IMG_SIZE
@@ -1263,7 +1249,7 @@ def load_classification_model():
         st.warning("Using fallback mode for wound classification")
         
         class DummyClassifier:
-            def _init_(self):
+            def __init__(self):
                 self.classes = ["pressure_injury", "venous_ulcer", "diabetic_foot_ulcer", 
                                 "arterial_ulcer", "surgical_wound", "burn"]
             
@@ -1536,7 +1522,7 @@ if uploaded:
                         
                         # Display the report
                         st.markdown('<div class="report-container">', unsafe_allow_html=True)
-                        st.markdown("📋 Professional Wound Assessment Report**")
+                        st.markdown("**📋 Professional Wound Assessment Report**")
                         st.write(professional_report)
                         st.markdown('</div>', unsafe_allow_html=True)
                         
@@ -1633,7 +1619,7 @@ if uploaded:
                     """, unsafe_allow_html=True)
 
                     # AI-generated detailed assessment
-                    st.markdown("*Detailed AI Health Assessment:*")
+                    st.markdown("**Detailed AI Health Assessment:**")
                     st.markdown(f"""
                     <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; 
                         margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
@@ -1661,7 +1647,7 @@ if uploaded:
                     """, unsafe_allow_html=True)
                     
                     # AI-generated classification information
-                    st.markdown("*AI Classification Analysis:*")
+                    st.markdown("### AI Classification Analysis:")
                     st.markdown(f"""
                     <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; 
                         margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
@@ -1685,7 +1671,41 @@ if uploaded:
                         """, unsafe_allow_html=True)
 
                     # Additional care guidelines
-                    st.markdown("*General Wound Care Guidelines:*")
+                    st.markdown("**General Wound Care Guidelines:**")
                     guidelines = [
                         "🧼 Keep wound clean and monitor for signs of infection",
-                        "💧 Maintain a
+                        "💧 Maintain appropriate moisture balance",
+                        "🔄 Change dressings as recommended by healthcare provider",
+                        "📏 Document wound progress with regular measurements",
+                        "👩‍⚕ Consult healthcare provider for concerning changes",
+                        "📱 Use this tool for regular monitoring and documentation",
+                        "🤖 AI recommendations should supplement, not replace, clinical judgment"
+                    ]
+
+                    for guideline in guidelines:
+                        st.markdown(f"""
+                        <div style="padding: 8px 0; color: {COL['text_primary']}; font-size: 1.1rem;">
+                            {guideline}
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    except Exception as e:
+        st.error(f"Error processing image: {str(e)}")
+        st.write("Exception details:")
+        st.exception(e)
+        clear_memory()
+
+# ──── Footer ────────────────────────────────────────────────────
+st.markdown('</div>', unsafe_allow_html=True)  # Close content-wrapper
+
+st.markdown("""
+<div class="footer">
+    <strong>Advanced Wound Analysis System with Gemini AI</strong><br>
+    Powered by deep learning models and Google Gemini AI for comprehensive wound assessment and monitoring.<br>
+    <em>For research and educational purposes. Always consult healthcare professionals for medical decisions.</em>
+</div>
+""", unsafe_allow_html=True)
