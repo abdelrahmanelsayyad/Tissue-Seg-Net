@@ -1198,6 +1198,8 @@ def calculate_tissue_percentages_and_areas(mask, class_names):
         # Skip unused classes
         if name not in DISPLAY_CLASSES:
             continue
+        if name == "background":
+            continue
         class_pixels = np.sum(mask == idx)
         if class_pixels > 0:
             data[name] = {
