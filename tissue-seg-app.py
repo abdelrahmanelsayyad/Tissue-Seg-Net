@@ -1,4 +1,120 @@
-#latest_version
+with tab4:
+                    st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
+                    st.markdown('<div class="tab-title">AI-Powered Clinical Recommendations</div>', unsafe_allow_html=True)
+
+                    # Generate AI-powered clinical recommendations using AI health score
+                    with st.spinner("🤖 AI is generating personalized recommendations..."):
+                        ai_recommendations = generate_clinical_recommendations(tissue_data, pred_class, ai_health_score)
+
+                    # Display AI-generated recommendations
+                    st.markdown("### 🤖 AI Personalized Clinical Recommendations:")
+                    st.markdown(f"""
+                    <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 15px; 
+                        border-left: 5px solid {COL['highlight']}; margin: 20px 0; 
+                        border: 1px solid {COL['border_color']};">
+                        <div style="color: {COL['text_primary']}; line-height: 1.6; font-size: 1.1rem;">
+                            {ai_recommendations.replace(chr(10), '<br>')}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    # Additional general guidelines
+                    st.markdown("### 📋 General Wound Care Guidelines:")
+                    guidelines = [
+                        "🧼 Keep wound clean and monitor for signs of infection",
+                        "💧 Maintain appropriate moisture balance",
+                        "🔄 Change dressings as recommended by healthcare provider",
+                        "📏 Document wound progress with regular measurements",
+                        "👩‍⚕ Consult healthcare provider for concerning changes",
+                        "📱 Use this tool for regular monitoring and documentation"
+                    ]
+
+                    for guideline in guidelines:
+                        st.markdown(f"""
+                        <div style="padding: 8px 0; color: {COL['text_primary']}; font-size: 1.1rem;">
+                            {guideline}
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    except Exception as e:
+        st.error(f"Error processing image: {str(e)}")
+        st.write("Exception details:")
+        st.exception(e)
+        clear_memory()
+
+# Add missing pandas import for timestamp
+import pandas as pd
+
+# ──── Footer ────────────────────────────────────────────────────
+st.markdown('</div>', unsafe_allow_html=True)  # Close content-wrapper
+
+st.markdown("""
+<div class="footer">
+    <strong>Advanced Wound Analysis System</strong><br>
+    Powered by AI models and Gemini AI for comprehensive wound assessment and monitoring.<br>
+    <em>For research and educational purposes. Always consult healthcare professionals for medical decisions.</em>
+</div>
+""", unsafe_allow_html=True)d clean and monitor for signs of infection",
+                        "💧 Maintain appropriate moisture balance",
+                        "🔄 Change dressings as recommended by healthcare provider",
+                        "📏 Document wound progress with regular measurements",
+                        "👩‍⚕ Consult healthcare provider for concerning changes",
+                        "📱 Use this tool for regular monitoring and documentation"
+                    ]
+
+                    for guideline in guidelines:
+                        st.markdown(f"""
+                        <div style="padding: 8px 0; color: {COL['text_primary']}; font-size: 1.1rem;">
+                            {guideline}
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                    st.markdown('</div>', unsafe_allow_html=True)d clean and monitor for signs of infection",
+                        "💧 Maintain appropriate moisture balance",
+                        "🔄 Change dressings as recommended by healthcare provider",
+                        "📏 Document wound progress with regular measurements",
+                        "👩‍⚕ Consult healthcare provider for concerning changes",
+                        "📱 Use this tool for regular monitoring and documentation"
+                    ]
+
+                    for guideline in guidelines:
+                        st.markdown(f"""
+                        <div style="padding: 8px 0; color: {COL['text_primary']}; font-size: 1.1rem;">
+                            {guideline}
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    except Exception as e:
+        st.error(f"Error processing image: {str(e)}")
+        st.write("Exception details:")
+        st.exception(e)
+        clear_memory()
+
+# Add missing pandas import for timestamp
+import pandas as pd
+
+# ──── Footer ────────────────────────────────────────────────────
+st.markdown('</div>', unsafe_allow_html=True)  # Close content-wrapper
+
+st.markdown("""
+<div class="footer">
+    <strong>Advanced Wound Analysis System</strong><br>
+    Powered by AI models and Gemini AI for comprehensive wound assessment and monitoring.<br>
+    <em>For research and educational purposes. Always consult healthcare professionals for medical decisions.</em>
+</div>
+""", unsafe_allow_html=True)# Enhanced model download with retry mechanism
+def download_models():
+    """Download models with enhanced error handling and retry logic"""
+    download_success = True
+    max_retries =#latest_version
 import io
 import os
 import sys
@@ -17,6 +133,39 @@ from fastai.learner import load_learner
 import pickle
 from fastai.basics import *
 import gc
+
+# Gemini AI Integration
+import google.generativeai as genai
+
+# Configure Gemini API
+os.environ["GEMINI_API_KEY"] = "AIzaSyA21AIdWr6F0UqlR4FwnIf6r3kinLjHe9Q"
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
+# Gemini model configuration
+generation_config = {
+    "temperature": 0.7,
+    "top_p": 0.95,
+    "top_k": 64,
+    "max_output_tokens": 8192,
+    "response_mime_type": "text/plain",
+}
+
+safety_settings = [
+    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+]
+
+# Initialize Gemini model
+@st.cache_resource
+def init_gemini_model():
+    return genai.GenerativeModel(
+        model_name="gemini-2.0-flash",
+        safety_settings=safety_settings,
+        generation_config=generation_config,
+        system_instruction="You are a professional wound care specialist and medical AI assistant. Provide accurate, evidence-based wound assessment and care recommendations."
+    )
 
 st.set_page_config(
     page_title="Advanced Wound Analysis",
@@ -87,28 +236,47 @@ TISSUE_HEALTH_WEIGHTS = {
     "background": 0.0      # Neutral
 }
 
-# Memory optimization functions
+# Enhanced memory optimization functions
 def resize_image_if_needed(image, max_size=MAX_IMAGE_SIZE):
     """Resize image if it exceeds maximum size to reduce memory usage"""
-    height, width = image.shape[:2]
-    
-    if max(height, width) > max_size:
-        # Calculate scaling factor
-        scale = max_size / max(height, width)
-        new_width = int(width * scale)
-        new_height = int(height * scale)
+    try:
+        height, width = image.shape[:2]
         
-        # Resize image
-        resized = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
-        return resized
-    
-    return image
+        if max(height, width) > max_size:
+            # Calculate scaling factor
+            scale = max_size / max(height, width)
+            new_width = int(width * scale)
+            new_height = int(height * scale)
+            
+            # Resize image
+            resized = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+            return resized
+        
+        return image
+    except Exception as e:
+        st.warning(f"Image resize failed, using original: {str(e)}")
+        return image
 
 def clear_memory():
-    """Clear memory by garbage collecting"""
-    gc.collect()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
+    """Enhanced memory clearing with error handling"""
+    try:
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except Exception:
+        pass  # Silent fail for memory cleanup
+
+def safe_tensor_operation(func, *args, **kwargs):
+    """Wrapper for safe tensor operations"""
+    try:
+        return func(*args, **kwargs)
+    except RuntimeError as e:
+        if "out of memory" in str(e).lower():
+            clear_memory()
+            st.error("Out of memory. Please try with a smaller image or restart the app.")
+            return None
+        else:
+            raise e
 
 # Download models from Google Drive if not present
 def download_models():
@@ -937,6 +1105,172 @@ def get_models():
     classification_model = load_classification_model()
     return tissue_model, classification_model
 
+# ──── Gemini AI Functions ────────────────────────────────────────────────
+def generate_health_assessment_with_score(tissue_data, dominant_tissue):
+    """Generate detailed health assessment AND health score using Gemini AI"""
+    try:
+        gemini_model = init_gemini_model()
+        
+        prompt = f"""
+        As a wound care specialist, analyze this wound and provide both a health assessment AND a numerical health score.
+        
+        Tissue Composition Analysis:
+        {chr(10).join([f"- {tissue.title()}: {info['percentage']:.1f}% ({info['area_px']:,} pixels)" for tissue, info in tissue_data.items()])}
+        
+        Dominant Tissue: {dominant_tissue}
+        
+        Please provide:
+        1. **HEALTH SCORE: Assign a numerical score from 0-100 (where 100 is perfect healing)**
+        2. Overall wound status interpretation
+        3. Healing stage assessment 
+        4. Key positive factors
+        5. Areas of concern
+        6. Prognosis outlook
+        
+        Start your response with "HEALTH SCORE: [number]/100" then provide the detailed assessment.
+        Base the score on clinical wound healing principles - granulation tissue indicates good healing, fibrin suggests inflammatory phase, callus indicates poor healing, background represents non-wound tissue.
+        """
+        
+        response = gemini_model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        return f"HEALTH SCORE: 50/100\n\nHealth assessment analysis temporarily unavailable. Manual review recommended with {dominant_tissue} as the dominant tissue type."
+
+def extract_health_score_from_ai_response(ai_response):
+    """Extract the numerical health score from Gemini's response"""
+    try:
+        # Look for "HEALTH SCORE: XX/100" pattern
+        import re
+        score_match = re.search(r'HEALTH SCORE:\s*(\d+)/100', ai_response, re.IGNORECASE)
+        if score_match:
+            return int(score_match.group(1))
+        else:
+            # Fallback: look for any number followed by /100
+            fallback_match = re.search(r'(\d+)/100', ai_response)
+            if fallback_match:
+                return int(fallback_match.group(1))
+    except:
+        pass
+    
+    # Default fallback score
+    return 50
+
+def generate_wound_classification_info(pred_class, confidence):
+    """Generate enhanced wound classification information using Gemini AI"""
+    try:
+        gemini_model = init_gemini_model()
+        
+        prompt = f"""
+        As a wound care specialist, provide comprehensive information about {pred_class} wounds (confidence: {confidence:.1%}):
+        
+        Please provide:
+        1. Detailed clinical description
+        2. Pathophysiology and causes
+        3. Evidence-based treatment protocols
+        4. Risk factors and complications
+        5. Staging or classification system (if applicable)
+        6. Expected healing timeline
+        7. Prevention strategies
+        
+        Format as professional clinical guidance.
+        """
+        
+        response = gemini_model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        return f"Detailed classification information for {pred_class} temporarily unavailable. This wound type requires specialized assessment and treatment protocols."
+
+def generate_clinical_recommendations(tissue_data, pred_class, ai_health_score):
+    """Generate personalized clinical recommendations using Gemini AI"""
+    try:
+        gemini_model = init_gemini_model()
+        
+        prompt = f"""
+        As a wound care specialist, provide specific clinical recommendations for a {pred_class} wound with:
+        
+        AI-Assessed Health Score: {ai_health_score}/100
+        Tissue Analysis:
+        {chr(10).join([f"- {tissue.title()}: {info['percentage']:.1f}%" for tissue, info in tissue_data.items()])}
+        
+        Provide specific recommendations for:
+        1. Immediate wound care priorities
+        2. Dressing selection and frequency
+        3. Debridement needs (if any)
+        4. Infection prevention measures
+        5. Patient education points
+        6. Follow-up schedule
+        7. Red flags to monitor
+        8. Lifestyle modifications
+        
+        Make recommendations specific to this wound's tissue composition and type.
+        """
+        
+        response = gemini_model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        return "Clinical recommendations temporarily unavailable. Please follow standard wound care protocols and consult with healthcare provider."
+
+def generate_comprehensive_report(tissue_data, pred_class, ai_health_score, open_defect_area, dominant_tissue):
+    """Generate a comprehensive professional wound report using Gemini AI"""
+    try:
+        gemini_model = init_gemini_model()
+        
+        tissue_summary = "\n".join([f"- {tissue.title()}: {info['percentage']:.1f}% ({info['area_px']:,} pixels)" 
+                                   for tissue, info in tissue_data.items()])
+        
+        prompt = f"""
+        As a senior wound care specialist, create a comprehensive professional wound assessment report:
+        
+        WOUND ANALYSIS DATA:
+        - Wound Classification: {pred_class}
+        - AI-Assessed Health Score: {ai_health_score}/100
+        - Open Defect Area: {open_defect_area:,} pixels
+        - Dominant Tissue Type: {dominant_tissue}
+        
+        TISSUE COMPOSITION ANALYSIS:
+        {tissue_summary}
+        
+        Please create a complete professional report with the following sections:
+        
+        1. EXECUTIVE SUMMARY
+        2. WOUND ASSESSMENT FINDINGS
+        3. TISSUE COMPOSITION ANALYSIS
+        4. CLINICAL INTERPRETATION
+        5. TREATMENT RECOMMENDATIONS
+        6. MONITORING PROTOCOL
+        7. PROGNOSIS AND EXPECTED OUTCOMES
+        8. PATIENT EDUCATION SUMMARY
+        
+        Format as a formal medical report suitable for clinical documentation.
+        Use appropriate medical terminology while remaining clear and actionable.
+        Include specific measurements and percentages from the analysis.
+        """
+        
+        response = gemini_model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        return f"""
+        COMPREHENSIVE WOUND ASSESSMENT REPORT
+        =====================================
+        
+        Analysis Date: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}
+        
+        EXECUTIVE SUMMARY:
+        Professional wound assessment report temporarily limited due to AI service availability.
+        
+        KEY FINDINGS:
+        - Wound Type: {pred_class}
+        - AI Health Score: {ai_health_score}/100
+        - Open Defect Area: {open_defect_area:,} pixels
+        - Dominant Tissue: {dominant_tissue}
+        
+        TISSUE COMPOSITION:
+        {tissue_summary}
+        
+        RECOMMENDATION:
+        Consult with wound care specialist for detailed assessment and treatment planning.
+        """
+
 # ──── Page Layout ────────────────────────────────────────────────
 st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 
@@ -1088,6 +1422,28 @@ if uploaded:
                 del tissue_display, orig_bgr_resized, tissue_overlay, tissue_overlay_rgb
                 clear_memory()
 
+                # ──── Professional Report Generation Button ────────────────────────────────
+                st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
+                if st.button("📋 Generate Professional Report", help="Create comprehensive AI-powered wound assessment report"):
+                    with st.spinner("🤖 AI is generating comprehensive professional report..."):
+                        comprehensive_report = generate_comprehensive_report(
+                            tissue_data, pred_class, ai_health_score, open_defect_area, dominant_tissue
+                        )
+                    
+                    st.markdown("### 📄 Professional Wound Assessment Report")
+                    st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
+                    st.markdown(comprehensive_report.replace('\n', '\n\n'))
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
+                    # Download button for the report
+                    st.download_button(
+                        label="💾 Download Report",
+                        data=comprehensive_report,
+                        file_name=f"wound_assessment_report_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                        mime="text/plain"
+                    )
+                st.markdown('</div>', unsafe_allow_html=True)
+
                 # ──── Key Metrics Dashboard ────────────────────────────────────────────────
                 st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
                 col1, col2, col3, col4, col5 = st.columns(5)
@@ -1097,8 +1453,8 @@ if uploaded:
                 with col1:
                     st.markdown(f"""
                     <div class="metric-card">
-                        <div class="metric-value">{health_score:.0f}</div>
-                        <div class="metric-label">Health Score</div>
+                        <div class="metric-value">{ai_health_score:.0f}</div>
+                        <div class="metric-label">AI Health Score</div>
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -1188,18 +1544,18 @@ if uploaded:
 
                 with tab2:
                     st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                    st.markdown('<div class="tab-title">Health Assessment</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="tab-title">AI-Powered Health Assessment</div>', unsafe_allow_html=True)
 
-                    # Health score interpretation
-                    if health_score >= 80:
+                    # Health score interpretation with AI insights
+                    if ai_health_score >= 80:
                         health_status = "Excellent"
                         health_color = COL['success']
                         health_icon = "🌟"
-                    elif health_score >= 60:
+                    elif ai_health_score >= 60:
                         health_status = "Good"
                         health_color = COL['success']
                         health_icon = "✅"
-                    elif health_score >= 40:
+                    elif ai_health_score >= 40:
                         health_status = "Fair"
                         health_color = COL['warning']
                         health_icon = "⚠"
@@ -1212,127 +1568,61 @@ if uploaded:
                     <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, {COL['dark']}, {COL['accent']}); 
                         border-radius: 15px; margin: 20px 0; color: white;">
                         <div style="font-size: 4rem; margin-bottom: 10px;">{health_icon}</div>
-                        <div style="font-size: 2.5rem; font-weight: 800; color: {health_color};">{health_score:.0f}/100</div>
-                        <div style="font-size: 1.5rem; margin-top: 10px;">Overall Health: {health_status}</div>
+                        <div style="font-size: 2.5rem; font-weight: 800; color: {health_color};">{ai_health_score:.0f}/100</div>
+                        <div style="font-size: 1.5rem; margin-top: 10px;">AI Health Status: {health_status}</div>
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # Detailed breakdown
-                    st.markdown("Health Score Factors:")
-
-                    positive_factors = []
-                    negative_factors = []
-
-                    for tissue, info in tissue_data.items():
-                        percentage = info['percentage']
-                        if percentage > 1:  # Only show significant tissues
-                            weight = TISSUE_HEALTH_WEIGHTS.get(tissue, 0)
-                            if weight > 0:
-                                positive_factors.append(f"• {tissue.title()}: {percentage:.1f}% (+{weight*100:.0f} points)")
-                            elif weight < 0:
-                                negative_factors.append(f"• {tissue.title()}: {percentage:.1f}% ({weight*100:.0f} points)")
-
-                    if positive_factors:
-                        st.markdown("Positive Factors:")
-                        for factor in positive_factors:
-                            st.markdown(f"<span style='color: {COL['success']};'>{factor}</span>", unsafe_allow_html=True)
-
-                    if negative_factors:
-                        st.markdown("Concerning Factors:")
-                        for factor in negative_factors:
-                            st.markdown(f"<span style='color: {COL['danger']};'>{factor}</span>", unsafe_allow_html=True)
+                    # Display AI-generated health assessment (remove the score from display since it's shown above)
+                    st.markdown("### 🤖 AI Clinical Assessment:")
+                    # Remove the "HEALTH SCORE: XX/100" line from the display
+                    display_assessment = ai_health_response
+                    if "HEALTH SCORE:" in display_assessment:
+                        lines = display_assessment.split('\n')
+                        display_assessment = '\n'.join([line for line in lines if not line.upper().startswith('HEALTH SCORE:')])
+                    
+                    st.markdown(f"""
+                    <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 15px; 
+                        border-left: 5px solid {COL['highlight']}; margin: 20px 0; 
+                        border: 1px solid {COL['border_color']};">
+                        <div style="color: {COL['text_primary']}; line-height: 1.6; font-size: 1.1rem;">
+                            {display_assessment.replace(chr(10), '<br>')}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
                     st.markdown('</div>', unsafe_allow_html=True)
                     
                 with tab3:
                     st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                    st.markdown('<div class="tab-title">Wound Classification Information</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="tab-title">AI-Enhanced Wound Classification</div>', unsafe_allow_html=True)
                     
-                    # Information about the wound type
-                    wound_info = {
-                        "pressure_injury": {
-                            "description": "Localized damage to the skin and/or underlying tissue, usually over a bony prominence, resulting from pressure or pressure in combination with shear.",
-                            "treatment": "• Pressure redistribution\n• Moisture management\n• Nutritional support\n• Regular repositioning\n• Appropriate dressings based on wound stage",
-                            "risk_factors": "• Immobility\n• Poor nutrition\n• Skin moisture\n• Advanced age\n• Sensory deficits",
-                            "stages": "Ranges from Stage 1 (non-blanchable erythema) to Stage 4 (full thickness tissue loss)"
-                        },
-                        "venous_ulcer": {
-                            "description": "Wound that occurs on the leg due to poor blood circulation in the veins, often in the ankle area.",
-                            "treatment": "• Compression therapy\n• Elevation\n• Moisture-retentive dressings\n• Regular debridement if necessary\n• Treatment of infection if present",
-                            "risk_factors": "• Venous insufficiency\n• History of DVT\n• Varicose veins\n• Obesity\n• Sedentary lifestyle",
-                            "features": "Often shallow with irregular borders, exudative, may have fibrinous tissue"
-                        },
-                        "diabetic_foot_ulcer": {
-                            "description": "Foot ulcers that develop in people with diabetes due to a combination of neuropathy, vascular disease, and increased pressure points.",
-                            "treatment": "• Offloading pressure\n• Blood glucose management\n• Infection control\n• Debridement\n• Appropriate dressings\n• Vascular assessment",
-                            "risk_factors": "• Diabetic neuropathy\n• Peripheral arterial disease\n• Foot deformities\n• Previous ulceration\n• Poor glycemic control",
-                            "complications": "High risk for infection, may lead to osteomyelitis and amputation if not properly managed"
-                        },
-                        "diabetic_wounds": {
-                            "description": "Wounds that develop in people with diabetes due to a combination of neuropathy, vascular disease, and increased pressure points.",
-                            "treatment": "• Offloading pressure\n• Blood glucose management\n• Infection control\n• Debridement\n• Appropriate dressings\n• Vascular assessment",
-                            "risk_factors": "• Diabetic neuropathy\n• Peripheral arterial disease\n• Foot deformities\n• Previous ulceration\n• Poor glycemic control",
-                            "complications": "High risk for infection, may lead to osteomyelitis and amputation if not properly managed"
-                        },
-                        "arterial_ulcer": {
-                            "description": "Ulcers caused by poor arterial blood flow to the extremities, leading to tissue ischemia.",
-                            "treatment": "• Revascularization procedures\n• Pain management\n• Protecting the wound\n• Addressing underlying vascular disease\n• Non-adherent dressings",
-                            "risk_factors": "• Peripheral arterial disease\n• Smoking\n• Hypertension\n• Hyperlipidemia\n• Diabetes",
-                            "features": "Well-defined, often deep with pale wound bed, minimal exudate, painful"
-                        },
-                        "surgical_wound": {
-                            "description": "Intentional break in the skin created during surgery that may develop complications in healing.",
-                            "treatment": "• Clean technique for dressing changes\n• Appropriate dressing selection\n• Monitoring for infection\n• Nutritional support\n• Suture/staple removal as indicated",
-                            "complications": "• Dehiscence\n• Infection\n• Hematoma/Seroma\n• Excessive scarring",
-                            "healing": "Primary intention healing when edges are approximated; secondary intention when wound is left open to heal"
-                        },
-                        "burn": {
-                            "description": "Tissue damage caused by heat, chemicals, electricity, radiation, or friction.",
-                            "treatment": "• Cooling the burn\n• Appropriate dressings\n• Pain management\n• Infection prevention\n• Possibly surgical intervention for deep burns",
-                            "classification": "• First-degree: Superficial (epidermis only)\n• Second-degree: Partial thickness (epidermis and dermis)\n• Third-degree: Full thickness (all layers of skin and possibly deeper tissues)",
-                            "complications": "Risk of infection, fluid loss, scarring, contractures, and systemic effects in severe burns"
-                        }
-                    }
+                    # Generate AI-powered wound classification information
+                    with st.spinner("🤖 AI is analyzing wound classification..."):
+                        ai_classification_info = generate_wound_classification_info(pred_class, confidence)
                     
-                    # Normalize the prediction class for lookup
-                    pred_class_normalized = pred_class.lower().replace(' ', '_').replace('-', '_')
+                    # Display classification confidence
+                    st.markdown(f"""
+                    <div style="text-align: center; padding: 20px; background: {COL['card_bg']}; 
+                        border-radius: 15px; margin: 20px 0; border: 1px solid {COL['border_color']};">
+                        <h3 style="color: {COL['highlight']}; margin: 0;">Classification: {pred_class}</h3>
+                        <p style="color: {COL['text_primary']}; font-size: 1.2rem; margin: 5px 0;">
+                            Confidence: {confidence:.1%}
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
                     
-                    # If we have information about this wound type
-                    if pred_class_normalized in wound_info:
-                        info = wound_info[pred_class_normalized]
-                        
-                        st.markdown(f"""
-                        <div style="margin-bottom: 20px;">
-                            <h3 style="color: {COL['highlight']};">Description:</h3>
-                            <p style="color: {COL['text_primary']}; font-size: 1.1rem;">{info['description']}</p>
+                    # Display AI-generated classification information
+                    st.markdown("### 🤖 AI Clinical Classification Analysis:")
+                    st.markdown(f"""
+                    <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 15px; 
+                        border-left: 5px solid {COL['highlight']}; margin: 20px 0; 
+                        border: 1px solid {COL['border_color']};">
+                        <div style="color: {COL['text_primary']}; line-height: 1.6; font-size: 1.1rem;">
+                            {ai_classification_info.replace(chr(10), '<br>')}
                         </div>
-                        """, unsafe_allow_html=True)
-                        
-                        # Create two columns for treatment and risk factors
-                        col1, col2 = st.columns(2)
-                        
-                        with col1:
-                            st.markdown(f"""
-                            <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid {COL['border_color']};">
-                                <h3 style="color: {COL['highlight']}; font-size: 1.4rem;">Treatment Approach:</h3>
-                                <p style="color: {COL['text_primary']}; white-space: pre-line; font-size: 1.1rem;">{info['treatment']}</p>
-                            </div>
-                            """, unsafe_allow_html=True)
-                        
-                        with col2:
-                            # Display risk factors if available, otherwise display whatever other key info is available
-                            for key in ['risk_factors', 'complications', 'features', 'stages', 'classification', 'healing']:
-                                if key in info:
-                                    title = key.replace('_', ' ').title()
-                                    st.markdown(f"""
-                                    <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid {COL['border_color']};">
-                                        <h3 style="color: {COL['highlight']}; font-size: 1.4rem;">{title}:</h3>
-                                        <p style="color: {COL['text_primary']}; white-space: pre-line; font-size: 1.1rem;">{info[key]}</p>
-                                    </div>
-                                    """, unsafe_allow_html=True)
-                                    break
-                    else:
-                        st.info(f"No detailed information available for {pred_class} wound type.")
+                    </div>
+                    """, unsafe_allow_html=True)
                     
                     st.markdown('</div>', unsafe_allow_html=True)
 
