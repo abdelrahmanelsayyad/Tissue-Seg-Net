@@ -25,19 +25,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Theme state
+# Create session state variables for models - removed since we're using @st.cache_resource
+# Session state now only tracks theme
 if 'dark_mode' not in st.session_state:
     st.session_state.dark_mode = True
-
-# Create a session state to track if models are loaded
-if 'models_loaded' not in st.session_state:
-    st.session_state.models_loaded = False
-
-# Create session state variables for models
-if 'tissue_model' not in st.session_state:
-    st.session_state.tissue_model = None
-if 'classification_model' not in st.session_state:
-    st.session_state.classification_model = None
 
 # ──── Config ───────────────────────────────────────────────────
 
@@ -777,45 +768,46 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ──── Tissue Analysis Model Functions ────────────────────────────────────────────
+@st.cache_resource
 def load_tissue_model():
-    with st.spinner("Loading tissue analysis model..."):
-        try:
-            model = smp.Unet(
-                encoder_name=ENCODER,
-                encoder_weights=None,
-                in_channels=3,
-                classes=N_CLASSES,
-                decoder_attention_type='scse',
-                activation=None,
-            )
-            state_dict = torch.load(str(TISSUE_MODEL_PATH), map_location="cpu")
-            model.load_state_dict(state_dict)
-            model.eval()
-            return model
-        except Exception as e:
-            st.error(f"Error loading tissue analysis model: {str(e)}")
-            # Create a dummy model for demonstration
-            st.warning("Using fallback mode for tissue analysis")
-            
-            class DummyModel:
-                def __init__(self):
-                    pass
-                    
-                def __call__(self, x):
-                    # Create a dummy tensor with the right shape
-                    batch_size = x.shape[0]
-                    h, w = IMG_SIZE, IMG_SIZE
-                    dummy_output = torch.zeros((batch_size, N_CLASSES, h, w))
-                    # Make class 0 (background) and class 1 (fibrin) more likely in different areas
-                    dummy_output[:, 0, :h//2, :] = 5.0  # background in top half
-                    dummy_output[:, 1, h//2:, :] = 5.0  # fibrin in bottom half
-                    dummy_output[:, 2, h//3:2*h//3, w//3:2*w//3] = 7.0  # granulation in middle
-                    return dummy_output
+    """Load tissue analysis model with caching to prevent reloading"""
+    try:
+        model = smp.Unet(
+            encoder_name=ENCODER,
+            encoder_weights=None,
+            in_channels=3,
+            classes=N_CLASSES,
+            decoder_attention_type='scse',
+            activation=None,
+        )
+        state_dict = torch.load(str(TISSUE_MODEL_PATH), map_location="cpu")
+        model.load_state_dict(state_dict)
+        model.eval()
+        return model
+    except Exception as e:
+        st.error(f"Error loading tissue analysis model: {str(e)}")
+        # Create a dummy model for demonstration
+        st.warning("Using fallback mode for tissue analysis")
+        
+        class DummyModel:
+            def __init__(self):
+                pass
                 
-                def eval(self):
-                    return self
-                    
-            return DummyModel()
+            def __call__(self, x):
+                # Create a dummy tensor with the right shape
+                batch_size = x.shape[0]
+                h, w = IMG_SIZE, IMG_SIZE
+                dummy_output = torch.zeros((batch_size, N_CLASSES, h, w))
+                # Make class 0 (background) and class 1 (fibrin) more likely in different areas
+                dummy_output[:, 0, :h//2, :] = 5.0  # background in top half
+                dummy_output[:, 1, h//2:, :] = 5.0  # fibrin in bottom half
+                dummy_output[:, 2, h//3:2*h//3, w//3:2*w//3] = 7.0  # granulation in middle
+                return dummy_output
+            
+            def eval(self):
+                return self
+                
+        return DummyModel()
 
 def preprocess_tissue(image_pil):
     image = np.array(image_pil.resize((IMG_SIZE, IMG_SIZE))) / 255.0
@@ -912,54 +904,38 @@ def calculate_open_defect_area(tissue_data):
     return fibrin_area + granulation_area
 
 # ──── Wound Classification Model Functions ──────────────────────────────────────
+@st.cache_resource
 def load_classification_model():
-    with st.spinner("Loading wound classification model..."):
-        try:
-            # First attempt - standard loading
-            return load_learner(str(CLASSIFICATION_MODEL_PATH))
-        except Exception as e:
-            st.error(f"Error loading classification model: {str(e)}")
-            
-            # Create a dummy classification model
-            st.warning("Using fallback mode for wound classification")
-            
-            class DummyClassifier:
-                def __init__(self):
-                    self.classes = ["pressure_injury", "venous_ulcer", "diabetic_foot_ulcer", 
-                                    "arterial_ulcer", "surgical_wound", "burn"]
-                
-                def predict(self, img):
-                    # Always predict pressure injury with 80% confidence
-                    pred_class = "pressure_injury"
-                    pred_idx = 0
-                    # Create a dummy output tensor with confidence scores
-                    outputs = torch.tensor([0.8, 0.05, 0.05, 0.05, 0.03, 0.02])
-                    return pred_class, pred_idx, outputs
-            
-            return DummyClassifier()
-
-def try_load_models():
-    """Try to load all models and store in session state"""
-    success = True
-    
+    """Load wound classification model with caching to prevent reloading"""
     try:
-        st.session_state.tissue_model = load_tissue_model()
+        # First attempt - standard loading
+        return load_learner(str(CLASSIFICATION_MODEL_PATH))
     except Exception as e:
-        st.error(f"Failed to load tissue analysis model: {str(e)}")
-        success = False
-    
-    try:
-        st.session_state.classification_model = load_classification_model()
-    except Exception as e:
-        st.error(f"Failed to load wound classification model: {str(e)}")
-        success = False
-    
-    st.session_state.models_loaded = success
-    return success
+        st.error(f"Error loading classification model: {str(e)}")
+        
+        # Create a dummy classification model
+        st.warning("Using fallback mode for wound classification")
+        
+        class DummyClassifier:
+            def __init__(self):
+                self.classes = ["pressure_injury", "venous_ulcer", "diabetic_foot_ulcer", 
+                                "arterial_ulcer", "surgical_wound", "burn"]
+            
+            def predict(self, img):
+                # Always predict pressure injury with 80% confidence
+                pred_class = "pressure_injury"
+                pred_idx = 0
+                # Create a dummy output tensor with confidence scores
+                outputs = torch.tensor([0.8, 0.05, 0.05, 0.05, 0.03, 0.02])
+                return pred_class, pred_idx, outputs
+        
+        return DummyClassifier()
 
-# Try to load the models
-if not st.session_state.models_loaded:
-    try_load_models()
+def get_models():
+    """Get cached models without session state"""
+    tissue_model = load_tissue_model()
+    classification_model = load_classification_model()
+    return tissue_model, classification_model
 
 # ──── Page Layout ────────────────────────────────────────────────
 st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
@@ -1041,50 +1017,45 @@ if uploaded:
         # Analysis button
         st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
         if st.button("🚀 Analyze Wound", help="Click to run comprehensive AI analysis"):
-            # Check if models are loaded
-            if not st.session_state.models_loaded:
-                with st.spinner("Initializing analysis models..."):
-                    try_load_models()
+            # Get cached models
+            with st.spinner("Initializing AI models..."):
+                tissue_model, classification_model = get_models()
+            
+            # ──── Complete Analysis ────────────────────────────────────────────────
+            with st.spinner("Running comprehensive wound analysis..."):
+                progress = st.progress(0)
+
+                # Step 1: Wound classification
+                for i in range(40):
+                    progress.progress(i+1)
                 
-            # Ensure we have the models needed
-            if not st.session_state.models_loaded:
-                st.error("Failed to load analysis models. Please refresh the page or contact support.")
-            else:
-                # ──── Complete Analysis ────────────────────────────────────────────────
-                with st.spinner("Running comprehensive wound analysis..."):
-                    progress = st.progress(0)
+                pred_class, pred_idx, outputs = classification_model.predict(pil_img)
+                confidence = outputs[pred_idx].item()
 
-                    # Step 1: Wound classification
-                    for i in range(40):
-                        progress.progress(i+1)
+                # Step 2: Tissue analysis
+                for i in range(40, 90):
+                    progress.progress(i+1)
+
+                with torch.no_grad():
+                    tensor_img = preprocess_tissue(pil_img)
+                    tissue_pred = tissue_model(tensor_img)
+                    tissue_mask_bgr, tissue_mask_indices = postprocess_tissue(tissue_pred)
+                    tissue_data = calculate_tissue_percentages_and_areas(tissue_mask_indices, CLASS_NAMES)
                     
-                    pred_class, pred_idx, outputs = st.session_state.classification_model.predict(pil_img)
-                    confidence = outputs[pred_idx].item()
+                    # Clear intermediate tensors
+                    del tensor_img, tissue_pred
 
-                    # Step 2: Tissue analysis
-                    for i in range(40, 90):
-                        progress.progress(i+1)
+                # Step 3: Analysis completion
+                for i in range(90, 100):
+                    progress.progress(i+1)
 
-                    with torch.no_grad():
-                        tensor_img = preprocess_tissue(pil_img)
-                        tissue_pred = st.session_state.tissue_model(tensor_img)
-                        tissue_mask_bgr, tissue_mask_indices = postprocess_tissue(tissue_pred)
-                        tissue_data = calculate_tissue_percentages_and_areas(tissue_mask_indices, CLASS_NAMES)
-                        
-                        # Clear intermediate tensors
-                        del tensor_img, tissue_pred
+                health_score = calculate_health_score(tissue_data)
+                dominant_tissue, dominant_percent = get_dominant_tissue(tissue_data)
+                recommendations = generate_recommendations(tissue_data)
+                open_defect_area = calculate_open_defect_area(tissue_data)
 
-                    # Step 3: Analysis completion
-                    for i in range(90, 100):
-                        progress.progress(i+1)
-
-                    health_score = calculate_health_score(tissue_data)
-                    dominant_tissue, dominant_percent = get_dominant_tissue(tissue_data)
-                    recommendations = generate_recommendations(tissue_data)
-                    open_defect_area = calculate_open_defect_area(tissue_data)
-
-                    progress.empty()
-                    clear_memory()
+                progress.empty()
+                clear_memory()
 
                 st.success("✅ Complete analysis finished!")
                 st.markdown('<div class="results-header">Advanced Wound Analysis Results</div>', unsafe_allow_html=True)
