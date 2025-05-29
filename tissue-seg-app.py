@@ -1683,35 +1683,6 @@ if uploaded:
                     st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
                     st.markdown('<div class="tab-title">AI Clinical Recommendations</div>', unsafe_allow_html=True)
 
-                    # AI-generated recommendations
-                    for i, rec in enumerate(ai_recommendations, 1):
-                        st.markdown(f"""
-                        <div style="background-color: {COL['accent']}; padding: 15px; margin: 10px 0; 
-                            border-radius: 10px; border-left: 5px solid {COL['highlight']};">
-                            <strong style="color: white; font-size: 1.2rem;">{i}. {rec}</strong>
-                        </div>
-                        """, unsafe_allow_html=True)
-
-                    # Additional care guidelines
-                    st.markdown("**General Wound Care Guidelines:**")
-                    guidelines = [
-                        "🧼 Keep wound clean and monitor for signs of infection",
-                        "💧 Maintain appropriate moisture balance",
-                        "🔄 Change dressings as recommended by healthcare provider",
-                        "📏 Document wound progress with regular measurements",
-                        "👩‍⚕ Consult healthcare provider for concerning changes",
-                        "📱 Use this tool for regular monitoring and documentation",
-                        "🤖 AI recommendations should supplement, not replace, clinical judgment"
-                    ]
-
-                    for guideline in guidelines:
-                        st.markdown(f"""
-                        <div style="padding: 8px 0; color: {COL['text_primary']}; font-size: 1.1rem;">
-                            {guideline}
-                        </div>
-                        """, unsafe_allow_html=True)
-
-                    st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
