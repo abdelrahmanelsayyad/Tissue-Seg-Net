@@ -198,21 +198,24 @@ def generate_health_assessment(tissue_data, wound_type, confidence):
         gemini_model = initialize_gemini()
         if not gemini_model:
             return "Health assessment unavailable - AI service not available"
+        total_wound_area = sum(info['area_px'] for tissue, info in tissue_data.items()
+                               if tissue != "background" and info['percentage'] > 0)
         
         prompt = f"""
         As a wound care specialist, provide a detailed health assessment for this wound analysis:
 
-        Tissue Composition:
+        Wound Tissue Composition (excluding background/non-wound areas):
         {format_tissue_data_for_prompt(tissue_data)}
-        
+       
+        Total Wound Area: {total_wound_area:,} pixels
         Wound Classification: {wound_type} (Confidence: {confidence:.1%})
         
         Please provide:
         1. Overall wound health status interpretation
-        2. Healing stage assessment
-        3. Risk factors identified
-        4. Prognostic indicators
-        5. Key monitoring parameters
+        2. Healing stage assessment based on tissue types present
+        3. Risk factors identified from tissue composition
+        4. Prognostic indicators for healing trajectory
+        5. Key monitoring parameters for this wound type
         
         Keep it professional and clinical, but accessible to healthcare providers.
         
@@ -238,22 +241,26 @@ def generate_wound_classification_info(wound_type, confidence, tissue_data):
         gemini_model = initialize_gemini()
         if not gemini_model:
             return "Classification information unavailable - AI service not available"
-        
+                # Calculate wound tissue percentages (excluding background)
+        wound_tissues = {tissue: info for tissue, info in tissue_data.items() 
+                        if tissue != "background" and info['percentage'] > 0}
+
         prompt = f"""
         Provide comprehensive information about {wound_type} wounds:
 
         Current Analysis:
         - Wound Type: {wound_type}
         - AI Confidence: {confidence:.1%}
+        - Wound Tissue Composition: {format_tissue_data_for_prompt(tissue_data)}
         - Tissue Composition: {format_tissue_data_for_prompt(tissue_data)}
         
         Please provide detailed information about:
-        1. Pathophysiology and causes
-        2. Typical characteristics and appearance
-        3. Standard treatment protocols
-        4. Expected healing timeline
-        5. Potential complications
-        6. How the current tissue composition aligns with this wound type
+        1. Pathophysiology and typical causes of {wound_type}
+        2. Characteristic tissue appearance and composition patterns
+        3. Standard evidence-based treatment protocols
+        4. Expected healing timeline and stages
+        5. Potential complications specific to this wound type
+        6. How the current tissue composition aligns with typical {wound_type} presentations
         
         Make it comprehensive for clinical reference.
         
@@ -279,7 +286,7 @@ def generate_clinical_recommendations(tissue_data, wound_type, health_score):
         gemini_model = initialize_gemini()
         if not gemini_model:
             return ["Clinical recommendations unavailable - AI service not available"]
-        
+        wound_tissue_summary = format_tissue_data_for_prompt(tissue_data)
         prompt = f"""
         As a wound care specialist, provide specific clinical recommendations for this wound:
 
@@ -289,15 +296,16 @@ def generate_clinical_recommendations(tissue_data, wound_type, health_score):
         - Tissue Composition: {format_tissue_data_for_prompt(tissue_data)}
         
         Provide actionable clinical recommendations for:
-        1. Immediate wound care interventions
-        2. Dressing selection and frequency
-        3. Infection prevention strategies
-        4. Patient education points
-        5. Follow-up monitoring schedule
-        6. When to escalate care
+        1. Immediate wound care interventions based on tissue types present
+        2. Appropriate dressing selection and change frequency
+        3. Infection prevention strategies specific to this wound profile
+        4. Patient education points relevant to this wound type
+        5. Follow-up monitoring schedule and key indicators to track
+        6. When to escalate care or seek specialist consultation
         
+        Base recommendations on the actual wound tissues identified, not background areas.
         Format as numbered recommendations that healthcare providers can implement.
-        
+
         CRITICAL: Do not use ANY markdown formatting including asterisks (*), double asterisks (**), 
         underscores (_), hash symbols (#), or any other markdown syntax. 
         Use only plain text with clear numbering and proper sentences.
@@ -324,15 +332,6 @@ def generate_clinical_recommendations(tissue_data, wound_type, health_score):
     except Exception as e:
         return [f"Clinical recommendations unavailable: {str(e)}"]
 
-def format_tissue_data_for_prompt(tissue_data):
-    """Format tissue data for AI prompts"""
-    formatted = []
-    for tissue, info in tissue_data.items():
-        if tissue == "background":
-            continue
-        if info['percentage'] > 0:
-            formatted.append(f"- {tissue.title()}: {info['percentage']:.1f}% ({info['area_px']:,} pixels)")
-    return '\n'.join(formatted)
 
 def generate_ai_health_score(tissue_data, wound_type):
     """Generate AI health score independently using Gemini AI"""
@@ -349,20 +348,20 @@ def generate_ai_health_score(tissue_data, wound_type):
         - Tissue Composition: {format_tissue_data_for_prompt(tissue_data)}
         
         Based on your clinical expertise, evaluate:
-        1. Tissue composition quality and healing indicators
+        1. Quality of wound tissues present and healing indicators
         2. Wound type-specific healing expectations
-        3. Overall healing trajectory and prognosis
-        4. Risk factors and complications
+        3. Overall healing trajectory and prognosis based on tissue composition
+        4. Risk factors and potential complications
         5. Tissue balance and regeneration potential
         
         Provide a health score from 0-100 where:
-        - 90-100: Excellent healing, optimal tissue composition
-        - 80-89: Good healing progress, favorable indicators
-        - 70-79: Moderate healing, some positive signs
-        - 60-69: Fair healing, mixed indicators
-        - 50-59: Poor healing, concerning factors
-        - 40-49: Very poor healing, significant issues
-        - 0-39: Critical condition, immediate intervention needed
+        - 90-100: Excellent healing, optimal wound tissue composition
+        - 80-89: Good healing progress, favorable tissue indicators
+        - 70-79: Moderate healing, some positive tissue signs
+        - 60-69: Fair healing, mixed tissue indicators
+        - 50-59: Poor healing, concerning tissue factors
+        - 40-49: Very poor healing, significant tissue issues
+        - 0-39: Critical condition, immediate intervention neededed
         
         Format your response as:
         SCORE: [number 0-100]
