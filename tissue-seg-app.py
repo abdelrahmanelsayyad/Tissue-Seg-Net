@@ -17,10 +17,21 @@ from fastai.learner import load_learner
 import pickle
 from fastai.basics import *
 import gc
-
+import re
 # Gemini AI Integration
 import google.generativeai as genai
-
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image as RLImage, Table, TableStyle, PageBreak
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
+from reportlab.graphics.shapes import Drawing, Rect
+from reportlab.graphics.charts.barcharts import VerticalBarChart
+from reportlab.graphics.charts.legends import Legend
+import tempfile
+import base64
+from datetime import datetime
 st.set_page_config(
     page_title="Advanced Wound Analysis",
     page_icon="🩹",
@@ -635,13 +646,396 @@ def get_theme_colors():
             "card_bg": "rgba(74, 138, 106, 0.05)",
             "border_color": "rgba(46, 125, 50, 0.2)",
         }
+# Add this function after your existing helper functions (around line 500-600)
+def create_pdf_report(tissue_data, wound_type, confidence, health_score, recommendations, 
+                     original_image, tissue_analysis_image, overlay_image, timestamp_str):
+    """Generate a comprehensive PDF report"""
+    try:
+        # Create temporary file for PDF
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+            pdf_path = tmp_file.name
+        
+        # Create PDF document
+        doc = SimpleDocTemplate(
+            pdf_path,
+            pagesize=A4,
+            rightMargin=0.75*inch,
+            leftMargin=0.75*inch,
+            topMargin=1*inch,
+            bottomMargin=1*inch
+        )
+        
+        # Get styles
+        styles = getSampleStyleSheet()
+        
+        # Custom styles
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            textColor=colors.HexColor('#074225'),
+            spaceAfter=30,
+            alignment=TA_CENTER,
+            fontName='Helvetica-Bold'
+        )
+        
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=16,
+            textColor=colors.HexColor('#3B6C53'),
+            spaceAfter=12,
+            spaceBefore=20,
+            fontName='Helvetica-Bold'
+        )
+        
+        subheading_style = ParagraphStyle(
+            'CustomSubHeading',
+            parent=styles['Heading3'],
+            fontSize=14,
+            textColor=colors.HexColor('#41706F'),
+            spaceAfter=8,
+            spaceBefore=12,
+            fontName='Helvetica-Bold'
+        )
+        
+        normal_style = ParagraphStyle(
+            'CustomNormal',
+            parent=styles['Normal'],
+            fontSize=11,
+            textColor=colors.black,
+            spaceAfter=6,
+            alignment=TA_JUSTIFY,
+            fontName='Helvetica'
+        )
+        
+        # Story (content) list
+        story = []
+        
+        # Title and header
+        story.append(Paragraph("Advanced Wound Analysis Report", title_style))
+        story.append(Spacer(1, 12))
+        
+        # Report metadata
+        current_date = datetime.now().strftime("%B %d, %Y at %I:%M %p")
+        metadata_data = [
+            ['Report Generated:', current_date],
+            ['Analysis ID:', timestamp_str],
+            ['System Version:', 'Advanced Wound Analysis v2.0 with Gemini AI']
+        ]
+        
+        metadata_table = Table(metadata_data, colWidths=[2*inch, 4*inch])
+        metadata_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#E8F5E9')),
+            ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#2E7D32')),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#C8E6C9')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 8),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ]))
+        
+        story.append(metadata_table)
+        story.append(Spacer(1, 20))
+        
+        # Executive Summary
+        story.append(Paragraph("EXECUTIVE SUMMARY", heading_style))
+        
+        # Key metrics table
+        dominant_tissue, dominant_percent = get_dominant_tissue(tissue_data)
+        open_defect_area = calculate_open_defect_area(tissue_data)
+        tissue_types_count = len([t for t in tissue_data.keys() if t != "background" and tissue_data[t]['percentage'] > 0])
+        
+        summary_data = [
+            ['Metric', 'Value', 'Assessment'],
+            ['AI Health Score', f'{health_score:.0f}/100', get_health_status_text(health_score)],
+            ['Wound Classification', wound_type.replace('_', ' ').title(), f'{confidence:.1%} confidence'],
+            ['Dominant Tissue Type', dominant_tissue.title(), f'{dominant_percent:.1f}% of wound area'],
+            ['Open Defect Area', f'{open_defect_area:,} pixels', 'Total fibrin + granulation'],
+            ['Tissue Types Present', str(tissue_types_count), 'Distinct tissue classifications']
+        ]
+        
+        summary_table = Table(summary_data, colWidths=[2*inch, 1.5*inch, 2.5*inch])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#074225')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#F1F8E9')),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#81A295')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 8),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ]))
+        
+        story.append(summary_table)
+        story.append(Spacer(1, 20))
+        
+        # Save images temporarily for PDF inclusion
+        original_img_path = save_temp_image(original_image, f"original_{timestamp_str}")
+        tissue_img_path = save_temp_image(tissue_analysis_image, f"tissue_{timestamp_str}")
+        overlay_img_path = save_temp_image(overlay_image, f"overlay_{timestamp_str}")
+        
+        # Images section
+        story.append(Paragraph("WOUND ANALYSIS IMAGES", heading_style))
+        
+        # Create image table
+        img_width = 2.2*inch
+        img_height = 1.8*inch
+        
+        try:
+            orig_img = RLImage(original_img_path, width=img_width, height=img_height)
+            tissue_img = RLImage(tissue_img_path, width=img_width, height=img_height)
+            overlay_img = RLImage(overlay_img_path, width=img_width, height=img_height)
+            
+            image_data = [
+                [orig_img, tissue_img, overlay_img],
+                ['Original Wound Image', 'Tissue Analysis', 'Combined Overlay']
+            ]
+            
+            image_table = Table(image_data, colWidths=[2.3*inch, 2.3*inch, 2.3*inch])
+            image_table.setStyle(TableStyle([
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+                ('FONTNAME', (0, 1), (-1, 1), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 1), (-1, 1), 10),
+                ('TEXTCOLOR', (0, 1), (-1, 1), colors.HexColor('#2E7D32')),
+                ('TOPPADDING', (0, 1), (-1, 1), 8),
+            ]))
+            
+            story.append(image_table)
+        except Exception as e:
+            story.append(Paragraph(f"Error loading images: {str(e)}", normal_style))
+        
+        story.append(Spacer(1, 20))
+        
+        # Tissue Composition Analysis
+        story.append(Paragraph("TISSUE COMPOSITION ANALYSIS", heading_style))
+        
+        # Create tissue composition table
+        tissue_header = ['Tissue Type', 'Percentage', 'Area (pixels)', 'Clinical Significance']
+        tissue_rows = [tissue_header]
+        
+        # Sort tissues by percentage
+        sorted_tissues = sorted(
+            [(k, v) for k, v in tissue_data.items() if v['percentage'] > 0], 
+            key=lambda x: x[1]['percentage'], reverse=True
+        )
+        
+        tissue_significance = {
+            'granulation': 'Healthy healing tissue - indicates good vascularization',
+            'fibrin': 'Protein matrix - normal in healing process',
+            'callus': 'Hard tissue formation - may impede healing',
+            'background': 'Non-wound area - reference for analysis'
+        }
+        
+        for tissue, info in sorted_tissues:
+            significance = tissue_significance.get(tissue, 'Requires clinical evaluation')
+            tissue_rows.append([
+                tissue.title(),
+                f"{info['percentage']:.1f}%",
+                f"{info['area_px']:,}",
+                significance
+            ])
+        
+        tissue_table = Table(tissue_rows, colWidths=[1.5*inch, 1*inch, 1.2*inch, 3.3*inch])
+        tissue_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3B6C53')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#F8F9FA')),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#81A295')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 6),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ]))
+        
+        story.append(tissue_table)
+        story.append(PageBreak())
+        
+        # Clinical Recommendations
+        story.append(Paragraph("CLINICAL RECOMMENDATIONS", heading_style))
+        
+        if isinstance(recommendations, list):
+            for i, rec in enumerate(recommendations, 1):
+                story.append(Paragraph(f"<b>{i}.</b> {rec}", normal_style))
+                story.append(Spacer(1, 6))
+        else:
+            story.append(Paragraph(str(recommendations), normal_style))
+        
+        story.append(Spacer(1, 20))
+        
+        # Health Assessment Details
+        story.append(Paragraph("HEALTH ASSESSMENT INTERPRETATION", heading_style))
+        
+        health_interpretation = get_detailed_health_interpretation(health_score, tissue_data, wound_type)
+        story.append(Paragraph(health_interpretation, normal_style))
+        
+        story.append(Spacer(1, 20))
+        
+        # Disclaimer
+        story.append(Paragraph("IMPORTANT DISCLAIMER", heading_style))
+        disclaimer_text = """This automated wound analysis is intended for educational and research purposes only. 
+        All clinical decisions should be made by qualified healthcare professionals based on comprehensive patient 
+        assessment. This AI analysis should supplement, not replace, professional medical judgment. Please consult 
+        with appropriate wound care specialists for treatment decisions."""
+        
+        story.append(Paragraph(disclaimer_text, normal_style))
+        
+        # Build PDF
+        doc.build(story)
+        
+        # Clean up temporary image files
+        import os
+        for temp_path in [original_img_path, tissue_img_path, overlay_img_path]:
+            try:
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+            except:
+                pass
+        
+        return pdf_path
+        
+    except Exception as e:
+        st.error(f"Error creating PDF report: {str(e)}")
+        return None
 
+def save_temp_image(image_array, filename_prefix):
+    """Save image array to temporary file"""
+    import tempfile
+    import cv2
+    
+    # Create temporary file
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+        temp_path = tmp_file.name
+    
+    # Convert and save image
+    if len(image_array.shape) == 3:
+        # Convert RGB to BGR for OpenCV
+        if image_array.shape[2] == 3:
+            image_bgr = cv2.cvtColor(image_array, cv2.COLOR_RGB2BGR)
+        else:
+            image_bgr = image_array
+    else:
+        image_bgr = image_array
+    
+    cv2.imwrite(temp_path, image_bgr)
+    return temp_path
+
+def get_health_status_text(score):
+    """Get health status text based on score"""
+    if score >= 80:
+        return "Excellent healing progress"
+    elif score >= 60:
+        return "Good healing indicators"
+    elif score >= 40:
+        return "Fair healing status"
+    else:
+        return "Requires attention"
+
+def get_detailed_health_interpretation(health_score, tissue_data, wound_type):
+    """Generate detailed health interpretation for PDF"""
+    interpretation = f"""Based on the AI analysis, this {wound_type.replace('_', ' ')} demonstrates a health score of {health_score:.0f}/100. """
+    
+    # Analyze dominant tissues
+    dominant_tissue, dominant_percent = get_dominant_tissue(tissue_data)
+    
+    if dominant_tissue == "granulation":
+        interpretation += f"The presence of {dominant_percent:.1f}% granulation tissue indicates active healing and good vascularization. "
+    elif dominant_tissue == "fibrin":
+        interpretation += f"The wound shows {dominant_percent:.1f}% fibrin coverage, which is part of the normal healing cascade. "
+    elif dominant_tissue == "callus":
+        interpretation += f"Significant callus formation ({dominant_percent:.1f}%) may require debridement to promote healing. "
+    
+    # Add tissue diversity assessment
+    tissue_count = len([t for t in tissue_data.keys() if t != "background" and tissue_data[t]['percentage'] > 0])
+    if tissue_count > 2:
+        interpretation += f"The wound shows {tissue_count} distinct tissue types, indicating a complex healing environment. "
+    
+    interpretation += "Regular monitoring and appropriate wound care interventions are recommended to optimize healing outcomes."
+    
+    return interpretation
+
+# Modified Professional Report Button section (replace the existing section around line 1200-1250)
+def generate_pdf_report_section(tissue_data, wound_type, confidence, health_score, recommendations, 
+                              original_image, tissue_analysis_image, overlay_image, timestamp_str, COL):
+    """Generate the PDF report section in Streamlit"""
+    
+    st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
+    
+    # Create two columns for buttons
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("📋 Generate Text Report", help="Generate comprehensive text report"):
+            with st.spinner("Generating professional wound assessment report..."):
+                professional_report = generate_professional_report(
+                    tissue_data, wound_type, confidence, health_score, recommendations
+                )
+                
+                # Display the report
+                st.markdown('<div class="report-container">', unsafe_allow_html=True)
+                st.markdown("**📋 Professional Wound Assessment Report**")
+                st.write(professional_report)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Download button for text report
+                st.download_button(
+                    label="📥 Download Text Report",
+                    data=professional_report,
+                    file_name=f"wound_assessment_report_{timestamp_str}.txt",
+                    mime="text/plain"
+                )
+    
+    with col2:
+        if st.button("📄 Generate PDF Report", help="Generate comprehensive PDF report with images"):
+            with st.spinner("Creating PDF report with images and analysis..."):
+                try:
+                    # Create PDF report
+                    pdf_path = create_pdf_report(
+                        tissue_data, wound_type, confidence, health_score, recommendations,
+                        original_image, tissue_analysis_image, overlay_image, timestamp_str
+                    )
+                    
+                    if pdf_path:
+                        # Read PDF file
+                        with open(pdf_path, 'rb') as pdf_file:
+                            pdf_data = pdf_file.read()
+                        
+                        # Display success message
+                        st.success("✅ PDF report generated successfully!")
+                        
+                        # Download button for PDF
+                        st.download_button(
+                            label="📥 Download PDF Report",
+                            data=pdf_data,
+                            file_name=f"wound_analysis_report_{timestamp_str}.pdf",
+                            mime="application/pdf"
+                        )
+                        
+                        # Clean up temporary file
+                        import os
+                        try:
+                            os.remove(pdf_path)
+                        except:
+                            pass
+                    else:
+                        st.error("Failed to generate PDF report. Please try the text report instead.")
+                        
+                except Exception as e:
+                    st.error(f"Error generating PDF report: {str(e)}")
+                    st.info("Please try the text report option instead.")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 # Theme toggle button
 col1, col2, col3 = st.columns([1, 8, 1])
 with col3:
     if st.button("🌓", help="Toggle theme"):
         st.session_state.dark_mode = not st.session_state.dark_mode
-        st.experimental_rerun()
+        st.rerun()
 
 # Get theme colors AFTER session state is initialized
 COL = get_theme_colors()
@@ -1610,7 +2004,7 @@ if uploaded:
                 st.markdown('</div>', unsafe_allow_html=True)
                 
                 # Clean up images
-                del tissue_display, orig_bgr_resized, tissue_overlay, tissue_overlay_rgb
+                del orig_bgr_resized
                 clear_memory()
 
                 # ──── Key Metrics Dashboard ────────────────────────────────────────────────
@@ -1661,29 +2055,26 @@ if uploaded:
 
                 st.markdown('</div>', unsafe_allow_html=True)
 
-                # ──── Professional Report Button ────────────────────────────────────────────────
-                st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
-                if st.button("📋 Generate Professional Report", help="Generate comprehensive clinical report"):
-                    with st.spinner("Generating professional wound assessment report..."):
-                        professional_report = generate_professional_report(
-                            tissue_data, pred_class, confidence, ai_health_score, ai_recommendations
-                        )
-                        
-                        # Display the report
-                        st.markdown('<div class="report-container">', unsafe_allow_html=True)
-                        st.markdown("**📋 Professional Wound Assessment Report**")
-                        st.write(professional_report)
-                        st.markdown('</div>', unsafe_allow_html=True)
-                        
-                        # Download button for the report
-                        st.download_button(
-                            label="📥 Download Report",
-                            data=professional_report,
-                            file_name=f"wound_assessment_report_{timestamp_str}.txt",
-                            mime="text/plain"
-                        )
-                
-                st.markdown('</div>', unsafe_allow_html=True)
+                # Store the images for PDF generation
+                if 'analysis_images' not in st.session_state:
+                    st.session_state.analysis_images = {}
+
+                # Store analysis images for PDF generation - convert to numpy arrays
+                st.session_state.analysis_images = {
+                    'original': np.array(pil_img),
+                    'tissue_analysis': cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB),
+                    'overlay': cv2.cvtColor(tissue_overlay, cv2.COLOR_BGR2RGB)
+                }
+
+                # ──── Professional Report Buttons ────────────────────────────────────────────────
+                generate_pdf_report_section(
+                    tissue_data, pred_class, confidence, ai_health_score, ai_recommendations,
+                    st.session_state.analysis_images['original'],
+                    st.session_state.analysis_images['tissue_analysis'], 
+                    st.session_state.analysis_images['overlay'],
+                    timestamp_str, COL
+                )
+
 
                 # ──── Detailed Analysis Tabs with AI Enhancement ────────────────────────────────────────────────
                 tab1, tab2, tab3, tab4 = st.tabs(["🧬 Tissue Composition", "📊 AI Health Assessment", "🏥 AI Wound Classification", "💡 AI Clinical Recommendations"])
