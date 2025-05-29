@@ -19,3 +19,4 @@ fastdownload>=0.0.5
 pydantic>=1.0.0,<2.0.0
 packaging>=20.0
 tqdm>=4.60.0
+google-generativeai
