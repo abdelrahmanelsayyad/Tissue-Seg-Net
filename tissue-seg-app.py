@@ -299,31 +299,41 @@ def generate_clinical_recommendations(tissue_data, wound_type, health_score):
     except Exception as e:
         return [f"Clinical recommendations unavailable: {str(e)}"]
 
-def generate_enhanced_health_score(tissue_data, wound_type, basic_score):
-    """Generate enhanced health score with AI analysis"""
+def generate_ai_health_score(tissue_data, wound_type):
+    """Generate AI health score independently using Gemini AI"""
     try:
         gemini_model = initialize_gemini()
         if not gemini_model:
-            return basic_score, "Basic calculation only"
+            return 50, "AI service unavailable - using neutral score"
         
         prompt = f"""
-        As a wound healing expert, provide an enhanced health score assessment:
+        As a wound healing expert, analyze this wound and provide a comprehensive health score assessment:
 
-        Current Analysis:
-        - Basic Health Score: {basic_score}/100
+        Wound Analysis Data:
         - Wound Type: {wound_type}
         - Tissue Composition: {format_tissue_data_for_prompt(tissue_data)}
         
-        Considering clinical factors like:
-        - Tissue type balance and healing potential
-        - Wound type-specific expectations
-        - Healing trajectory indicators
+        Based on your clinical expertise, evaluate:
+        1. Tissue composition quality and healing indicators
+        2. Wound type-specific healing expectations
+        3. Overall healing trajectory and prognosis
+        4. Risk factors and complications
+        5. Tissue balance and regeneration potential
         
-        Provide:
-        1. An adjusted health score (0-100)
-        2. Brief justification for any adjustments
+        Provide a health score from 0-100 where:
+        - 90-100: Excellent healing, optimal tissue composition
+        - 80-89: Good healing progress, favorable indicators
+        - 70-79: Moderate healing, some positive signs
+        - 60-69: Fair healing, mixed indicators
+        - 50-59: Poor healing, concerning factors
+        - 40-49: Very poor healing, significant issues
+        - 0-39: Critical condition, immediate intervention needed
         
-        Format: "SCORE: XX\nJUSTIFICATION: explanation"
+        Format your response as:
+        SCORE: [number 0-100]
+        JUSTIFICATION: [detailed clinical reasoning for the score]
+        
+        Base your assessment purely on clinical wound healing principles and tissue analysis.
         """
         
         chat = gemini_model.start_chat()
@@ -331,22 +341,29 @@ def generate_enhanced_health_score(tissue_data, wound_type, basic_score):
         
         # Parse the response to extract score and justification
         lines = response.text.split('\n')
-        enhanced_score = basic_score
+        ai_score = 50  # Default neutral score
         justification = "AI analysis completed"
         
         for line in lines:
             if line.startswith('SCORE:'):
                 try:
-                    enhanced_score = int(line.split(':')[1].strip())
+                    score_text = line.split(':')[1].strip()
+                    # Extract just the number if there are additional words
+                    import re
+                    score_match = re.search(r'\d+', score_text)
+                    if score_match:
+                        ai_score = int(score_match.group())
+                        # Ensure score is within valid range
+                        ai_score = max(0, min(100, ai_score))
                 except:
                     pass
             elif line.startswith('JUSTIFICATION:'):
                 justification = line.split(':', 1)[1].strip()
         
-        return enhanced_score, justification
+        return ai_score, justification
         
     except Exception as e:
-        return basic_score, f"AI enhancement unavailable: {str(e)}"
+        return 50, f"AI assessment unavailable: {str(e)}"
 
 def generate_professional_report(tissue_data, wound_type, confidence, health_score, recommendations):
     """Generate a comprehensive professional wound report using Gemini AI"""
@@ -1349,14 +1366,14 @@ if uploaded:
                 # Generate AI-enhanced assessments
                 if gemini_model:
                     with st.spinner("Generating AI-enhanced assessments..."):
-                        # Enhanced health score
-                        enhanced_health_score, health_justification = generate_enhanced_health_score(
-                            tissue_data, pred_class, basic_health_score
+                        # AI-generated health score (independent)
+                        ai_health_score, health_justification = generate_ai_health_score(
+                            tissue_data, pred_class
                         )
                         
                         # AI recommendations
                         ai_recommendations = generate_clinical_recommendations(
-                            tissue_data, pred_class, enhanced_health_score
+                            tissue_data, pred_class, ai_health_score
                         )
                         
                         # Health assessment
@@ -1369,8 +1386,8 @@ if uploaded:
                             pred_class, confidence, tissue_data
                         )
                 else:
-                    enhanced_health_score = basic_health_score
-                    health_justification = "Basic calculation only"
+                    ai_health_score = basic_health_score
+                    health_justification = "AI service unavailable - using basic calculation"
                     ai_recommendations = generate_recommendations(tissue_data)
                     health_assessment = "AI assessment unavailable"
                     classification_info = "AI classification info unavailable"
@@ -1418,7 +1435,7 @@ if uploaded:
                 with col1:
                     st.markdown(f"""
                     <div class="metric-card">
-                        <div class="metric-value">{enhanced_health_score:.0f}</div>
+                        <div class="metric-value">{ai_health_score:.0f}</div>
                         <div class="metric-label">AI Health Score</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -1462,7 +1479,7 @@ if uploaded:
                 if st.button("📋 Generate Professional Report", help="Generate comprehensive clinical report"):
                     with st.spinner("Generating professional wound assessment report..."):
                         professional_report = generate_professional_report(
-                            tissue_data, pred_class, confidence, enhanced_health_score, ai_recommendations
+                            tissue_data, pred_class, confidence, ai_health_score, ai_recommendations
                         )
                         
                         # Display the report
@@ -1536,15 +1553,15 @@ if uploaded:
                     st.markdown('<div class="tab-title">AI-Enhanced Health Assessment</div>', unsafe_allow_html=True)
 
                     # Enhanced health score interpretation
-                    if enhanced_health_score >= 80:
+                    if ai_health_score >= 80:
                         health_status = "Excellent"
                         health_color = COL['success']
                         health_icon = "🌟"
-                    elif enhanced_health_score >= 60:
+                    elif ai_health_score >= 60:
                         health_status = "Good"
                         health_color = COL['success']
                         health_icon = "✅"
-                    elif enhanced_health_score >= 40:
+                    elif ai_health_score >= 40:
                         health_status = "Fair"
                         health_color = COL['warning']
                         health_icon = "⚠"
@@ -1557,7 +1574,7 @@ if uploaded:
                     <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, {COL['dark']}, {COL['accent']}); 
                         border-radius: 15px; margin: 20px 0; color: white;">
                         <div style="font-size: 4rem; margin-bottom: 10px;">{health_icon}</div>
-                        <div style="font-size: 2.5rem; font-weight: 800; color: {health_color};">{enhanced_health_score:.0f}/100</div>
+                        <div style="font-size: 2.5rem; font-weight: 800; color: {health_color};">{ai_health_score:.0f}/100</div>
                         <div style="font-size: 1.5rem; margin-top: 10px;">AI Health Assessment: {health_status}</div>
                         <div style="font-size: 1.1rem; margin-top: 15px; opacity: 0.9;">{health_justification}</div>
                     </div>
