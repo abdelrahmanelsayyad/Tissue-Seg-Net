@@ -760,10 +760,10 @@ def load_tissue_model():
             st.warning("Using fallback mode for tissue analysis")
             
             class DummyModel:
-                def _init_(self):
+                def __init__(self):
                     pass
                     
-                def _call_(self, x):
+                def __call__(self, x):
                     # Create a dummy tensor with the right shape
                     batch_size = x.shape[0]
                     h, w = IMG_SIZE, IMG_SIZE
@@ -886,7 +886,7 @@ def load_classification_model():
             st.warning("Using fallback mode for wound classification")
             
             class DummyClassifier:
-                def _init_(self):
+                def __init__(self):
                     self.classes = ["pressure_injury", "venous_ulcer", "diabetic_foot_ulcer", 
                                     "arterial_ulcer", "surgical_wound", "burn"]
                 
