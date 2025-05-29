@@ -1682,15 +1682,17 @@ if uploaded:
                 with tab4:
                     st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
                     st.markdown('<div class="tab-title">AI Clinical Recommendations</div>', unsafe_allow_html=True)
+                    st.markdown("**AI Clinical Recommendations:**")
+                    recommendations_text = "\n\n".join([f"{i}. {rec}" for i, rec in enumerate(ai_recommendations, 1)])
+                    st.markdown(f"""
+                    <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px;
+                        margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
+                        {recommendations_text}
+                    </div>
+                    """, unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
 
-                    # AI-generated recommendations
-                    for i, rec in enumerate(ai_recommendations, 1):
-                        st.markdown(f"""
-                        <div style="background-color: {COL['accent']}; padding: 15px; margin: 10px 0; 
-                            border-radius: 10px; border-left: 5px solid {COL['highlight']};">
-                            <strong style="color: white; font-size: 1.2rem;">{i}. {rec}</strong>
-                        </div>
-                        """, unsafe_allow_html=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
