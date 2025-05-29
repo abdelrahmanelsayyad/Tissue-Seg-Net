@@ -1683,6 +1683,14 @@ if uploaded:
                     st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
                     st.markdown('<div class="tab-title">AI Clinical Recommendations</div>', unsafe_allow_html=True)
 
+                    # AI-generated recommendations
+                    for i, rec in enumerate(ai_recommendations, 1):
+                        st.markdown(f"""
+                        <div style="background-color: {COL['accent']}; padding: 15px; margin: 10px 0; 
+                            border-radius: 10px; border-left: 5px solid {COL['highlight']};">
+                            <strong style="color: white; font-size: 1.2rem;">{i}. {rec}</strong>
+                        </div>
+                        """, unsafe_allow_html=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
