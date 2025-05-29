@@ -1683,10 +1683,16 @@ if uploaded:
                     st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
                     st.markdown('<div class="tab-title">AI Clinical Recommendations</div>', unsafe_allow_html=True)
                     st.markdown("**AI Clinical Recommendations:**")
-                    recommendations_text = "\n\n".join([f"{i}. {rec}" for i, rec in enumerate(ai_recommendations, 1)])
+
+                    if isinstance(ai_recommendations, list):
+                        recommendations_text = "\n\n".join(ai_recommendations)
+                    else:
+                        recommendations_text = str(ai_recommendations)
+                        
                     st.markdown(f"""
                     <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px;
-                        margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
+                        margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
+                        white-space: pre-line;">
                         {recommendations_text}
                     </div>
                     """, unsafe_allow_html=True)
