@@ -215,11 +215,23 @@ def generate_health_assessment(tissue_data, wound_type, confidence):
         5. Key monitoring parameters
         
         Keep it professional and clinical, but accessible to healthcare providers.
+        
+        IMPORTANT: Do not use markdown formatting (##, *, _, etc.) in your response.
+        Use plain text with clear formatting and proper paragraphs.
         """
         
         chat = gemini_model.start_chat()
         response = chat.send_message(prompt)
-        return response.text
+        
+        # Clean up any markdown formatting
+        cleaned_response = response.text
+        import re
+        cleaned_response = re.sub(r'#{1,6}\s*', '', cleaned_response)
+        cleaned_response = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned_response)
+        cleaned_response = re.sub(r'\*(.*?)\*', r'\1', cleaned_response)
+        cleaned_response = re.sub(r'_(.*?)_', r'\1', cleaned_response)
+        
+        return cleaned_response
         
     except Exception as e:
         return f"Health assessment unavailable: {str(e)}"
@@ -248,11 +260,23 @@ def generate_wound_classification_info(wound_type, confidence, tissue_data):
         6. How the current tissue composition aligns with this wound type
         
         Make it comprehensive for clinical reference.
+        
+        IMPORTANT: Do not use markdown formatting (##, *, _, etc.) in your response.
+        Use plain text with clear formatting and proper paragraphs.
         """
         
         chat = gemini_model.start_chat()
         response = chat.send_message(prompt)
-        return response.text
+        
+        # Clean up any markdown formatting
+        cleaned_response = response.text
+        import re
+        cleaned_response = re.sub(r'#{1,6}\s*', '', cleaned_response)
+        cleaned_response = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned_response)
+        cleaned_response = re.sub(r'\*(.*?)\*', r'\1', cleaned_response)
+        cleaned_response = re.sub(r'_(.*?)_', r'\1', cleaned_response)
+        
+        return cleaned_response
         
     except Exception as e:
         return f"Classification information unavailable: {str(e)}"
@@ -396,11 +420,24 @@ def generate_professional_report(tissue_data, wound_type, confidence, health_sco
         Format as a professional medical report suitable for clinical documentation.
         Include specific measurements, percentages, and clinical terminology.
         Emphasize evidence-based recommendations and standard care protocols.
+        
+        IMPORTANT: Do not use markdown formatting (##, *, _, etc.) in your response.
+        Use plain text with clear section headers and proper paragraph formatting.
         """
         
         chat = gemini_model.start_chat()
         response = chat.send_message(prompt)
-        return response.text
+        
+        # Clean up any markdown formatting that might slip through
+        cleaned_response = response.text
+        # Remove common markdown patterns
+        import re
+        cleaned_response = re.sub(r'#{1,6}\s*', '', cleaned_response)  # Remove # headers
+        cleaned_response = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned_response)  # Remove **bold**
+        cleaned_response = re.sub(r'\*(.*?)\*', r'\1', cleaned_response)  # Remove *italic*
+        cleaned_response = re.sub(r'_(.*?)_', r'\1', cleaned_response)  # Remove _underline_
+        
+        return cleaned_response
         
     except Exception as e:
         return f"Professional report generation failed: {str(e)}"
@@ -1266,6 +1303,7 @@ st.markdown("""
     <li><b>Generate</b> professional reports for clinical documentation</li>
     <li><b>Monitor</b> wound progress over time with professional-grade assessment</li>
   </ol>
+  <p><strong>Note:</strong> The "background" classification refers to non-wound areas in the image and is not part of the actual wound tissue analysis.</p>
 </div>
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
@@ -1484,8 +1522,8 @@ if uploaded:
                         
                         # Display the report
                         st.markdown('<div class="report-container">', unsafe_allow_html=True)
-                        st.markdown("## 📋 Professional Wound Assessment Report")
-                        st.markdown(professional_report)
+                        st.markdown("**📋 Professional Wound Assessment Report**")
+                        st.write(professional_report)
                         st.markdown('</div>', unsafe_allow_html=True)
                         
                         # Download button for the report
@@ -1581,7 +1619,7 @@ if uploaded:
                     """, unsafe_allow_html=True)
 
                     # AI-generated detailed assessment
-                    st.markdown("### Detailed AI Health Assessment:")
+                    st.markdown("**Detailed AI Health Assessment:**")
                     st.markdown(f"""
                     <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; 
                         margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
@@ -1633,7 +1671,7 @@ if uploaded:
                         """, unsafe_allow_html=True)
 
                     # Additional care guidelines
-                    st.markdown("### General Wound Care Guidelines:")
+                    st.markdown("**General Wound Care Guidelines:**")
                     guidelines = [
                         "🧼 Keep wound clean and monitor for signs of infection",
                         "💧 Maintain appropriate moisture balance",
