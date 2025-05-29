@@ -328,6 +328,8 @@ def format_tissue_data_for_prompt(tissue_data):
     """Format tissue data for AI prompts"""
     formatted = []
     for tissue, info in tissue_data.items():
+        if tissue == "background":
+            continue
         if info['percentage'] > 0:
             formatted.append(f"- {tissue.title()}: {info['percentage']:.1f}% ({info['area_px']:,} pixels)")
     return '\n'.join(formatted)
