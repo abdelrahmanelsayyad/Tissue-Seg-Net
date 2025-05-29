@@ -288,7 +288,7 @@ def generate_clinical_recommendations(tissue_data, wound_type, health_score):
         - Health Score: {health_score}/100
         - Tissue Composition: {format_tissue_data_for_prompt(tissue_data)}
         
-        Provide actionable clinical recommendations for:
+        Provide 6-8 actionable clinical recommendations. Format each recommendation as a complete sentence starting with an action verb. Cover these areas:
         1. Immediate wound care interventions
         2. Dressing selection and frequency
         3. Infection prevention strategies
@@ -296,34 +296,161 @@ def generate_clinical_recommendations(tissue_data, wound_type, health_score):
         5. Follow-up monitoring schedule
         6. When to escalate care
         
-        Format as numbered recommendations that healthcare providers can implement.
+        Write each recommendation as a separate paragraph. Do not use numbering, bullets, or any markdown formatting.
+        Start each recommendation with words like: "Apply", "Monitor", "Change", "Assess", "Educate", "Schedule", "Consider", "Implement".
         
-        CRITICAL: Do not use ANY markdown formatting including asterisks (*), double asterisks (**), 
-        underscores (_), hash symbols (#), or any other markdown syntax. 
-        Use only plain text with clear numbering and proper sentences.
+        Example format:
+        Apply appropriate wound dressing based on exudate levels and change every 2-3 days or as needed.
+        
+        Monitor wound for signs of infection including increased redness, warmth, swelling, or purulent drainage.
         """
         
         chat = gemini_model.start_chat()
         response = chat.send_message(prompt)
         
-        # Clean markdown formatting aggressively
+        # Clean up any markdown formatting aggressively
         cleaned_text = clean_markdown_formatting(response.text)
         
-        # Parse the response into a list of recommendations
+        # Parse the response into individual recommendations
         recommendations = []
-        lines = cleaned_text.split('\n')
-        for line in lines:
-            line = line.strip()
-            if line and (line[0].isdigit() or line.startswith('•') or line.startswith('-')):
-                # Additional cleaning for any remaining markdown
-                line = clean_markdown_formatting(line)
-                recommendations.append(line)
         
-        return recommendations if recommendations else [clean_markdown_formatting(response.text)]
+        # Split by double newlines first (paragraphs)
+        paragraphs = [p.strip() for p in cleaned_text.split('\n\n') if p.strip()]
+        
+        if not paragraphs:
+            # Fallback: split by single newlines
+            paragraphs = [p.strip() for p in cleaned_text.split('\n') if p.strip()]
+        
+        for paragraph in paragraphs:
+            # Clean each paragraph
+            clean_paragraph = paragraph.strip()
+            
+            # Remove any remaining numbering or bullets
+            import re
+            clean_paragraph = re.sub(r'^\d+[\.\)]\s*', '', clean_paragraph)
+            clean_paragraph = re.sub(r'^[•\-\*]\s*', '', clean_paragraph)
+            clean_paragraph = re.sub(r'^\w+\.\s*', '', clean_paragraph)  # Remove "1. " etc
+            
+            # Only add substantial recommendations (more than 20 characters)
+            if len(clean_paragraph) > 20 and not clean_paragraph.lower().startswith('clinical'):
+                recommendations.append(clean_paragraph)
+        
+        # If we still don't have good recommendations, try a different parsing approach
+        if len(recommendations) < 3:
+            # Split by sentence-ending punctuation and group logical recommendations
+            sentences = re.split(r'[.!?]+', cleaned_text)
+            current_rec = ""
+            
+            for sentence in sentences:
+                sentence = sentence.strip()
+                if not sentence:
+                    continue
+                    
+                # Start new recommendation if sentence begins with action word
+                action_words = ['apply', 'monitor', 'change', 'assess', 'educate', 'schedule', 
+                               'consider', 'implement', 'ensure', 'maintain', 'provide', 'use']
+                
+                if any(sentence.lower().startswith(word) for word in action_words):
+                    if current_rec and len(current_rec) > 20:
+                        recommendations.append(current_rec.strip())
+                    current_rec = sentence
+                else:
+                    current_rec += " " + sentence
+            
+            # Add the last recommendation
+            if current_rec and len(current_rec) > 20:
+                recommendations.append(current_rec.strip())
+        
+        # Ensure we have at least some recommendations
+        if not recommendations:
+            recommendations = [cleaned_text]
+        
+        # Limit to maximum 8 recommendations for display
+        return recommendations[:8]
         
     except Exception as e:
         return [f"Clinical recommendations unavailable: {str(e)}"]
 
+def clean_markdown_formatting(text):
+    """Enhanced markdown cleaning function"""
+    import re
+    
+    # Start with the original text
+    cleaned = text
+    
+    # Remove markdown patterns more aggressively
+    cleaned = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned)  # Remove **bold**
+    cleaned = re.sub(r'\*(.*?)\*', r'\1', cleaned)      # Remove *italic*
+    cleaned = re.sub(r'__(.*?)__', r'\1', cleaned)      # Remove __underline__
+    cleaned = re.sub(r'_(.*?)_', r'\1', cleaned)        # Remove _underline_
+    cleaned = re.sub(r'#{1,6}\s*', '', cleaned)         # Remove # headers
+    cleaned = re.sub(r'`{1,3}(.*?)`{1,3}', r'\1', cleaned)  # Remove `code` and ```code blocks```
+    
+    # Remove list formatting
+    cleaned = re.sub(r'^\s*[\*\-\+]\s+', '', cleaned, flags=re.MULTILINE)  # Remove bullet points
+    cleaned = re.sub(r'^\s*\d+[\.\)]\s+', '', cleaned, flags=re.MULTILINE)  # Remove numbered lists
+    
+    # Clean up excessive whitespace
+    cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)  # Max 2 consecutive newlines
+    cleaned = re.sub(r'[ \t]+', ' ', cleaned)     # Multiple spaces to single space
+    
+    # Remove empty lines at start and end
+    cleaned = cleaned.strip()
+    
+    return cleaned
+
+# Updated display function for the recommendations tab
+def display_recommendations_tab(ai_recommendations, col_colors):
+    """Display recommendations in a better formatted way"""
+    st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
+    st.markdown('<div class="tab-title">AI Clinical Recommendations</div>', unsafe_allow_html=True)
+    
+    if isinstance(ai_recommendations, list) and len(ai_recommendations) > 1:
+        # Display as numbered list with better formatting
+        for i, recommendation in enumerate(ai_recommendations, 1):
+            st.markdown(f"""
+            <div style="background: {col_colors['card_bg']}; padding: 20px; border-radius: 10px;
+                margin: 15px 0; border-left: 4px solid {col_colors['highlight']}; 
+                border: 1px solid {col_colors['border_color']}; color: {col_colors['text_primary']};">
+                <div style="font-weight: bold; color: {col_colors['highlight']}; margin-bottom: 10px;">
+                    Recommendation {i}:
+                </div>
+                <div style="line-height: 1.6; font-size: 1.1rem;">
+                    {recommendation}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        # Single recommendation or fallback
+        recommendations_text = ai_recommendations[0] if isinstance(ai_recommendations, list) else str(ai_recommendations)
+        
+        # Split into paragraphs for better display
+        paragraphs = [p.strip() for p in recommendations_text.split('\n\n') if p.strip()]
+        
+        if len(paragraphs) > 1:
+            for i, paragraph in enumerate(paragraphs, 1):
+                st.markdown(f"""
+                <div style="background: {col_colors['card_bg']}; padding: 20px; border-radius: 10px;
+                    margin: 15px 0; border-left: 4px solid {col_colors['highlight']}; 
+                    border: 1px solid {col_colors['border_color']}; color: {col_colors['text_primary']};">
+                    <div style="font-weight: bold; color: {col_colors['highlight']}; margin-bottom: 10px;">
+                        Recommendation {i}:
+                    </div>
+                    <div style="line-height: 1.6; font-size: 1.1rem;">
+                        {paragraph}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div style="background: {col_colors['card_bg']}; padding: 20px; border-radius: 10px;
+                margin: 20px 0; border: 1px solid {col_colors['border_color']}; color: {col_colors['text_primary']};
+                line-height: 1.6; font-size: 1.1rem;">
+                {recommendations_text}
+            </div>
+            """, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 def format_tissue_data_for_prompt(tissue_data):
     """Format tissue data for AI prompts"""
     formatted = []
@@ -1682,23 +1809,67 @@ if uploaded:
                 with tab4:
                     st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
                     st.markdown('<div class="tab-title">AI Clinical Recommendations</div>', unsafe_allow_html=True)
-                    st.markdown("**AI Clinical Recommendations:**")
-
-                    if isinstance(ai_recommendations, list):
-                        recommendations_text = "\n\n".join(ai_recommendations)
-                    else:
-                        recommendations_text = str(ai_recommendations)
-                        
-                    st.markdown(f"""
-                    <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px;
-                        margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
-                        white-space: pre-line;">
-                        {recommendations_text}
-                    </div>
-                    """, unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
                     
-
+                    if isinstance(ai_recommendations, list) and len(ai_recommendations) > 1:
+                        # Display as numbered recommendations with better formatting
+                        for i, recommendation in enumerate(ai_recommendations, 1):
+                            # Clean up any remaining formatting issues
+                            clean_rec = recommendation.strip()
+                            
+                            st.markdown(f"""
+                            <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
+                                margin: 20px 0; border-left: 5px solid {COL['highlight']}; 
+                                border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
+                                box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 12px; font-size: 1.2rem;">
+                                    🏥 Clinical Recommendation {i}
+                                </div>
+                                <div style="line-height: 1.7; font-size: 1.1rem; color: {COL['text_primary']};">
+                                    {clean_rec}
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    else:
+                        # Handle single recommendation or fallback
+                        recommendations_text = ai_recommendations[0] if isinstance(ai_recommendations, list) else str(ai_recommendations)
+                        
+                        # Try to split into logical sections
+                        import re
+                        
+                        # Split by common sentence patterns that indicate new recommendations
+                        sections = re.split(r'(?<=[.!?])\s*(?=[A-Z][a-z]+\s+(?:the\s+)?(?:wound|patient|dressing|infection))', recommendations_text)
+                        
+                        if len(sections) > 1:
+                            for i, section in enumerate(sections, 1):
+                                section = section.strip()
+                                if len(section) > 20:  # Only display substantial sections
+                                    st.markdown(f"""
+                                    <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
+                                        margin: 20px 0; border-left: 5px solid {COL['highlight']}; 
+                                        border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
+                                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                        <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 12px; font-size: 1.2rem;">
+                                            🏥 Clinical Recommendation {i}
+                                        </div>
+                                        <div style="line-height: 1.7; font-size: 1.1rem; color: {COL['text_primary']};">
+                                            {section}
+                                        </div>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                        else:
+                            # Display as single block with better formatting
+                            st.markdown(f"""
+                            <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
+                                margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
+                                line-height: 1.7; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 15px; font-size: 1.3rem;">
+                                    🏥 Clinical Recommendations
+                                </div>
+                                <div>{recommendations_text}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
     except Exception as e:
         st.error(f"Error processing image: {str(e)}")
         st.write("Exception details:")
