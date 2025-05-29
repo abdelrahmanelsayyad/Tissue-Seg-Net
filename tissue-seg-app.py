@@ -1699,9 +1699,6 @@ if uploaded:
                     st.markdown('</div>', unsafe_allow_html=True)
                     
 
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
     except Exception as e:
         st.error(f"Error processing image: {str(e)}")
         st.write("Exception details:")
