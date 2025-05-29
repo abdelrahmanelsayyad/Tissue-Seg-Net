@@ -655,6 +655,44 @@ st.markdown(f"""
     letter-spacing: 1px;
   }}
   
+  /* Remove black boxes from tabs */
+  .stTabs [data-baseweb="tab-list"] {{
+    gap: 8px;
+    background: transparent !important;
+  }}
+  
+  .stTabs [data-baseweb="tab"] {{
+    height: 50px;
+    white-space: pre-wrap;
+    background-color: transparent !important;
+    border: 2px solid {COL['accent']} !important;
+    border-radius: 15px !important;
+    color: {COL['text_primary']} !important;
+    font-weight: 600 !important;
+    padding: 10px 20px !important;
+    margin: 0 5px !important;
+    transition: all 0.3s ease !important;
+  }}
+  
+  .stTabs [data-baseweb="tab"]:hover {{
+    background-color: {COL['accent']} !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  }}
+  
+  .stTabs [aria-selected="true"] {{
+    background: linear-gradient(135deg, {COL['gradient_start']}, {COL['gradient_end']}) !important;
+    color: white !important;
+    border-color: {COL['highlight']} !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+  }}
+  
+  .stTabs [data-baseweb="tab-panel"] {{
+    background: transparent !important;
+    padding: 0 !important;
+  }}
+  
   /* Enhanced Footer */
   .footer {{ 
     text-align: center; 
@@ -1259,6 +1297,12 @@ if uploaded:
                             "risk_factors": "• Diabetic neuropathy\n• Peripheral arterial disease\n• Foot deformities\n• Previous ulceration\n• Poor glycemic control",
                             "complications": "High risk for infection, may lead to osteomyelitis and amputation if not properly managed"
                         },
+                        "diabetic_wounds": {
+                            "description": "Wounds that develop in people with diabetes due to a combination of neuropathy, vascular disease, and increased pressure points.",
+                            "treatment": "• Offloading pressure\n• Blood glucose management\n• Infection control\n• Debridement\n• Appropriate dressings\n• Vascular assessment",
+                            "risk_factors": "• Diabetic neuropathy\n• Peripheral arterial disease\n• Foot deformities\n• Previous ulceration\n• Poor glycemic control",
+                            "complications": "High risk for infection, may lead to osteomyelitis and amputation if not properly managed"
+                        },
                         "arterial_ulcer": {
                             "description": "Ulcers caused by poor arterial blood flow to the extremities, leading to tissue ischemia.",
                             "treatment": "• Revascularization procedures\n• Pain management\n• Protecting the wound\n• Addressing underlying vascular disease\n• Non-adherent dressings",
@@ -1279,9 +1323,12 @@ if uploaded:
                         }
                     }
                     
+                    # Normalize the prediction class for lookup
+                    pred_class_normalized = pred_class.lower().replace(' ', '_').replace('-', '_')
+                    
                     # If we have information about this wound type
-                    if pred_class.lower() in wound_info:
-                        info = wound_info[pred_class.lower()]
+                    if pred_class_normalized in wound_info:
+                        info = wound_info[pred_class_normalized]
                         
                         st.markdown(f"""
                         <div style="margin-bottom: 20px;">
