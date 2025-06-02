@@ -1,10 +1,16 @@
-#latest_version_with_gemini
+## Latest version + Database
+from pymongo import MongoClient          # ← new
+from pymongo.server_api import ServerApi  # ← new
 import io
 import os
+from dotenv import load_dotenv
+import cloudinary
+import cloudinary.uploader
+import uuid
 import sys
 import base64
 from pathlib import Path
-
+from datetime import datetime
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
@@ -35,6 +41,8 @@ try:
     REPORTLAB_AVAILABLE = True
 except ImportError:
     REPORTLAB_AVAILABLE = False
+
+load_dotenv()
 
 st.set_page_config(
     page_title="Advanced Wound Analysis",
@@ -1646,6 +1654,32 @@ st.markdown(f"""
 
 # ──── Tissue Analysis Model Functions ────────────────────────────────────────────
 @st.cache_resource
+# ──── MongoDB Helper ────────────────────────────────────────────
+def get_mongo_collection():
+    """Return the analyses collection; connection reused across reruns."""
+    uri = st.secrets["mongodb"]["uri"]
+    db  = st.secrets["mongodb"]["db"]
+    col = st.secrets["mongodb"]["col"]
+
+    client = MongoClient(uri, server_api=ServerApi("1"), tls=True)
+    return client[db][col]
+def save_analysis_to_mongo(doc_id, pdf_url,
+                           tissue_data, wound_type,
+                           confidence, ai_health_score,
+                           timestamp_str):
+    """Insert one analysis result into Atlas."""
+    col = get_mongo_collection()
+    doc = {
+        "_id"             : doc_id,
+        "created_at"      : datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S"),
+        "pdf_url"         : pdf_url,
+        "wound_type"      : wound_type,
+        "confidence"      : round(confidence, 4),
+        "ai_health_score" : int(ai_health_score),
+        "tissue_data"     : tissue_data          # full dict is BSON-safe
+    }
+    col.insert_one(doc)
+
 def load_tissue_model():
     """Load tissue analysis model with caching to prevent reloading"""
     try:
@@ -1785,6 +1819,152 @@ def calculate_open_defect_area(tissue_data):
     fibrin_area = tissue_data.get("fibrin", {}).get('area_px', 0)
     granulation_area = tissue_data.get("granulation", {}).get('area_px', 0)
     return fibrin_area + granulation_area
+
+
+# STEP 2: REPLACE YOUR save_analysis_to_cloud FUNCTION WITH THIS AUTOMATIC VERSION
+def save_analysis_to_cloud_auto(tissue_data, wound_type, confidence, health_score, 
+                                recommendations, original_image, tissue_analysis_image, 
+                                overlay_image, timestamp_str):
+    """Save PDF report to Cloudinary only"""
+    try:
+        # Initialize Cloudinary
+        cloudinary.config(
+            cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+            api_key=os.getenv('CLOUDINARY_API_KEY'),
+            api_secret=os.getenv('CLOUDINARY_API_SECRET')
+        )
+        
+        # Generate unique document ID
+        doc_id = str(uuid.uuid4())[:8]
+        
+        # Create PDF report
+        pdf_path = create_pdf_report(
+            tissue_data, wound_type, confidence, health_score, recommendations,
+            original_image, tissue_analysis_image, overlay_image, timestamp_str
+        )
+        
+        if not pdf_path:
+            st.error("❌ Failed to create PDF report")
+            return None, None
+        
+        # Upload to Cloudinary
+        filename = f"{doc_id}_{timestamp_str}.pdf"
+        response = cloudinary.uploader.upload(
+            pdf_path,
+            public_id=f"wound_reports/{filename}",
+            resource_type="raw",
+            folder="wound_analysis_reports"
+        )
+        
+        pdf_url = response.get('secure_url')
+        
+        # Clean up local file
+        try:
+            os.remove(pdf_path)
+        except:
+            pass
+        
+        if pdf_url:
+            st.success(f"✅ PDF uploaded to cloud!")
+            st.info(f"📋 Document ID: **{doc_id}**")
+            try:
+                save_analysis_to_mongo(
+                    doc_id, pdf_url,
+                    tissue_data, wound_type,
+                    confidence, health_score,
+                    timestamp_str
+                )
+                st.info("📦 Analysis saved to MongoDB Atlas")
+            except Exception as e:
+                st.warning(f"MongoDB save failed: {e}")
+            
+            return doc_id, pdf_url
+        else:
+            st.error("Failed to upload PDF")
+            return None, None
+            
+    except Exception as e:
+        st.error(f"Error uploading to Cloudinary: {str(e)}")
+        return None, None
+        
+
+# STEP 3: REPLACE YOUR EXISTING PDF REPORT SECTION WITH THIS SIMPLIFIED VERSION
+
+def generate_pdf_report_section_simplified(COL):
+    """Simplified PDF report section (cloud save happens automatically)"""
+    
+    if not st.session_state.get("analysis_ready"):
+        return
+    
+    tissue_data = st.session_state["tissue_data"]
+    wound_type = st.session_state["pred_class"]
+    confidence = st.session_state["confidence"]
+    health_score = st.session_state["ai_health_score"]
+    recommendations = st.session_state["ai_recommendations"]
+    timestamp_str = st.session_state["timestamp_str"]
+    images = st.session_state["images"]
+    
+    st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
+    
+    # Create two columns for manual download buttons
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("📋 Generate Text Report", help="Generate comprehensive text report"):
+            with st.spinner("Generating professional wound assessment report..."):
+                professional_report = generate_professional_report(
+                    tissue_data, wound_type, confidence, health_score, recommendations
+                )
+                
+                st.markdown('<div class="report-container">', unsafe_allow_html=True)
+                st.markdown("**📋 Professional Wound Assessment Report**")
+                st.write(professional_report)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                st.download_button(
+                    label="📥 Download Text Report",
+                    data=professional_report,
+                    file_name=f"wound_assessment_report_{timestamp_str}.txt",
+                    mime="text/plain"
+                )
+    
+    with col2:
+        if not REPORTLAB_AVAILABLE:
+            st.info("Install the 'reportlab' library to enable PDF output.")
+        else:
+            if st.button("📄 Generate PDF Report", help="Generate PDF for local download"):
+                with st.spinner("Creating PDF report..."):
+                    try:
+                        pdf_path = create_pdf_report(
+                            tissue_data, wound_type, confidence, health_score, recommendations,
+                            images["original"], images["tissue_analysis"], images["overlay"], timestamp_str
+                        )
+                        
+                        if pdf_path:
+                            with open(pdf_path, 'rb') as pdf_file:
+                                pdf_data = pdf_file.read()
+                            
+                            st.success("✅ PDF report generated successfully!")
+                            st.download_button(
+                                label="📥 Download PDF Report",
+                                data=pdf_data,
+                                file_name=f"wound_analysis_report_{timestamp_str}.pdf",
+                                mime="application/pdf"
+                            )
+                            
+                            try:
+                                os.remove(pdf_path)
+                            except:
+                                pass
+                        else:
+                            st.error("Failed to generate PDF report.")
+                            
+                    except Exception as e:
+                        st.error(f"Error generating PDF report: {str(e)}")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
 
 # ──── Wound Classification Model Functions ──────────────────────────────────────
 @st.cache_resource
@@ -2086,6 +2266,10 @@ if uploaded:
                     "tissue_analysis": st.session_state.analysis_images['tissue_analysis'],
                     "overlay"        : st.session_state.analysis_images['overlay'],
                 }
+                save_analysis_to_cloud_auto(tissue_data, pred_class, confidence, ai_health_score, 
+                                            ai_recommendations, st.session_state.analysis_images['original'],
+                                            st.session_state.analysis_images['tissue_analysis'],
+                                            st.session_state.analysis_images['overlay'], timestamp_str)
 
 
                 # ──── Detailed Analysis Tabs with AI Enhancement ────────────────────────────────────────────────
@@ -2279,8 +2463,9 @@ if uploaded:
         st.exception(e)
         clear_memory()
 # ──── Report Buttons (stand-alone) ─────────────────────────────────
+
 if st.session_state.get("analysis_ready"):
-    generate_pdf_report_section(COL)
+    generate_pdf_report_section_simplified(COL)  # ← ADD THIS LINE
 
 # ──── Footer ────────────────────────────────────────────────────
 st.markdown('</div>', unsafe_allow_html=True)  # Close content-wrapper
