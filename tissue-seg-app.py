@@ -289,9 +289,21 @@ st.set_page_config(
     page_title="Advanced Wound Analysis",
     page_icon="🩹",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
+    menu_items={
+        'Get Help': None,
+        'Report a bug': None,
+        'About': "Advanced Wound Analysis - Mobile Optimized"
+    }
 )
-
+def is_mobile():
+    """Detect if user is on mobile device"""
+    try:
+        # Check user agent from browser (this is a workaround)
+        # In production, you might use JavaScript injection
+        return False  # Default to desktop, but CSS will handle mobile
+    except:
+        return False
 # Create session state variables for models - removed since we're using @st.cache_resource
 # Session state now only tracks theme
 if 'dark_mode' not in st.session_state:
