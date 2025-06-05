@@ -2985,11 +2985,11 @@ def create_fully_automatic_mobile_upload():
         padding: 15px !important;
     }
     
-    .mobile-device .upload-tips {
+    .mobile-device #mobile-tips {
         display: block !important;
     }
     
-    .desktop-device .upload-tips {
+    .desktop-device #mobile-tips {
         display: none !important;
     }
     </style>
