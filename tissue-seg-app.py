@@ -2275,7 +2275,6 @@ st.markdown("""
     <li><b>Generate</b> professional reports for clinical documentation</li>
     <li><b>Monitor</b> wound progress over time with professional-grade assessment</li>
   </ol>
-  <p><strong>Note:</strong> The "background" classification refers to non-wound areas in the image and is not part of the actual wound tissue analysis.</p>
 </div>
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
