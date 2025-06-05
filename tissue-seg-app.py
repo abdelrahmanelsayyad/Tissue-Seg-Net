@@ -2894,7 +2894,9 @@ st.markdown("""
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ──── Upload Section ────────────────────────────────────────
-uploaded, camera_image, mobile_mode = create_upload_section_auto()
+uploaded = st.file_uploader("Upload wound image", type=["png","jpg","jpeg"])
+camera_image = st.camera_input("📸 Capture Wound Image")
+mobile_mode = False  # Set to False for now
 
 # Determine which image source to use
 image_source = None
