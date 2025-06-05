@@ -3605,17 +3605,15 @@ if image_source:
                                 </div>
                                 """, unsafe_allow_html=True)
                         
-                        st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-
+            except Exception as e:
+                st.error(f"Error processing image: {str(e)}")
+                st.write("Exception details:")
+                st.exception(e)
+                clear_memory()
 
         st.markdown('</div>', unsafe_allow_html=True)
-        
-    except Exception as e:
-        st.error(f"Error processing image: {str(e)}")
-        st.write("Exception details:")
-        st.exception(e)
-        clear_memory()
 
 # Now the function can be defined outside the if block
 def create_mobile_camera_interface():
