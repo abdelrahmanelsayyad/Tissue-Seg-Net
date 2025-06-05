@@ -2894,247 +2894,195 @@ st.markdown("""
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ──── Enhanced Upload Section with Native Camera ────────────────────────────────────────
+st.markdown('</div>', unsafe_allow_html=True)
 
-def create_mobile_camera_upload_section():
-    """Create mobile-optimized camera upload that opens native camera app"""
+# ──── Fully Automatic Mobile Detection Upload ────────────────────────────────────────
+def create_fully_automatic_mobile_upload():
+    """Fully automatic mobile detection - NO manual options"""
     
-    st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
-    
-    
-    if mobile_mode:
-        # Mobile-first design
-        st.markdown("### 📸 Add Wound Photo")
+    # Automatic mobile detection JavaScript
+    st.markdown("""
+    <script>
+    // Immediate mobile detection
+    function detectMobileAndSetup() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
         
-        # Option selection
-        photo_method = st.radio(
-            "How would you like to add a photo?",
-            ["📸 Take New Photo", "📁 Choose from Gallery"],
-            help="Select your preferred method"
-        )
+        // Multiple detection methods
+        const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+        const isMobileUA = mobileRegex.test(userAgent.toLowerCase());
+        const isMobileScreen = window.innerWidth <= 768;
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
         
-        if photo_method == "📸 Take New Photo":
-            st.markdown("""
-            <div style="background: linear-gradient(135deg, #074225 0%, #3B6C53 100%); 
-                        padding: 20px; border-radius: 15px; text-align: center; color: white; margin: 20px 0;">
-                <h4 style="margin-top: 0;">📸 Camera Capture</h4>
-                <p style="margin-bottom: 0;">This will open your phone's camera app</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Mobile camera tips
-            with st.expander("📱 Mobile Photography Tips", expanded=False):
-                st.markdown("""
-                **Before Taking the Photo:**
-                - Clean your camera lens
-                - Find good lighting (natural light is best)
-                - Position wound to fill most of the frame
+        // Final mobile determination
+        const isMobile = isMobileUA || (isMobileScreen && isTouchDevice);
+        
+        // Set CSS classes for automatic styling
+        document.body.classList.remove('mobile-device', 'desktop-device');
+        document.body.classList.add(isMobile ? 'mobile-device' : 'desktop-device');
+        document.body.setAttribute('data-is-mobile', isMobile.toString());
+        
+        // Store for reference
+        window.isMobileDevice = isMobile;
+        sessionStorage.setItem('isMobile', isMobile.toString());
+        
+        console.log('Device detected as:', isMobile ? 'MOBILE' : 'DESKTOP');
+        
+        // Setup file uploaders for mobile if needed
+        if (isMobile) {
+            setupMobileUploaders();
+        }
+        
+        return isMobile;
+    }
+    
+    function setupMobileUploaders() {
+        setTimeout(function() {
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            fileInputs.forEach(input => {
+                // Add mobile camera attributes to ALL file inputs
+                input.setAttribute('capture', 'environment');
+                input.setAttribute('accept', 'image/*');
                 
-                **When Taking the Photo:**
-                - Hold phone steady (use both hands)
-                - Tap to focus on the wound
-                - Take multiple shots if needed
-                - Use volume buttons as shutter if preferred
+                // Style for mobile
+                const container = input.closest('[data-testid="stFileUploader"]');
+                if (container) {
+                    container.style.fontSize = '18px';
+                }
+            });
+            console.log('Mobile file uploaders configured');
+        }, 1000);
+    }
+    
+    // Run detection immediately
+    detectMobileAndSetup();
+    
+    // Re-run on window resize
+    window.addEventListener('resize', detectMobileAndSetup);
+    
+    // Re-run when new elements are added (Streamlit updates)
+    const observer = new MutationObserver(function() {
+        if (window.isMobileDevice) {
+            setupMobileUploaders();
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    </script>
+    
+    <style>
+    /* Automatic responsive styling based on detected device */
+    .mobile-device .upload-container {
+        padding: 15px 10px !important;
+        margin: 10px -1rem !important;
+    }
+    
+    .desktop-device .upload-container {
+        padding: 20px !important;
+        margin: 20px 0 !important;
+    }
+    
+    .mobile-device .stFileUploader label {
+        font-size: 18px !important;
+        padding: 15px !important;
+    }
+    
+    .mobile-device .upload-tips {
+        display: block !important;
+    }
+    
+    .desktop-device .upload-tips {
+        display: none !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('<div class="section-wrapper upload-container">', unsafe_allow_html=True)
+    
+    # Universal upload section (automatically adapts based on device)
+    st.markdown("### 📸 Upload Wound Image")
+    
+    # Mobile-specific tips (only show on mobile via CSS)
+    st.markdown("""
+    <div class="upload-tips" style="background: rgba(7, 66, 37, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0;">
+        <strong>📱 Mobile Photography Tips:</strong><br>
+        • This will open your phone's camera app<br>
+        • Hold phone steady and tap to focus on wound<br>
+        • Use good lighting for best results<br>
+        • Take multiple shots and choose the best one
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Universal file uploader
+    uploaded = st.file_uploader(
+        "📸 Select or Capture Image",
+        type=["png", "jpg", "jpeg"],
+        help="On mobile: Opens camera app | On desktop: Opens file browser",
+        key="auto_detecting_upload"
+    )
+    
+    # Additional mobile enhancement
+    st.markdown("""
+    <script>
+    // Enhanced mobile setup that runs after Streamlit renders
+    setTimeout(function() {
+        if (window.isMobileDevice) {
+            const fileInput = document.querySelector('input[type="file"][data-testid*="auto_detecting_upload"]') ||
+                             document.querySelector('input[type="file"]');
+            
+            if (fileInput) {
+                fileInput.setAttribute('capture', 'environment');
+                fileInput.setAttribute('accept', 'image/*');
                 
-                **Photo Quality:**
-                - Keep camera 6-12 inches from wound
-                - Avoid shadows and reflections
-                - Ensure wound is clearly visible and in focus
-                """)
-            
-            # IMPORTANT: Use a unique key for mobile camera
-            uploaded = st.file_uploader(
-                "📸 Open Camera & Take Photo",
-                type=["png", "jpg", "jpeg"],
-                help="This will open your camera app on mobile devices",
-                key="mobile_camera_capture_unique",
-                accept_multiple_files=False
-            )
-            
-            # Enhanced JavaScript that actually works with Streamlit
-            st.markdown("""
-            <script>
-            function setupMobileCamera() {
-                // Wait for Streamlit to fully load
-                setTimeout(function() {
-                    // Find the file input for mobile camera
-                    const fileInputs = document.querySelectorAll('input[type="file"]');
-                    
-                    fileInputs.forEach(input => {
-                        // Check if this is our mobile camera input
-                        const parent = input.closest('[data-testid="stFileUploader"]');
-                        if (parent && parent.textContent.includes('Open Camera & Take Photo')) {
-                            console.log('Found mobile camera input, setting up...');
-                            
-                            // Set camera attributes
-                            input.setAttribute('capture', 'environment');
-                            input.setAttribute('accept', 'image/*');
-                            input.id = 'mobile-camera-input';
-                            
-                            // Style the file input to be more prominent
-                            input.style.display = 'block';
-                            input.style.width = '100%';
-                            input.style.padding = '15px';
-                            input.style.fontSize = '16px';
-                            input.style.backgroundColor = '#074225';
-                            input.style.color = 'white';
-                            input.style.border = 'none';
-                            input.style.borderRadius = '10px';
-                            input.style.cursor = 'pointer';
-                            
-                            console.log('Mobile camera setup complete!');
-                        }
-                    });
-                }, 2000); // Wait 2 seconds for Streamlit to fully render
+                // Make it more prominent on mobile
+                fileInput.style.minHeight = '50px';
+                fileInput.style.fontSize = '16px';
+                
+                console.log('Mobile camera attributes applied successfully');
             }
-            
-            // Run setup when page loads
-            setupMobileCamera();
-            
-            // Also run when Streamlit updates the page
-            document.addEventListener('DOMContentLoaded', setupMobileCamera);
-            </script>
-            """, unsafe_allow_html=True)
-            
-            # Additional info for users
-            st.info("📱 **On mobile:** The file selector above will automatically open your camera app when tapped.")
-            
-        else:  # Choose from Gallery
-            st.markdown("""
-            <div style="background: linear-gradient(135deg, #3B6C53 0%, #074225 100%); 
-                        padding: 20px; border-radius: 15px; text-align: center; color: white; margin: 20px 0;">
-                <h4 style="margin-top: 0;">📁 Photo Gallery</h4>
-                <p style="margin-bottom: 0;">Select existing photo from your device</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            uploaded = st.file_uploader(
-                "Choose from gallery",
-                type=["png", "jpg", "jpeg"],
-                help="Select a wound image from your photo gallery",
-                key="gallery_upload_unique"
-            )
+        }
+    }, 2000);
+    </script>
+    """, unsafe_allow_html=True)
     
-    else:
-        # Desktop layout
-        st.markdown("### 📤 Upload Wound Image")
-        
-        upload_tab, camera_tab = st.tabs(["📁 Upload File", "📸 Take Photo"])
-        
-        uploaded = None
-        
-        with upload_tab:
-            uploaded = st.file_uploader(
-                "Choose wound image file",
-                type=["png", "jpg", "jpeg"],
-                help="Select a wound image from your computer",
-                key="desktop_upload_unique"
-            )
-        
-        with camera_tab:
-            st.info("📱 For best camera experience on mobile, check 'Mobile Device' above.")
-            
-            # Desktop camera options
-            camera_option = st.selectbox(
-                "Camera Type:",
-                ["Webcam Capture", "Mobile Camera Upload"]
-            )
-            
-            if camera_option == "Webcam Capture":
-                if st.button("📹 Activate Webcam"):
-                    st.session_state.webcam_active = True
-                
-                if st.session_state.get("webcam_active", False):
-                    camera_image = st.camera_input("Take photo with webcam")
-                    if camera_image:
-                        uploaded = camera_image
-                        st.success("✅ Photo captured!")
-                    
-                    if st.button("❌ Close Webcam"):
-                        st.session_state.webcam_active = False
-                        st.experimental_rerun()
-            
-            else:  # Mobile Camera Upload on Desktop
-                st.info("📱 This option works best when accessed from a mobile device.")
-                uploaded = st.file_uploader(
-                    "Open mobile camera",
-                    type=["png", "jpg", "jpeg"],
-                    help="Use this option from mobile for camera access",
-                    key="desktop_mobile_camera_unique"
-                )
+    # Show device detection result (for confirmation)
+    st.markdown("""
+    <div id="device-status" style="font-size: 0.9rem; color: #666; text-align: center; margin: 10px 0;">
+        🤖 Detecting device type...
+    </div>
+    
+    <script>
+    setTimeout(function() {
+        const statusDiv = document.getElementById('device-status');
+        if (statusDiv && window.isMobileDevice !== undefined) {
+            const deviceType = window.isMobileDevice ? '📱 Mobile' : '💻 Desktop';
+            const behavior = window.isMobileDevice ? 'Camera app will open' : 'File browser will open';
+            statusDiv.innerHTML = `${deviceType} detected • ${behavior}`;
+        }
+    }, 1500);
+    </script>
+    """, unsafe_allow_html=True)
     
     # Success feedback
     if uploaded:
-        if mobile_mode:
-            st.success("📸 Photo ready for analysis!")
-            st.balloons()
-        else:
-            st.success("✅ Image uploaded successfully!")
+        st.success("✅ Image ready for analysis!")
+        
+        # Show different messages based on likely device type
+        st.markdown("""
+        <script>
+        if (window.isMobileDevice) {
+            // Mobile success message
+            console.log('Mobile upload successful');
+        } else {
+            // Desktop success message  
+            console.log('Desktop upload successful');
+        }
+        </script>
+        """, unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
     return uploaded
 
-# Alternative: Pure HTML5 approach for maximum mobile compatibility
-def create_pure_html5_camera():
-    """Pure HTML5 approach for guaranteed mobile camera access"""
-    
-    st.markdown("""
-    <div style="background: linear-gradient(135deg, #074225 0%, #3B6C53 100%); 
-                padding: 25px; border-radius: 20px; text-align: center; color: white; margin: 25px 0;">
-        <h3 style="margin-top: 0;">📸 Mobile Camera Upload</h3>
-        <p>Click below to open your phone's camera app and take a photo</p>
-        
-        <label for="native-camera-input" style="
-            display: inline-block; background: rgba(255,255,255,0.2); 
-            padding: 15px 30px; border-radius: 10px; cursor: pointer;
-            border: 2px solid rgba(255,255,255,0.3); margin: 15px 0;
-            transition: all 0.3s ease; font-weight: bold;">
-            📱 Open Camera & Take Photo
-        </label>
-        
-        <input type="file" id="native-camera-input" 
-               accept="image/*" capture="environment"
-               style="display: none;"
-               onchange="handlePhotoCapture(this)" />
-    </div>
-    
-    <div id="upload-status"></div>
-    
-    <script>
-    function handlePhotoCapture(input) {
-        const statusDiv = document.getElementById('upload-status');
-        
-        if (input.files && input.files.length > 0) {
-            const file = input.files[0];
-            const fileSize = (file.size / 1024 / 1024).toFixed(2);
-            
-            statusDiv.innerHTML = `
-                <div style="background: #d4edda; color: #155724; padding: 20px; 
-                           border-radius: 10px; margin: 15px 0; border: 1px solid #c3e6cb;
-                           text-align: center;">
-                    <h4 style="margin: 0 0 10px 0;">✅ Photo Captured Successfully!</h4>
-                    <p style="margin: 0;">
-                        <strong>File:</strong> ${file.name}<br>
-                        <strong>Size:</strong> ${fileSize} MB<br>
-                        <strong>Type:</strong> ${file.type}
-                    </p>
-                    <small style="opacity: 0.8;">Scroll down to analyze your image</small>
-                </div>
-            `;
-            
-            // Create a fake Streamlit file upload event
-            // Note: This is for demonstration - you'd need to integrate with Streamlit's upload system
-        } else {
-            statusDiv.innerHTML = `
-                <div style="background: #f8d7da; color: #721c24; padding: 15px; 
-                           border-radius: 10px; margin: 15px 0; border: 1px solid #f5c6cb;">
-                    ❌ No photo selected. Please try again.
-                </div>
-            `;
-        }
-    }
-    </script>
-    """, unsafe_allow_html=True)
-
+# Call the automatic upload function
+uploaded = create_fully_automatic_mobile_upload()
 # Usage - replace your upload section with:
 uploaded = create_mobile_camera_upload_section()
 
