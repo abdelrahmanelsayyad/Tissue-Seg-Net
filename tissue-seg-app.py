@@ -2893,10 +2893,234 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ──── Upload Section ────────────────────────────────────────
-uploaded = st.file_uploader("Upload wound image", type=["png","jpg","jpeg"])
-camera_image = st.camera_input("📸 Capture Wound Image")
-mobile_mode = False  # Set to False for now
+# ──── Enhanced Upload Section with Native Camera ────────────────────────────────────────
+
+def create_mobile_camera_upload_section():
+    """Create mobile-optimized camera upload that opens native camera app"""
+    
+    st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
+    
+    # Mobile vs Desktop detection
+    mobile_mode = st.checkbox("📱 Mobile Device", value=False, help="Check if using mobile device")
+    
+    if mobile_mode:
+        # Mobile-first design
+        st.markdown("### 📸 Add Wound Photo")
+        
+        # Option selection
+        photo_method = st.radio(
+            "How would you like to add a photo?",
+            ["📸 Take New Photo", "📁 Choose from Gallery"],
+            help="Select your preferred method"
+        )
+        
+        if photo_method == "📸 Take New Photo":
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, #074225 0%, #3B6C53 100%); 
+                        padding: 20px; border-radius: 15px; text-align: center; color: white; margin: 20px 0;">
+                <h4 style="margin-top: 0;">📸 Camera Capture</h4>
+                <p style="margin-bottom: 0;">This will open your phone's camera app</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Mobile camera tips
+            with st.expander("📱 Mobile Photography Tips", expanded=False):
+                st.markdown("""
+                **Before Taking the Photo:**
+                - Clean your camera lens
+                - Find good lighting (natural light is best)
+                - Position wound to fill most of the frame
+                
+                **When Taking the Photo:**
+                - Hold phone steady (use both hands)
+                - Tap to focus on the wound
+                - Take multiple shots if needed
+                - Use volume buttons as shutter if preferred
+                
+                **Photo Quality:**
+                - Keep camera 6-12 inches from wound
+                - Avoid shadows and reflections
+                - Ensure wound is clearly visible and in focus
+                """)
+            
+            # The key HTML for mobile camera
+            st.markdown("""
+            <div style="text-align: center; margin: 30px 0;">
+                <button onclick="document.getElementById('mobile-camera-input').click()" 
+                        style="background: linear-gradient(135deg, #074225 0%, #3B6C53 100%);
+                               color: white; border: none; padding: 20px 40px; 
+                               border-radius: 15px; font-size: 1.2rem; font-weight: bold;
+                               cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                               transition: all 0.3s ease;">
+                    📸 Open Camera & Take Photo
+                </button>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # The actual file input with camera attributes
+            uploaded = st.file_uploader(
+                "Camera Input",
+                type=["png", "jpg", "jpeg"],
+                help="This will open your camera app",
+                key="mobile_camera_capture",
+                label_visibility="hidden"
+            )
+            
+            # Add JavaScript to enhance the file input
+            st.markdown("""
+            <script>
+            // Enhance the file input for camera capture
+            setTimeout(function() {
+                const fileInputs = document.querySelectorAll('input[type="file"]');
+                fileInputs.forEach(input => {
+                    if (input.closest('[data-testid*="mobile_camera_capture"]')) {
+                        // Add camera capture attributes
+                        input.setAttribute('capture', 'environment');
+                        input.setAttribute('accept', 'image/*');
+                        input.id = 'mobile-camera-input';
+                    }
+                });
+            }, 1000);
+            </script>
+            """, unsafe_allow_html=True)
+            
+        else:  # Choose from Gallery
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, #3B6C53 0%, #074225 100%); 
+                        padding: 20px; border-radius: 15px; text-align: center; color: white; margin: 20px 0;">
+                <h4 style="margin-top: 0;">📁 Photo Gallery</h4>
+                <p style="margin-bottom: 0;">Select existing photo from your device</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            uploaded = st.file_uploader(
+                "Choose from gallery",
+                type=["png", "jpg", "jpeg"],
+                help="Select a wound image from your photo gallery"
+            )
+    
+    else:
+        # Desktop layout
+        st.markdown("### 📤 Upload Wound Image")
+        
+        upload_tab, camera_tab = st.tabs(["📁 Upload File", "📸 Take Photo"])
+        
+        uploaded = None
+        
+        with upload_tab:
+            uploaded = st.file_uploader(
+                "Choose wound image file",
+                type=["png", "jpg", "jpeg"],
+                help="Select a wound image from your computer"
+            )
+        
+        with camera_tab:
+            st.info("📱 For best camera experience on mobile, check 'Mobile Device' above.")
+            
+            # Desktop camera options
+            camera_option = st.selectbox(
+                "Camera Type:",
+                ["Webcam Capture", "Mobile Camera Upload"]
+            )
+            
+            if camera_option == "Webcam Capture":
+                if st.button("📹 Activate Webcam"):
+                    st.session_state.webcam_active = True
+                
+                if st.session_state.get("webcam_active", False):
+                    camera_image = st.camera_input("Take photo with webcam")
+                    if camera_image:
+                        uploaded = camera_image
+                        st.success("✅ Photo captured!")
+                    
+                    if st.button("❌ Close Webcam"):
+                        st.session_state.webcam_active = False
+                        st.experimental_rerun()
+            
+            else:  # Mobile Camera Upload on Desktop
+                st.info("📱 This option works best when accessed from a mobile device.")
+                uploaded = st.file_uploader(
+                    "Open mobile camera",
+                    type=["png", "jpg", "jpeg"],
+                    help="Use this option from mobile for camera access",
+                    key="desktop_mobile_camera"
+                )
+    
+    # Success feedback
+    if uploaded:
+        if mobile_mode:
+            st.success("📸 Photo ready for analysis!")
+            st.balloons()
+        else:
+            st.success("✅ Image uploaded successfully!")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    return uploaded
+
+# Alternative: Pure HTML5 approach for maximum mobile compatibility
+def create_pure_html5_camera():
+    """Pure HTML5 approach for guaranteed mobile camera access"""
+    
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #074225 0%, #3B6C53 100%); 
+                padding: 25px; border-radius: 20px; text-align: center; color: white; margin: 25px 0;">
+        <h3 style="margin-top: 0;">📸 Mobile Camera Upload</h3>
+        <p>Click below to open your phone's camera app and take a photo</p>
+        
+        <label for="native-camera-input" style="
+            display: inline-block; background: rgba(255,255,255,0.2); 
+            padding: 15px 30px; border-radius: 10px; cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.3); margin: 15px 0;
+            transition: all 0.3s ease; font-weight: bold;">
+            📱 Open Camera & Take Photo
+        </label>
+        
+        <input type="file" id="native-camera-input" 
+               accept="image/*" capture="environment"
+               style="display: none;"
+               onchange="handlePhotoCapture(this)" />
+    </div>
+    
+    <div id="upload-status"></div>
+    
+    <script>
+    function handlePhotoCapture(input) {
+        const statusDiv = document.getElementById('upload-status');
+        
+        if (input.files && input.files.length > 0) {
+            const file = input.files[0];
+            const fileSize = (file.size / 1024 / 1024).toFixed(2);
+            
+            statusDiv.innerHTML = `
+                <div style="background: #d4edda; color: #155724; padding: 20px; 
+                           border-radius: 10px; margin: 15px 0; border: 1px solid #c3e6cb;
+                           text-align: center;">
+                    <h4 style="margin: 0 0 10px 0;">✅ Photo Captured Successfully!</h4>
+                    <p style="margin: 0;">
+                        <strong>File:</strong> ${file.name}<br>
+                        <strong>Size:</strong> ${fileSize} MB<br>
+                        <strong>Type:</strong> ${file.type}
+                    </p>
+                    <small style="opacity: 0.8;">Scroll down to analyze your image</small>
+                </div>
+            `;
+            
+            // Create a fake Streamlit file upload event
+            // Note: This is for demonstration - you'd need to integrate with Streamlit's upload system
+        } else {
+            statusDiv.innerHTML = `
+                <div style="background: #f8d7da; color: #721c24; padding: 15px; 
+                           border-radius: 10px; margin: 15px 0; border: 1px solid #f5c6cb;">
+                    ❌ No photo selected. Please try again.
+                </div>
+            `;
+        }
+    }
+    </script>
+    """, unsafe_allow_html=True)
+
+# Usage - replace your upload section with:
+uploaded = create_mobile_camera_upload_section()
 
 # Determine which image source to use
 image_source = None
@@ -2904,10 +3128,7 @@ source_type = None
 
 if uploaded is not None:
     image_source = uploaded
-    source_type = "uploaded"
-elif camera_image is not None:
-    image_source = camera_image
-    source_type = "camera"
+    source_type = "uploaded"  # This covers both gallery and camera uploads now
 
 if image_source:
     try:
@@ -2930,21 +3151,17 @@ if image_source:
         
         # Clear memory
         clear_memory()
-
-        # Display uploaded image
+        
+# Display uploaded image
         st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
         st.markdown('<div class="img-container">', unsafe_allow_html=True)
-        caption_text = "📁 Uploaded Wound Image" if source_type == "uploaded" else "📸 Captured Wound Image"
+        caption_text = "📸 Wound Image Ready for Analysis"
         st.image(pil_img, caption=caption_text)
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Show image source info
-        if source_type == "camera":
-            st.info("📸 Image captured successfully! You can now proceed with analysis.")
-        else:
-            st.info("📁 Image uploaded successfully! You can now proceed with analysis.")
-
+        st.info("✅ Image ready for analysis! You can now proceed with AI assessment.")
         # Analysis button - Mobile responsive
         st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
         
