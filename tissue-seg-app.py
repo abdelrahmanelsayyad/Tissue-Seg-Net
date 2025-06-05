@@ -3614,7 +3614,9 @@ if image_source:
                 clear_memory()
 
         st.markdown('</div>', unsafe_allow_html=True)
-def create_mobile_camera_interface():
+
+# Now the function can be defined outside the if block
+    def create_mobile_camera_interface():
     """Create a mobile-optimized camera interface"""
     
     st.markdown("""
