@@ -3043,23 +3043,7 @@ def create_fully_automatic_mobile_upload():
     </script>
     """, unsafe_allow_html=True)
     
-    # Show device detection result (for confirmation)
-    st.markdown("""
-    <div id="device-status" style="font-size: 0.9rem; color: #666; text-align: center; margin: 10px 0;">
-        🤖 Detecting device type...
-    </div>
-    
-    <script>
-    setTimeout(function() {
-        const statusDiv = document.getElementById('device-status');
-        if (statusDiv && window.isMobileDevice !== undefined) {
-            const deviceType = window.isMobileDevice ? '📱 Mobile' : '💻 Desktop';
-            const behavior = window.isMobileDevice ? 'Camera app will open' : 'File browser will open';
-            statusDiv.innerHTML = `${deviceType} detected • ${behavior}`;
-        }
-    }, 1500);
-    </script>
-    """, unsafe_allow_html=True)
+
     
     # Success feedback
     if uploaded:
