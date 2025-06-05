@@ -3083,8 +3083,7 @@ def create_fully_automatic_mobile_upload():
 
 # Call the automatic upload function
 uploaded = create_fully_automatic_mobile_upload()
-# Usage - replace your upload section with:
-uploaded = create_mobile_camera_upload_section()
+
 
 # Determine which image source to use
 image_source = None
