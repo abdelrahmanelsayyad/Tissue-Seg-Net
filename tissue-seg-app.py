@@ -3619,9 +3619,6 @@ if image_source:
 
 # Now the function can be defined outside the if block
 def create_mobile_camera_interface():
-
-# Now the function can be defined outside the if block
-def create_mobile_camera_interface():
     """Create a mobile-optimized camera interface"""
     
     st.markdown("""
