@@ -8,7 +8,6 @@ import cloudinary
 import cloudinary.uploader
 import uuid
 import sys
-import time  # Add this with your other imports at the top
 import base64
 from pathlib import Path
 from datetime import datetime
@@ -44,266 +43,14 @@ except ImportError:
     REPORTLAB_AVAILABLE = False
 
 load_dotenv()
-class EnhancedProgressBar:
-    def __init__(self, total_steps=100):
-        self.total_steps = total_steps
-        self.current_step = 0
-        self.start_time = time.time()
-        self.progress_bar = None
-        self.status_text = None
-        self.progress_container = None
-        
-    def initialize(self):
-        """Initialize the enhanced progress bar with custom styling"""
-        self.progress_container = st.container()
-        
-        with self.progress_container:
-            # Enhanced progress bar CSS
-            st.markdown("""
-            <style>
-            .enhanced-progress-container {
-                background: linear-gradient(135deg, #074225 0%, #3B6C53 100%);
-                padding: 30px;
-                border-radius: 20px;
-                margin: 20px 0;
-                box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-                border: 2px solid rgba(122,164,140,0.3);
-                backdrop-filter: blur(15px);
-                position: relative;
-                overflow: hidden;
-            }
-            
-            .enhanced-progress-container::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-                animation: shimmer 3s infinite;
-            }
-            
-            .progress-title {
-                color: #ffffff;
-                font-size: 2rem;
-                font-weight: 800;
-                text-align: center;
-                margin-bottom: 15px;
-                text-shadow: 0 3px 6px rgba(0,0,0,0.4);
-                letter-spacing: 1.5px;
-                z-index: 2;
-                position: relative;
-            }
-            
-            .progress-subtitle {
-                color: rgba(255,255,255,0.95);
-                font-size: 1.3rem;
-                text-align: center;
-                margin-bottom: 25px;
-                font-weight: 600;
-                z-index: 2;
-                position: relative;
-            }
-            
-            .progress-stats {
-                display: flex;
-                justify-content: space-between;
-                margin-top: 20px;
-                color: rgba(255,255,255,0.9);
-                font-size: 1rem;
-                font-weight: 500;
-                z-index: 2;
-                position: relative;
-            }
-            
-            .progress-step-indicator {
-                background: rgba(255,255,255,0.15);
-                border-radius: 12px;
-                padding: 20px;
-                margin: 15px 0;
-                border-left: 5px solid #81A295;
-                color: white;
-                backdrop-filter: blur(10px);
-                transition: all 0.3s ease;
-                z-index: 2;
-                position: relative;
-            }
-            
-            .progress-step-indicator:hover {
-                background: rgba(255,255,255,0.2);
-                transform: translateX(5px);
-            }
-            
-            .step-icon {
-                font-size: 1.4rem;
-                margin-right: 12px;
-                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-            }
-            
-            .estimated-time {
-                background: rgba(129, 162, 149, 0.3);
-                border-radius: 10px;
-                padding: 12px 20px;
-                color: #81A295;
-                font-weight: 700;
-                text-align: center;
-                margin-top: 15px;
-                border: 1px solid rgba(129, 162, 149, 0.5);
-                z-index: 2;
-                position: relative;
-            }
-            
-            @keyframes pulse {
-                0% { opacity: 1; transform: scale(1); }
-                50% { opacity: 0.8; transform: scale(1.02); }
-                100% { opacity: 1; transform: scale(1); }
-            }
-            
-            .pulse-animation {
-                animation: pulse 2.5s infinite ease-in-out;
-            }
-            
-            @keyframes shimmer {
-                0% { left: -100%; }
-                100% { left: 100%; }
-            }
-            
-            /* Progress bar styling */
-            .stProgress > div > div > div > div {
-                background: linear-gradient(90deg, #81A295, #3B6C53) !important;
-                border-radius: 10px !important;
-                height: 12px !important;
-                box-shadow: 0 2px 8px rgba(129, 162, 149, 0.4) !important;
-            }
-            
-            .stProgress > div > div {
-                background-color: rgba(255,255,255,0.2) !important;
-                border-radius: 10px !important;
-                height: 12px !important;
-            }
-            </style>
-            """, unsafe_allow_html=True)
-            
-            # Progress container
-            st.markdown('<div class="enhanced-progress-container">', unsafe_allow_html=True)
-            st.markdown('<div class="progress-title">🩹 Advanced Wound Analysis</div>', unsafe_allow_html=True)
-            
-            # Initialize progress elements
-            self.status_text = st.empty()
-            self.progress_bar = st.progress(0)
-            self.stats_container = st.empty()
-            self.step_indicator = st.empty()
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-    
-    def update(self, step, total_steps, status_message, step_details=None):
-        """Update progress with enhanced information"""
-        self.current_step = step
-        progress_percent = step / total_steps
-        
-        # Update progress bar
-        self.progress_bar.progress(progress_percent)
-        
-        # Calculate timing information
-        elapsed_time = time.time() - self.start_time
-        if step > 0:
-            estimated_total_time = elapsed_time / progress_percent
-            remaining_time = max(0, estimated_total_time - elapsed_time)
-        else:
-            remaining_time = 0
-        
-        # Update status with enhanced styling
-        self.status_text.markdown(f"""
-        <div class="progress-subtitle pulse-animation">
-            {status_message}
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Update statistics
-        self.stats_container.markdown(f"""
-        <div class="progress-stats">
-            <span>📊 Progress: {step}/{total_steps} ({progress_percent:.1%})</span>
-            <span>⏱️ Elapsed: {elapsed_time:.1f}s</span>
-            <span>⏳ Remaining: ~{remaining_time:.1f}s</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Show current step details
-        if step_details:
-            self.step_indicator.markdown(f"""
-            <div class="progress-step-indicator">
-                <span class="step-icon">{self._get_step_icon(step)}</span>
-                <strong>Step {step}:</strong> {step_details}
-            </div>
-            """, unsafe_allow_html=True)
-    
-    def _get_step_icon(self, step):
-        """Get appropriate icon for each step"""
-        if step <= 10:
-            return "🔄"
-        elif step <= 25:
-            return "🧠"
-        elif step <= 40:
-            return "🔬"
-        elif step <= 55:
-            return "📊"
-        elif step <= 70:
-            return "🤖"
-        elif step <= 85:
-            return "💡"
-        elif step <= 95:
-            return "📋"
-        else:
-            return "✅"
-    
-    def complete(self, success_message="Analysis Complete!"):
-        """Show completion with celebration effect"""
-        self.progress_bar.progress(1.0)
-        
-        self.status_text.markdown(f"""
-        <div style="text-align: center; color: #81A295; font-size: 1.8rem; 
-                    font-weight: 800; margin: 25px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-            ✅ {success_message}
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Show completion summary
-        total_time = time.time() - self.start_time
-        self.step_indicator.markdown(f"""
-        <div class="estimated-time">
-            🎉 Analysis completed successfully in {total_time:.2f} seconds
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Auto-clear after showing results
-        time.sleep(1.5)
-        self.clear()
-    
-    def clear(self):
-        """Clear the progress bar"""
-        if self.progress_container:
-            self.progress_container.empty()
 
 st.set_page_config(
     page_title="Advanced Wound Analysis",
     page_icon="🩹",
     layout="wide",
-    initial_sidebar_state="collapsed",
-    menu_items={
-        'Get Help': None,
-        'Report a bug': None,
-        'About': "Advanced Wound Analysis - Mobile Optimized"
-    }
+    initial_sidebar_state="collapsed"
 )
-def is_mobile():
-    """Detect if user is on mobile device"""
-    try:
-        # Check user agent from browser (this is a workaround)
-        # In production, you might use JavaScript injection
-        return False  # Default to desktop, but CSS will handle mobile
-    except:
-        return False
+
 # Create session state variables for models - removed since we're using @st.cache_resource
 # Session state now only tracks theme
 if 'dark_mode' not in st.session_state:
@@ -465,165 +212,6 @@ def download_models():
 
 # Ensure models are available
 model_download_success = download_models()
-# ──── Enhanced Camera Functions (Optional) ────────────────────────────────────────
-
-def create_enhanced_camera_section():
-    """Create an enhanced camera capture section with additional features"""
-    
-    st.markdown(f"""
-    <div style="background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 100%); 
-                padding: 25px; border-radius: 15px; margin: 20px 0; color: white;">
-        <h3 style="color: white; margin-top: 0; text-align: center;">
-            📸 Professional Wound Photography
-        </h3>
-        <p style="color: rgba(255,255,255,0.9); text-align: center; margin-bottom: 0;">
-            Capture high-quality wound images for accurate AI analysis
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Camera settings and tips
-    col1, col2 = st.columns([3, 2])
-    
-    with col1:
-        st.markdown("### 📱 Camera Capture")
-        
-        # Camera quality tips
-        with st.expander("💡 Photography Tips for Best Results", expanded=False):
-            st.markdown("""
-            **Lighting:**
-            - Use natural daylight when possible
-            - Avoid shadows on the wound
-            - Use consistent lighting for serial photos
-            
-            **Distance & Angle:**
-            - Maintain 6-12 inches from wound
-            - Keep camera parallel to wound surface
-            - Fill frame with wound area
-            
-            **Focus & Stability:**
-            - Ensure wound is in sharp focus
-            - Hold camera steady or use tripod
-            - Take multiple shots if needed
-            
-            **Documentation:**
-            - Include measurement ruler if available
-            - Capture surrounding healthy tissue
-            - Maintain consistent positioning for follow-ups
-            """)
-        
-        # Main camera input
-        camera_image = st.camera_input(
-            "📸 Capture Wound Image",
-            help="Position camera over wound and click to capture"
-        )
-        
-        if camera_image:
-            st.success("✅ Image captured successfully!")
-            
-            # Optional: Show image metadata
-            if st.checkbox("📊 Show Image Details"):
-                import io
-                img_bytes = camera_image.getvalue()
-                st.write(f"**File size:** {len(img_bytes):,} bytes")
-                st.write(f"**Capture time:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    
-    with col2:
-        st.markdown("### 🎯 Quality Guidelines")
-        
-        # Static quality guidelines (no interactive checklist)
-        st.markdown("""
-        **For optimal results, ensure:**
-        
-        ✓ **Good lighting** on wound area  
-        ✓ **Wound is clearly visible** and in focus  
-        ✓ **Camera is steady** and focused  
-        ✓ **Appropriate distance** maintained  
-        ✓ **No obstructions** in view  
-        ✓ **Patient positioned** comfortably  
-        
-        Following these guidelines will improve analysis accuracy and provide better clinical insights.
-        """)
-        
-        # Simple tip box
-        st.info("💡 **Pro Tip:** Take multiple shots and select the clearest one for analysis.")
-    
-    return camera_image
-def create_mobile_camera_interface():
-    """Create a mobile-optimized camera interface"""
-    
-    st.markdown(f"""
-    <style>
-    .mobile-camera-container {{
-        background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 100%);
-        padding: 20px;
-        border-radius: 15px;
-        text-align: center;
-        color: white;
-        margin: 20px 0;
-    }}
-    
-    .mobile-camera-title {{
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-bottom: 15px;
-        color: white;
-    }}
-    
-    .mobile-tips {{
-        background: rgba(255,255,255,0.1);
-        padding: 15px;
-        border-radius: 10px;
-        margin: 15px 0;
-        text-align: left;
-    }}
-    
-    .mobile-tips h4 {{
-        color: {COL['light']};
-        margin-top: 0;
-    }}
-    
-    .mobile-tips ul {{
-        color: rgba(255,255,255,0.9);
-    }}
-    
-    @media (max-width: 768px) {{
-        .mobile-camera-container {{
-            margin: 10px -1rem;
-            border-radius: 0;
-        }}
-    }}
-    </style>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="mobile-camera-container">
-        <div class="mobile-camera-title">📱 Mobile Wound Capture</div>
-        <p>Optimized for mobile devices and tablets</p>
-        
-        <div class="mobile-tips">
-            <h4>📸 Quick Mobile Tips:</h4>
-            <ul>
-                <li>Use rear camera for better quality</li>
-                <li>Tap to focus on the wound</li>
-                <li>Use volume buttons as shutter if available</li>
-                <li>Keep device steady against a surface</li>
-            </ul>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Simplified camera input for mobile
-    camera_image = st.camera_input(
-        "📸 Tap to Capture",
-        help="Position your device camera over the wound and tap to capture"
-    )
-    
-    if camera_image:
-        st.balloons()  # Celebration effect for successful capture
-        st.success("📸 Perfect! Image captured and ready for analysis.")
-    
-    return camera_image
 
 # ──── Gemini AI Functions ────────────────────────────────────────────────
 
@@ -2446,41 +2034,16 @@ st.markdown("""
     <li><b>Generate</b> professional reports for clinical documentation</li>
     <li><b>Monitor</b> wound progress over time with professional-grade assessment</li>
   </ol>
+  <p><strong>Note:</strong> The "background" classification refers to non-wound areas in the image and is not part of the actual wound tissue analysis.</p>
 </div>
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ──── Upload & Analysis with Camera Capture ────────────────────────────────────────
+# ──── Upload & Analysis ────────────────────────────────────────
 col1, col2 = st.columns([2, 1]) 
 
 with col1:
-    # Create tabs for different input methods
-    upload_tab, camera_tab = st.tabs(["📁 Upload Image", "📸 Camera Capture"])
-    
-    uploaded = None
-    camera_image = None
-    
-    with upload_tab:
-        uploaded = st.file_uploader("Upload wound image", type=["png","jpg","jpeg"])
-    
-    with camera_tab:
-        st.markdown(f"""
-        <div style="background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #e8f5e9 0%, #f1f8e9 100%)"}; 
-                    padding: 20px; border-radius: 10px; margin-bottom: 20px;
-                    border-left: 4px solid {COL['highlight']}; color: {COL['text_primary']};">
-            <h4 style="color: {COL['highlight']}; margin-top: 0;">📱 Camera Capture Instructions</h4>
-            <ul style="color: {COL['text_primary']}; margin-bottom: 0;">
-                <li>Ensure good lighting conditions</li>
-                <li>Hold camera steady and focus on the wound</li>
-                <li>Maintain consistent distance from wound</li>
-                <li>Include a reference object for scale if possible</li>
-                <li>Click "Take Photo" when ready</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Camera input widget
-        camera_image = create_enhanced_camera_section()
+    uploaded = st.file_uploader("Upload wound image", type=["png","jpg","jpeg"])
 
 with col2:
     st.markdown("""
@@ -2496,18 +2059,7 @@ with col2:
     </div>
     """, unsafe_allow_html=True)
 
-# Determine which image source to use
-image_source = None
-source_type = None
-
-if uploaded is not None:
-    image_source = uploaded
-    source_type = "uploaded"
-elif camera_image is not None:
-    image_source = camera_image
-    source_type = "camera"
-
-if image_source:
+if uploaded:
     try:
         # Add missing import for pandas at the top if not already imported
         try:
@@ -2519,7 +2071,7 @@ if image_source:
             timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
 
         # Read and resize image if needed to reduce memory usage
-        pil_img = Image.open(image_source).convert("RGB")  # ← FIXED!
+        pil_img = Image.open(uploaded).convert("RGB")
         orig_bgr = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
         
         # Resize if too large
@@ -2532,55 +2084,35 @@ if image_source:
         # Display uploaded image
         st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
         st.markdown('<div class="img-container">', unsafe_allow_html=True)
-        caption_text = "📁 Uploaded Wound Image" if source_type == "uploaded" else "📸 Captured Wound Image"
-        st.image(pil_img, caption=caption_text)
+        st.image(pil_img, caption="Uploaded Wound Image")
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
-        # Show image source info
-        if source_type == "camera":
-            st.info("📸 Image captured successfully! You can now proceed with analysis.")
-        else:
-            st.info("📁 Image uploaded successfully! You can now proceed with analysis.")
 
-# Analysis button
+        # Analysis button
         st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
         if st.button("🚀 Analyze Wound", help="Click to run comprehensive AI analysis"):
-            
-            # Initialize enhanced progress bar
-            progress_tracker = EnhancedProgressBar()
-            progress_tracker.initialize()
-            
-            try:
-                # Step 1: Initialize models (0-15%)
-                progress_tracker.update(5, 100, "🔄 Initializing AI models...", 
-                                       "Loading tissue analysis and classification models")
-                
+            # Get cached models
+            with st.spinner("Initializing AI models..."):
                 tissue_model, classification_model = get_models()
                 gemini_model = initialize_gemini()
-                
-                progress_tracker.update(15, 100, "✅ Models loaded successfully", 
-                                       "AI models ready for analysis")
-                
-                # Step 2: Wound classification (15-35%)
-                progress_tracker.update(20, 100, "🧠 Analyzing wound characteristics...", 
-                                       "Running FastAI classification model")
+            
+            # ──── Complete Analysis ────────────────────────────────────────────────
+            with st.spinner("Running comprehensive wound analysis..."):
+                progress = st.progress(0)
+
+                # Step 1: Wound classification
+                for i in range(30):
+                    progress.progress(i+1)
                 
                 pred_class, pred_idx, outputs = classification_model.predict(pil_img)
                 confidence = outputs[pred_idx].item()
-                
-                progress_tracker.update(35, 100, f"🎯 Wound classified as: {pred_class}", 
-                                       f"Classification confidence: {confidence:.1%}")
 
-                # Step 3: Tissue analysis (35-60%)
-                progress_tracker.update(40, 100, "🔬 Starting tissue segmentation...", 
-                                       "Preprocessing image for tissue analysis")
+                # Step 2: Tissue analysis
+                for i in range(30, 60):
+                    progress.progress(i+1)
 
                 with torch.no_grad():
                     tensor_img = preprocess_tissue(pil_img)
-                    
-                    progress_tracker.update(50, 100, "🧬 Segmenting tissue types...", 
-                                           "Running advanced segmentation model")
-                    
                     tissue_pred = tissue_model(tensor_img)
                     tissue_mask_bgr, tissue_mask_indices = postprocess_tissue(tissue_pred)
                     tissue_data = calculate_tissue_percentages_and_areas(tissue_mask_indices, CLASS_NAMES)
@@ -2588,56 +2120,40 @@ if image_source:
                     # Clear intermediate tensors
                     del tensor_img, tissue_pred
 
-                progress_tracker.update(60, 100, "📊 Tissue analysis complete", 
-                                       f"Identified {len([t for t in tissue_data.keys() if tissue_data[t]['percentage'] > 0])} tissue types")
+                # Step 3: Basic calculations
+                for i in range(60, 70):
+                    progress.progress(i+1)
 
-                # Step 4: Basic calculations (60-70%)
-                progress_tracker.update(65, 100, "🧮 Calculating health metrics...", 
-                                       "Computing wound healing indicators")
-                
                 basic_health_score = calculate_health_score(tissue_data)
                 dominant_tissue, dominant_percent = get_dominant_tissue(tissue_data)
                 open_defect_area = calculate_open_defect_area(tissue_data)
-                
-                progress_tracker.update(70, 100, "📈 Basic analysis complete", 
-                                       f"Health score: {basic_health_score:.0f}/100")
 
-                # Step 5: AI Enhancement with Gemini (70-100%)
+                # Step 4: AI Enhancement with Gemini
+                for i in range(70, 100):
+                    progress.progress(i+1)
+
+                # Generate AI-enhanced assessments
                 if gemini_model:
-                    progress_tracker.update(75, 100, "🤖 Connecting to Gemini AI...", 
-                                           "Initializing advanced AI assessment")
-                    
-                    progress_tracker.update(80, 100, "🧠 Generating AI health score...", 
-                                           "AI analyzing tissue composition and healing")
-                    
-                    # AI-generated health score (independent)
-                    ai_health_score, health_justification = generate_ai_health_score(
-                        tissue_data, pred_class
-                    )
-                    
-                    progress_tracker.update(85, 100, "💡 Creating clinical recommendations...", 
-                                           "AI formulating treatment suggestions")
-                    
-                    # AI recommendations
-                    ai_recommendations = generate_clinical_recommendations(
-                        tissue_data, pred_class, ai_health_score
-                    )
-                    
-                    progress_tracker.update(90, 100, "📋 Generating detailed assessment...", 
-                                           "AI creating comprehensive health report")
-                    
-                    # Health assessment
-                    health_assessment = generate_health_assessment(
-                        tissue_data, pred_class, confidence
-                    )
-                    
-                    progress_tracker.update(95, 100, "📚 Compiling classification info...", 
-                                           "AI preparing wound type analysis")
-                    
-                    # Classification information
-                    classification_info = generate_wound_classification_info(
-                        pred_class, confidence, tissue_data
-                    )
+                    with st.spinner("Generating AI-enhanced assessments..."):
+                        # AI-generated health score (independent)
+                        ai_health_score, health_justification = generate_ai_health_score(
+                            tissue_data, pred_class
+                        )
+                        
+                        # AI recommendations
+                        ai_recommendations = generate_clinical_recommendations(
+                            tissue_data, pred_class, ai_health_score
+                        )
+                        
+                        # Health assessment
+                        health_assessment = generate_health_assessment(
+                            tissue_data, pred_class, confidence
+                        )
+                        
+                        # Classification information
+                        classification_info = generate_wound_classification_info(
+                            pred_class, confidence, tissue_data
+                        )
                 else:
                     ai_health_score = basic_health_score
                     health_justification = "AI service unavailable - using basic calculation"
@@ -2645,12 +2161,7 @@ if image_source:
                     health_assessment = "AI assessment unavailable"
                     classification_info = "AI classification info unavailable"
 
-                progress_tracker.update(100, 100, "🎉 Analysis complete!", 
-                                       "All assessments ready for display")
-
-                # Complete the progress bar
-                progress_tracker.complete("🎉 Advanced Wound Analysis Complete!")
-                
+                progress.empty()
                 clear_memory()
 
                 st.success("✅ Complete AI-enhanced analysis finished!")
@@ -2742,8 +2253,7 @@ if image_source:
                     'tissue_analysis': cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB),
                     'overlay': cv2.cvtColor(tissue_overlay, cv2.COLOR_BGR2RGB)
                 }
-                
-                # ---------- SAVE ANALYSIS RESULTS ----------
+                 # ---------- SAVE ANALYSIS RESULTS ----------
                 st.session_state["analysis_ready"]      = True
                 st.session_state["tissue_data"]         = tissue_data
                 st.session_state["pred_class"]          = pred_class
@@ -2760,6 +2270,7 @@ if image_source:
                                             ai_recommendations, st.session_state.analysis_images['original'],
                                             st.session_state.analysis_images['tissue_analysis'],
                                             st.session_state.analysis_images['overlay'], timestamp_str)
+
 
                 # ──── Detailed Analysis Tabs with AI Enhancement ────────────────────────────────────────────────
                 tab1, tab2, tab3, tab4 = st.tabs(["🧬 Tissue Composition", "📊 AI Health Assessment", "🏥 AI Wound Classification", "💡 AI Clinical Recommendations"])
@@ -2946,16 +2457,6 @@ if image_source:
                             """, unsafe_allow_html=True)
                     
                     st.markdown('</div>', unsafe_allow_html=True)
-                    
-            except Exception as e:
-                st.error(f"Error processing image: {str(e)}")
-                st.write("Exception details:")
-                st.exception(e)
-                progress_tracker.clear()
-                clear_memory()
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-
     except Exception as e:
         st.error(f"Error processing image: {str(e)}")
         st.write("Exception details:")
