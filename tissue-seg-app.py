@@ -2275,7 +2275,6 @@ st.markdown("""
     <li><b>Generate</b> professional reports for clinical documentation</li>
     <li><b>Monitor</b> wound progress over time with professional-grade assessment</li>
   </ol>
-  <p><strong>Note:</strong> The "background" classification refers to non-wound areas in the image and is not part of the actual wound tissue analysis.</p>
 </div>
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
@@ -2329,8 +2328,7 @@ if uploaded:
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-
-        # Analysis button
+# Analysis button
         st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
         if st.button("🚀 Analyze Wound", help="Click to run comprehensive AI analysis"):
             
@@ -2379,7 +2377,7 @@ if uploaded:
                 progress_tracker.update(60, 100, "📊 Tissue analysis complete", 
                                        f"Identified {len([t for t in tissue_data.keys() if tissue_data[t]['percentage'] > 0])} tissue types")
 
-                # Step 4: Basic calculations (60-70%)# Step 4: Basic calculations (60-70%)
+                # Step 4: Basic calculations (60-70%)
                 progress_tracker.update(65, 100, "🧮 Calculating health metrics...", 
                                        "Computing wound healing indicators")
                 
@@ -2444,7 +2442,6 @@ if uploaded:
                 st.success("✅ Complete AI-enhanced analysis finished!")
                 st.markdown('<div class="results-header">Advanced Wound Analysis Results</div>', unsafe_allow_html=True)
 
-                # ──── Image Results Display ────────────────────────────────────────────────
                 # ──── Image Results Display ────────────────────────────────────────────────
                 st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
@@ -2531,7 +2528,8 @@ if uploaded:
                     'tissue_analysis': cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB),
                     'overlay': cv2.cvtColor(tissue_overlay, cv2.COLOR_BGR2RGB)
                 }
-                 # ---------- SAVE ANALYSIS RESULTS ----------
+                
+                # ---------- SAVE ANALYSIS RESULTS ----------
                 st.session_state["analysis_ready"]      = True
                 st.session_state["tissue_data"]         = tissue_data
                 st.session_state["pred_class"]          = pred_class
@@ -2548,7 +2546,6 @@ if uploaded:
                                             ai_recommendations, st.session_state.analysis_images['original'],
                                             st.session_state.analysis_images['tissue_analysis'],
                                             st.session_state.analysis_images['overlay'], timestamp_str)
-
 
                 # ──── Detailed Analysis Tabs with AI Enhancement ────────────────────────────────────────────────
                 tab1, tab2, tab3, tab4 = st.tabs(["🧬 Tissue Composition", "📊 AI Health Assessment", "🏥 AI Wound Classification", "💡 AI Clinical Recommendations"])
@@ -2735,6 +2732,16 @@ if uploaded:
                             """, unsafe_allow_html=True)
                     
                     st.markdown('</div>', unsafe_allow_html=True)
+                    
+            except Exception as e:
+                st.error(f"Error processing image: {str(e)}")
+                st.write("Exception details:")
+                st.exception(e)
+                progress_tracker.clear()
+                clear_memory()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+
     except Exception as e:
         st.error(f"Error processing image: {str(e)}")
         st.write("Exception details:")
