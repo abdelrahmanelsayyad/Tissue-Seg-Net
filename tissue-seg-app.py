@@ -3538,6 +3538,7 @@ if image_source:
 
         st.markdown('</div>', unsafe_allow_html=True)
 
+# ──── Mobile Camera Interface Function ─────────────────────────────────
 def create_mobile_camera_interface():
     """Create a mobile-optimized camera interface"""
     
