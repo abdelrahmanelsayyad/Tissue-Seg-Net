@@ -8,6 +8,7 @@ import cloudinary
 import cloudinary.uploader
 import uuid
 import sys
+import time  # Add this with your other imports at the top
 import base64
 from pathlib import Path
 from datetime import datetime
@@ -43,6 +44,246 @@ except ImportError:
     REPORTLAB_AVAILABLE = False
 
 load_dotenv()
+class EnhancedProgressBar:
+    def __init__(self, total_steps=100):
+        self.total_steps = total_steps
+        self.current_step = 0
+        self.start_time = time.time()
+        self.progress_bar = None
+        self.status_text = None
+        self.progress_container = None
+        
+    def initialize(self):
+        """Initialize the enhanced progress bar with custom styling"""
+        self.progress_container = st.container()
+        
+        with self.progress_container:
+            # Enhanced progress bar CSS
+            st.markdown("""
+            <style>
+            .enhanced-progress-container {
+                background: linear-gradient(135deg, #074225 0%, #3B6C53 100%);
+                padding: 30px;
+                border-radius: 20px;
+                margin: 20px 0;
+                box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+                border: 2px solid rgba(122,164,140,0.3);
+                backdrop-filter: blur(15px);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .enhanced-progress-container::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+                animation: shimmer 3s infinite;
+            }
+            
+            .progress-title {
+                color: #ffffff;
+                font-size: 2rem;
+                font-weight: 800;
+                text-align: center;
+                margin-bottom: 15px;
+                text-shadow: 0 3px 6px rgba(0,0,0,0.4);
+                letter-spacing: 1.5px;
+                z-index: 2;
+                position: relative;
+            }
+            
+            .progress-subtitle {
+                color: rgba(255,255,255,0.95);
+                font-size: 1.3rem;
+                text-align: center;
+                margin-bottom: 25px;
+                font-weight: 600;
+                z-index: 2;
+                position: relative;
+            }
+            
+            .progress-stats {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 20px;
+                color: rgba(255,255,255,0.9);
+                font-size: 1rem;
+                font-weight: 500;
+                z-index: 2;
+                position: relative;
+            }
+            
+            .progress-step-indicator {
+                background: rgba(255,255,255,0.15);
+                border-radius: 12px;
+                padding: 20px;
+                margin: 15px 0;
+                border-left: 5px solid #81A295;
+                color: white;
+                backdrop-filter: blur(10px);
+                transition: all 0.3s ease;
+                z-index: 2;
+                position: relative;
+            }
+            
+            .progress-step-indicator:hover {
+                background: rgba(255,255,255,0.2);
+                transform: translateX(5px);
+            }
+            
+            .step-icon {
+                font-size: 1.4rem;
+                margin-right: 12px;
+                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            }
+            
+            .estimated-time {
+                background: rgba(129, 162, 149, 0.3);
+                border-radius: 10px;
+                padding: 12px 20px;
+                color: #81A295;
+                font-weight: 700;
+                text-align: center;
+                margin-top: 15px;
+                border: 1px solid rgba(129, 162, 149, 0.5);
+                z-index: 2;
+                position: relative;
+            }
+            
+            @keyframes pulse {
+                0% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.8; transform: scale(1.02); }
+                100% { opacity: 1; transform: scale(1); }
+            }
+            
+            .pulse-animation {
+                animation: pulse 2.5s infinite ease-in-out;
+            }
+            
+            @keyframes shimmer {
+                0% { left: -100%; }
+                100% { left: 100%; }
+            }
+            
+            /* Progress bar styling */
+            .stProgress > div > div > div > div {
+                background: linear-gradient(90deg, #81A295, #3B6C53) !important;
+                border-radius: 10px !important;
+                height: 12px !important;
+                box-shadow: 0 2px 8px rgba(129, 162, 149, 0.4) !important;
+            }
+            
+            .stProgress > div > div {
+                background-color: rgba(255,255,255,0.2) !important;
+                border-radius: 10px !important;
+                height: 12px !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            
+            # Progress container
+            st.markdown('<div class="enhanced-progress-container">', unsafe_allow_html=True)
+            st.markdown('<div class="progress-title">🩹 Advanced Wound Analysis</div>', unsafe_allow_html=True)
+            
+            # Initialize progress elements
+            self.status_text = st.empty()
+            self.progress_bar = st.progress(0)
+            self.stats_container = st.empty()
+            self.step_indicator = st.empty()
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+    
+    def update(self, step, total_steps, status_message, step_details=None):
+        """Update progress with enhanced information"""
+        self.current_step = step
+        progress_percent = step / total_steps
+        
+        # Update progress bar
+        self.progress_bar.progress(progress_percent)
+        
+        # Calculate timing information
+        elapsed_time = time.time() - self.start_time
+        if step > 0:
+            estimated_total_time = elapsed_time / progress_percent
+            remaining_time = max(0, estimated_total_time - elapsed_time)
+        else:
+            remaining_time = 0
+        
+        # Update status with enhanced styling
+        self.status_text.markdown(f"""
+        <div class="progress-subtitle pulse-animation">
+            {status_message}
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Update statistics
+        self.stats_container.markdown(f"""
+        <div class="progress-stats">
+            <span>📊 Progress: {step}/{total_steps} ({progress_percent:.1%})</span>
+            <span>⏱️ Elapsed: {elapsed_time:.1f}s</span>
+            <span>⏳ Remaining: ~{remaining_time:.1f}s</span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Show current step details
+        if step_details:
+            self.step_indicator.markdown(f"""
+            <div class="progress-step-indicator">
+                <span class="step-icon">{self._get_step_icon(step)}</span>
+                <strong>Step {step}:</strong> {step_details}
+            </div>
+            """, unsafe_allow_html=True)
+    
+    def _get_step_icon(self, step):
+        """Get appropriate icon for each step"""
+        if step <= 10:
+            return "🔄"
+        elif step <= 25:
+            return "🧠"
+        elif step <= 40:
+            return "🔬"
+        elif step <= 55:
+            return "📊"
+        elif step <= 70:
+            return "🤖"
+        elif step <= 85:
+            return "💡"
+        elif step <= 95:
+            return "📋"
+        else:
+            return "✅"
+    
+    def complete(self, success_message="Analysis Complete!"):
+        """Show completion with celebration effect"""
+        self.progress_bar.progress(1.0)
+        
+        self.status_text.markdown(f"""
+        <div style="text-align: center; color: #81A295; font-size: 1.8rem; 
+                    font-weight: 800; margin: 25px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+            ✅ {success_message}
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Show completion summary
+        total_time = time.time() - self.start_time
+        self.step_indicator.markdown(f"""
+        <div class="estimated-time">
+            🎉 Analysis completed successfully in {total_time:.2f} seconds
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Auto-clear after showing results
+        time.sleep(1.5)
+        self.clear()
+    
+    def clear(self):
+        """Clear the progress bar"""
+        if self.progress_container:
+            self.progress_container.empty()
 
 st.set_page_config(
     page_title="Advanced Wound Analysis",
@@ -2088,31 +2329,46 @@ if uploaded:
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
+
         # Analysis button
         st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
         if st.button("🚀 Analyze Wound", help="Click to run comprehensive AI analysis"):
-            # Get cached models
-            with st.spinner("Initializing AI models..."):
+            
+            # Initialize enhanced progress bar
+            progress_tracker = EnhancedProgressBar()
+            progress_tracker.initialize()
+            
+            try:
+                # Step 1: Initialize models (0-15%)
+                progress_tracker.update(5, 100, "🔄 Initializing AI models...", 
+                                       "Loading tissue analysis and classification models")
+                
                 tissue_model, classification_model = get_models()
                 gemini_model = initialize_gemini()
-            
-            # ──── Complete Analysis ────────────────────────────────────────────────
-            with st.spinner("Running comprehensive wound analysis..."):
-                progress = st.progress(0)
-
-                # Step 1: Wound classification
-                for i in range(30):
-                    progress.progress(i+1)
+                
+                progress_tracker.update(15, 100, "✅ Models loaded successfully", 
+                                       "AI models ready for analysis")
+                
+                # Step 2: Wound classification (15-35%)
+                progress_tracker.update(20, 100, "🧠 Analyzing wound characteristics...", 
+                                       "Running FastAI classification model")
                 
                 pred_class, pred_idx, outputs = classification_model.predict(pil_img)
                 confidence = outputs[pred_idx].item()
+                
+                progress_tracker.update(35, 100, f"🎯 Wound classified as: {pred_class}", 
+                                       f"Classification confidence: {confidence:.1%}")
 
-                # Step 2: Tissue analysis
-                for i in range(30, 60):
-                    progress.progress(i+1)
+                # Step 3: Tissue analysis (35-60%)
+                progress_tracker.update(40, 100, "🔬 Starting tissue segmentation...", 
+                                       "Preprocessing image for tissue analysis")
 
                 with torch.no_grad():
                     tensor_img = preprocess_tissue(pil_img)
+                    
+                    progress_tracker.update(50, 100, "🧬 Segmenting tissue types...", 
+                                           "Running advanced segmentation model")
+                    
                     tissue_pred = tissue_model(tensor_img)
                     tissue_mask_bgr, tissue_mask_indices = postprocess_tissue(tissue_pred)
                     tissue_data = calculate_tissue_percentages_and_areas(tissue_mask_indices, CLASS_NAMES)
@@ -2120,40 +2376,56 @@ if uploaded:
                     # Clear intermediate tensors
                     del tensor_img, tissue_pred
 
-                # Step 3: Basic calculations
-                for i in range(60, 70):
-                    progress.progress(i+1)
+                progress_tracker.update(60, 100, "📊 Tissue analysis complete", 
+                                       f"Identified {len([t for t in tissue_data.keys() if tissue_data[t]['percentage'] > 0])} tissue types")
 
+                # Step 4: Basic calculations (60-70%)# Step 4: Basic calculations (60-70%)
+                progress_tracker.update(65, 100, "🧮 Calculating health metrics...", 
+                                       "Computing wound healing indicators")
+                
                 basic_health_score = calculate_health_score(tissue_data)
                 dominant_tissue, dominant_percent = get_dominant_tissue(tissue_data)
                 open_defect_area = calculate_open_defect_area(tissue_data)
+                
+                progress_tracker.update(70, 100, "📈 Basic analysis complete", 
+                                       f"Health score: {basic_health_score:.0f}/100")
 
-                # Step 4: AI Enhancement with Gemini
-                for i in range(70, 100):
-                    progress.progress(i+1)
-
-                # Generate AI-enhanced assessments
+                # Step 5: AI Enhancement with Gemini (70-100%)
                 if gemini_model:
-                    with st.spinner("Generating AI-enhanced assessments..."):
-                        # AI-generated health score (independent)
-                        ai_health_score, health_justification = generate_ai_health_score(
-                            tissue_data, pred_class
-                        )
-                        
-                        # AI recommendations
-                        ai_recommendations = generate_clinical_recommendations(
-                            tissue_data, pred_class, ai_health_score
-                        )
-                        
-                        # Health assessment
-                        health_assessment = generate_health_assessment(
-                            tissue_data, pred_class, confidence
-                        )
-                        
-                        # Classification information
-                        classification_info = generate_wound_classification_info(
-                            pred_class, confidence, tissue_data
-                        )
+                    progress_tracker.update(75, 100, "🤖 Connecting to Gemini AI...", 
+                                           "Initializing advanced AI assessment")
+                    
+                    progress_tracker.update(80, 100, "🧠 Generating AI health score...", 
+                                           "AI analyzing tissue composition and healing")
+                    
+                    # AI-generated health score (independent)
+                    ai_health_score, health_justification = generate_ai_health_score(
+                        tissue_data, pred_class
+                    )
+                    
+                    progress_tracker.update(85, 100, "💡 Creating clinical recommendations...", 
+                                           "AI formulating treatment suggestions")
+                    
+                    # AI recommendations
+                    ai_recommendations = generate_clinical_recommendations(
+                        tissue_data, pred_class, ai_health_score
+                    )
+                    
+                    progress_tracker.update(90, 100, "📋 Generating detailed assessment...", 
+                                           "AI creating comprehensive health report")
+                    
+                    # Health assessment
+                    health_assessment = generate_health_assessment(
+                        tissue_data, pred_class, confidence
+                    )
+                    
+                    progress_tracker.update(95, 100, "📚 Compiling classification info...", 
+                                           "AI preparing wound type analysis")
+                    
+                    # Classification information
+                    classification_info = generate_wound_classification_info(
+                        pred_class, confidence, tissue_data
+                    )
                 else:
                     ai_health_score = basic_health_score
                     health_justification = "AI service unavailable - using basic calculation"
@@ -2161,12 +2433,18 @@ if uploaded:
                     health_assessment = "AI assessment unavailable"
                     classification_info = "AI classification info unavailable"
 
-                progress.empty()
+                progress_tracker.update(100, 100, "🎉 Analysis complete!", 
+                                       "All assessments ready for display")
+
+                # Complete the progress bar
+                progress_tracker.complete("🎉 Advanced Wound Analysis Complete!")
+                
                 clear_memory()
 
                 st.success("✅ Complete AI-enhanced analysis finished!")
                 st.markdown('<div class="results-header">Advanced Wound Analysis Results</div>', unsafe_allow_html=True)
 
+                # ──── Image Results Display ────────────────────────────────────────────────
                 # ──── Image Results Display ────────────────────────────────────────────────
                 st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
                 col1, col2 = st.columns(2)
