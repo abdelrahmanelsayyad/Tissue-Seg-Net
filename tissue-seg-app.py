@@ -2893,6 +2893,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
+# ──── Upload Section ────────────────────────────────────────
+uploaded, camera_image, mobile_mode = create_upload_section_auto()
 # ──── Upload & Analysis with Camera Capture ────────────────────────────────────────
 # ──── Mobile-Responsive Upload & Analysis ────────────────────────────────────────
 def create_upload_section_auto():
