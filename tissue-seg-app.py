@@ -453,6 +453,178 @@ def download_models():
 
 # Ensure models are available
 model_download_success = download_models()
+# ──── Enhanced Camera Functions (Optional) ────────────────────────────────────────
+
+def create_enhanced_camera_section():
+    """Create an enhanced camera capture section with additional features"""
+    
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 100%); 
+                padding: 25px; border-radius: 15px; margin: 20px 0; color: white;">
+        <h3 style="color: white; margin-top: 0; text-align: center;">
+            📸 Professional Wound Photography
+        </h3>
+        <p style="color: rgba(255,255,255,0.9); text-align: center; margin-bottom: 0;">
+            Capture high-quality wound images for accurate AI analysis
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Camera settings and tips
+    col1, col2 = st.columns([3, 2])
+    
+    with col1:
+        st.markdown("### 📱 Camera Capture")
+        
+        # Camera quality tips
+        with st.expander("💡 Photography Tips for Best Results", expanded=False):
+            st.markdown("""
+            **Lighting:**
+            - Use natural daylight when possible
+            - Avoid shadows on the wound
+            - Use consistent lighting for serial photos
+            
+            **Distance & Angle:**
+            - Maintain 6-12 inches from wound
+            - Keep camera parallel to wound surface
+            - Fill frame with wound area
+            
+            **Focus & Stability:**
+            - Ensure wound is in sharp focus
+            - Hold camera steady or use tripod
+            - Take multiple shots if needed
+            
+            **Documentation:**
+            - Include measurement ruler if available
+            - Capture surrounding healthy tissue
+            - Maintain consistent positioning for follow-ups
+            """)
+        
+        # Main camera input
+        camera_image = st.camera_input(
+            "📸 Capture Wound Image",
+            help="Position camera over wound and click to capture"
+        )
+        
+        if camera_image:
+            st.success("✅ Image captured successfully!")
+            
+            # Optional: Show image metadata
+            if st.checkbox("📊 Show Image Details"):
+                import io
+                img_bytes = camera_image.getvalue()
+                st.write(f"**File size:** {len(img_bytes):,} bytes")
+                st.write(f"**Capture time:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    with col2:
+        st.markdown("### 🎯 Quality Checklist")
+        
+        # Interactive quality checklist
+        st.markdown("**Before capturing, ensure:**")
+        
+        checklist_items = [
+            "Good lighting on wound area",
+            "Wound is clearly visible",
+            "Camera is steady and focused",
+            "Appropriate distance maintained",
+            "No obstructions in view",
+            "Patient positioned comfortably"
+        ]
+        
+        checked_count = 0
+        for item in checklist_items:
+            if st.checkbox(item, key=f"check_{item.replace(' ', '_').replace(',', '')}"):
+                checked_count += 1
+        
+        # Quality score based on checklist
+        quality_score = (checked_count / len(checklist_items)) * 100
+        
+        if quality_score == 100:
+            st.success(f"🌟 Perfect setup! Quality score: {quality_score:.0f}%")
+        elif quality_score >= 80:
+            st.info(f"✅ Good setup! Quality score: {quality_score:.0f}%")
+        elif quality_score >= 60:
+            st.warning(f"⚠️ Fair setup. Quality score: {quality_score:.0f}%")
+        else:
+            st.error(f"❌ Poor setup. Quality score: {quality_score:.0f}%")
+    
+    return camera_image
+
+def create_mobile_camera_interface():
+    """Create a mobile-optimized camera interface"""
+    
+    st.markdown(f"""
+    <style>
+    .mobile-camera-container {{
+        background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 100%);
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        color: white;
+        margin: 20px 0;
+    }}
+    
+    .mobile-camera-title {{
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: white;
+    }}
+    
+    .mobile-tips {{
+        background: rgba(255,255,255,0.1);
+        padding: 15px;
+        border-radius: 10px;
+        margin: 15px 0;
+        text-align: left;
+    }}
+    
+    .mobile-tips h4 {{
+        color: {COL['light']};
+        margin-top: 0;
+    }}
+    
+    .mobile-tips ul {{
+        color: rgba(255,255,255,0.9);
+    }}
+    
+    @media (max-width: 768px) {{
+        .mobile-camera-container {{
+            margin: 10px -1rem;
+            border-radius: 0;
+        }}
+    }}
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="mobile-camera-container">
+        <div class="mobile-camera-title">📱 Mobile Wound Capture</div>
+        <p>Optimized for mobile devices and tablets</p>
+        
+        <div class="mobile-tips">
+            <h4>📸 Quick Mobile Tips:</h4>
+            <ul>
+                <li>Use rear camera for better quality</li>
+                <li>Tap to focus on the wound</li>
+                <li>Use volume buttons as shutter if available</li>
+                <li>Keep device steady against a surface</li>
+            </ul>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Simplified camera input for mobile
+    camera_image = st.camera_input(
+        "📸 Tap to Capture",
+        help="Position your device camera over the wound and tap to capture"
+    )
+    
+    if camera_image:
+        st.balloons()  # Celebration effect for successful capture
+        st.success("📸 Perfect! Image captured and ready for analysis.")
+    
+    return camera_image
 
 # ──── Gemini AI Functions ────────────────────────────────────────────────
 
@@ -2279,11 +2451,37 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ──── Upload & Analysis ────────────────────────────────────────
+# ──── Upload & Analysis with Camera Capture ────────────────────────────────────────
 col1, col2 = st.columns([2, 1]) 
 
 with col1:
-    uploaded = st.file_uploader("Upload wound image", type=["png","jpg","jpeg"])
+    # Create tabs for different input methods
+    upload_tab, camera_tab = st.tabs(["📁 Upload Image", "📸 Camera Capture"])
+    
+    uploaded = None
+    camera_image = None
+    
+    with upload_tab:
+        uploaded = st.file_uploader("Upload wound image", type=["png","jpg","jpeg"])
+    
+    with camera_tab:
+        st.markdown(f"""
+        <div style="background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #e8f5e9 0%, #f1f8e9 100%)"}; 
+                    padding: 20px; border-radius: 10px; margin-bottom: 20px;
+                    border-left: 4px solid {COL['highlight']}; color: {COL['text_primary']};">
+            <h4 style="color: {COL['highlight']}; margin-top: 0;">📱 Camera Capture Instructions</h4>
+            <ul style="color: {COL['text_primary']}; margin-bottom: 0;">
+                <li>Ensure good lighting conditions</li>
+                <li>Hold camera steady and focus on the wound</li>
+                <li>Maintain consistent distance from wound</li>
+                <li>Include a reference object for scale if possible</li>
+                <li>Click "Take Photo" when ready</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Camera input widget
+        camera_image = create_enhanced_camera_section()
 
 with col2:
     st.markdown("""
@@ -2299,7 +2497,18 @@ with col2:
     </div>
     """, unsafe_allow_html=True)
 
-if uploaded:
+# Determine which image source to use
+image_source = None
+source_type = None
+
+if uploaded is not None:
+    image_source = uploaded
+    source_type = "uploaded"
+elif camera_image is not None:
+    image_source = camera_image
+    source_type = "camera"
+
+if image_source:
     try:
         # Add missing import for pandas at the top if not already imported
         try:
@@ -2311,7 +2520,7 @@ if uploaded:
             timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
 
         # Read and resize image if needed to reduce memory usage
-        pil_img = Image.open(uploaded).convert("RGB")
+        pil_img = Image.open(image_source).convert("RGB")  # ← FIXED!
         orig_bgr = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
         
         # Resize if too large
@@ -2324,9 +2533,15 @@ if uploaded:
         # Display uploaded image
         st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
         st.markdown('<div class="img-container">', unsafe_allow_html=True)
-        st.image(pil_img, caption="Uploaded Wound Image")
+        caption_text = "📁 Uploaded Wound Image" if source_type == "uploaded" else "📸 Captured Wound Image"
+        st.image(pil_img, caption=caption_text)
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+        # Show image source info
+        if source_type == "camera":
+            st.info("📸 Image captured successfully! You can now proceed with analysis.")
+        else:
+            st.info("📁 Image uploaded successfully! You can now proceed with analysis.")
 
 # Analysis button
         st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
