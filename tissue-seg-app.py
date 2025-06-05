@@ -3001,14 +3001,27 @@ def create_fully_automatic_mobile_upload():
     st.markdown("### 📸 Upload Wound Image")
     
     # Mobile-specific tips (only show on mobile via CSS)
+# Mobile-specific tips (only show on mobile via CSS and JavaScript)
     st.markdown("""
-    <div class="upload-tips" style="background: rgba(7, 66, 37, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0;">
+    <div id="mobile-tips" class="upload-tips" style="background: rgba(7, 66, 37, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; display: none;">
         <strong>📱 Mobile Photography Tips:</strong><br>
         • This will open your phone's camera app<br>
         • Hold phone steady and tap to focus on wound<br>
         • Use good lighting for best results<br>
         • Take multiple shots and choose the best one
     </div>
+    
+    <script>
+    // Show tips only on mobile devices
+    setTimeout(function() {
+        const tipsDiv = document.getElementById('mobile-tips');
+        if (tipsDiv && window.isMobileDevice) {
+            tipsDiv.style.display = 'block';
+        } else if (tipsDiv) {
+            tipsDiv.style.display = 'none';
+        }
+    }, 1000);
+    </script>
     """, unsafe_allow_html=True)
     
     # Universal file uploader
