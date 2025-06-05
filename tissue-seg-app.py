@@ -517,39 +517,26 @@ def create_enhanced_camera_section():
                 st.write(f"**Capture time:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     with col2:
-        st.markdown("### 🎯 Quality Checklist")
+        st.markdown("### 🎯 Quality Guidelines")
         
-        # Interactive quality checklist
-        st.markdown("**Before capturing, ensure:**")
+        # Static quality guidelines (no interactive checklist)
+        st.markdown("""
+        **For optimal results, ensure:**
         
-        checklist_items = [
-            "Good lighting on wound area",
-            "Wound is clearly visible",
-            "Camera is steady and focused",
-            "Appropriate distance maintained",
-            "No obstructions in view",
-            "Patient positioned comfortably"
-        ]
+        ✓ **Good lighting** on wound area  
+        ✓ **Wound is clearly visible** and in focus  
+        ✓ **Camera is steady** and focused  
+        ✓ **Appropriate distance** maintained  
+        ✓ **No obstructions** in view  
+        ✓ **Patient positioned** comfortably  
         
-        checked_count = 0
-        for item in checklist_items:
-            if st.checkbox(item, key=f"check_{item.replace(' ', '_').replace(',', '')}"):
-                checked_count += 1
+        Following these guidelines will improve analysis accuracy and provide better clinical insights.
+        """)
         
-        # Quality score based on checklist
-        quality_score = (checked_count / len(checklist_items)) * 100
-        
-        if quality_score == 100:
-            st.success(f"🌟 Perfect setup! Quality score: {quality_score:.0f}%")
-        elif quality_score >= 80:
-            st.info(f"✅ Good setup! Quality score: {quality_score:.0f}%")
-        elif quality_score >= 60:
-            st.warning(f"⚠️ Fair setup. Quality score: {quality_score:.0f}%")
-        else:
-            st.error(f"❌ Poor setup. Quality score: {quality_score:.0f}%")
+        # Simple tip box
+        st.info("💡 **Pro Tip:** Take multiple shots and select the clearest one for analysis.")
     
     return camera_image
-
 def create_mobile_camera_interface():
     """Create a mobile-optimized camera interface"""
     
