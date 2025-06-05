@@ -3136,287 +3136,280 @@ if image_source:
 
                 # ──── Detailed Analysis Tabs with AI Enhancement ────────────────────────────────────────────────
 # ──── Mobile-Responsive Analysis Display ────────────────────────────────────────────────
-                if mobile_mode:
-                    # Mobile: Use expanders for better space management
-                    st.markdown("### 📋 Detailed Analysis")
-                    
-                    with st.expander("🧬 Tissue Composition", expanded=True):
-                        display_tissue_composition_mobile(tissue_data)
-                        
-                        # Original tissue composition code but in mobile format
-                        st.markdown("---")
-                        sorted_tissues = sorted(
-                            [(k, v) for k, v in tissue_data.items() if v['percentage'] > 0], 
-                            key=lambda x: x[1]['percentage'], reverse=True
-                        )
+if mobile_mode:
+    # Mobile: Use expanders for better space management
+    st.markdown("### 📋 Detailed Analysis")
+    
+    with st.expander("🧬 Tissue Composition", expanded=True):
+        display_tissue_composition_mobile(tissue_data)
+        
+        # Original tissue composition code but in mobile format
+        st.markdown("---")
+        sorted_tissues = sorted(
+            [(k, v) for k, v in tissue_data.items() if v['percentage'] > 0], 
+            key=lambda x: x[1]['percentage'], reverse=True
+        )
 
-                        for tissue, info in sorted_tissues:
-                            color = TISSUE_COLORS_HEX[tissue]
-                            st.markdown(f"""
-                            <div style="background: rgba(7, 66, 37, 0.1); padding: 15px; border-radius: 8px;
-                                margin: 10px 0; border-left: 4px solid {color}; display: flex; 
-                                justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                                <div style="display: flex; align-items: center;">
-                                    <div style="width: 20px; height: 20px; background-color: {color}; 
-                                        border-radius: 4px; margin-right: 10px; border: 1px solid #ccc;"></div>
-                                    <strong>{tissue.title()}</strong>
-                                </div>
-                                <div style="text-align: right;">
-                                    <div style="font-size: 1.2rem; font-weight: bold; color: #074225;">{info['percentage']:.1f}%</div>
-                                    <div style="font-size: 0.9rem; color: #666;">{info['area_px']:,} px</div>
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                    
-                    with st.expander("📊 AI Health Assessment", expanded=False):
-                        # Health score display
-                        if ai_health_score >= 80:
-                            score_color = "#28a745"
-                            score_icon = "🌟"
-                        elif ai_health_score >= 60:
-                            score_color = "#28a745"
-                            score_icon = "✅"
-                        elif ai_health_score >= 40:
-                            score_color = "#ffc107"
-                            score_icon = "⚠️"
-                        else:
-                            score_color = "#dc3545"
-                            score_icon = "🚨"
-                        
-                        st.markdown(f"""
-                        <div style="text-align: center; padding: 20px; background: {score_color};
-                                    border-radius: 10px; color: white; margin: 15px 0;">
-                            <div style="font-size: 2rem;">{score_icon}</div>
-                            <div style="font-size: 2rem; font-weight: bold;">{ai_health_score:.0f}/100</div>
-                            <div style="font-size: 1.1rem;">AI Health Score</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        st.markdown("**Detailed Assessment:**")
-                        st.write(health_assessment)
-                    
-                    with st.expander("🏥 Wound Classification", expanded=False):
-                        st.markdown(f"""
-                        <div style="text-align: center; padding: 20px; background: rgba(7, 66, 37, 0.1); 
-                            border-radius: 10px; margin: 20px 0; border: 1px solid #074225;">
-                            <div style="font-size: 1.5rem; font-weight: 700; color: #074225;">
-                                {pred_class.replace('_', ' ').title()}
-                            </div>
-                            <div style="font-size: 1rem; margin-top: 10px; color: #666;">
-                                AI Confidence: {confidence:.1%}
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        st.markdown("**Classification Analysis:**")
-                        st.write(classification_info)
-                    
-                    with st.expander("💡 Clinical Recommendations", expanded=False):
-                        if isinstance(ai_recommendations, list):
-                            for i, rec in enumerate(ai_recommendations, 1):
-                                st.markdown(f"""
-                                <div style="background: rgba(7, 66, 37, 0.1); padding: 15px; border-radius: 8px;
-                                            margin: 10px 0; border-left: 4px solid #074225;">
-                                    <strong>Recommendation {i}:</strong><br>
-                                    {rec}
-                                </div>
-                                """, unsafe_allow_html=True)
-                        else:
-                            st.write(ai_recommendations)
+        for tissue, info in sorted_tissues:
+            color = TISSUE_COLORS_HEX[tissue]
+            st.markdown(f"""
+            <div style="background: rgba(7, 66, 37, 0.1); padding: 15px; border-radius: 8px;
+                margin: 10px 0; border-left: 4px solid {color}; display: flex; 
+                justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center;">
+                    <div style="width: 20px; height: 20px; background-color: {color}; 
+                        border-radius: 4px; margin-right: 10px; border: 1px solid #ccc;"></div>
+                    <strong>{tissue.title()}</strong>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #074225;">{info['percentage']:.1f}%</div>
+                    <div style="font-size: 0.9rem; color: #666;">{info['area_px']:,} px</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    with st.expander("📊 AI Health Assessment", expanded=False):
+        # Health score display
+        if ai_health_score >= 80:
+            score_color = "#28a745"
+            score_icon = "🌟"
+        elif ai_health_score >= 60:
+            score_color = "#28a745"
+            score_icon = "✅"
+        elif ai_health_score >= 40:
+            score_color = "#ffc107"
+            score_icon = "⚠️"
+        else:
+            score_color = "#dc3545"
+            score_icon = "🚨"
+        
+        st.markdown(f"""
+        <div style="text-align: center; padding: 20px; background: {score_color};
+                    border-radius: 10px; color: white; margin: 15px 0;">
+            <div style="font-size: 2rem;">{score_icon}</div>
+            <div style="font-size: 2rem; font-weight: bold;">{ai_health_score:.0f}/100</div>
+            <div style="font-size: 1.1rem;">AI Health Score</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("**Detailed Assessment:**")
+        st.write(health_assessment)
+    
+    with st.expander("🏥 Wound Classification", expanded=False):
+        st.markdown(f"""
+        <div style="text-align: center; padding: 20px; background: rgba(7, 66, 37, 0.1); 
+            border-radius: 10px; margin: 20px 0; border: 1px solid #074225;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: #074225;">
+                {pred_class.replace('_', ' ').title()}
+            </div>
+            <div style="font-size: 1rem; margin-top: 10px; color: #666;">
+                AI Confidence: {confidence:.1%}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("**Classification Analysis:**")
+        st.write(classification_info)
+    
+    with st.expander("💡 Clinical Recommendations", expanded=False):
+        if isinstance(ai_recommendations, list):
+            for i, rec in enumerate(ai_recommendations, 1):
+                st.markdown(f"""
+                <div style="background: rgba(7, 66, 37, 0.1); padding: 15px; border-radius: 8px;
+                            margin: 10px 0; border-left: 4px solid #074225;">
+                    <strong>Recommendation {i}:</strong><br>
+                    {rec}
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.write(ai_recommendations)
+
+else:
+    # Desktop: Use regular tabs
+    tab1, tab2, tab3, tab4 = st.tabs(["🧬 Tissue Composition", "📊 AI Health Assessment", "🏥 AI Wound Classification", "💡 AI Clinical Recommendations"])
+
+# Desktop tab content (ALWAYS runs for desktop mode)
+if not mobile_mode:
+    with tab1:
+        st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
+        st.markdown('<div class="tab-title">Tissue Composition Breakdown</div>', unsafe_allow_html=True)
+
+        # Color legend first
+        st.markdown("Color Legend:")
+        legend_cols = st.columns(3)
+        for i, (tissue, color) in enumerate(TISSUE_COLORS_HEX.items()):
+            # Skip unused classes
+            if tissue not in DISPLAY_CLASSES:
+                continue
+            if tissue in tissue_data and tissue_data[tissue]['percentage'] > 0:
+                col_idx = i % 3
+                with legend_cols[col_idx]:
+                    st.markdown(f"""
+                    <div class="color-legend-item">
+                        <div style="width: 20px; height: 20px; background-color: {color}; 
+                            border-radius: 4px; margin-right: 10px; border: 1px solid {'#fff' if st.session_state.dark_mode else '#000'};"></div>
+                        <span class="color-legend-text">{tissue}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        # Tissue percentages with area
+        sorted_tissues = sorted(
+            [(k, v) for k, v in tissue_data.items() if v['percentage'] > 0], 
+            key=lambda x: x[1]['percentage'], reverse=True
+        )
+
+        for tissue, info in sorted_tissues:
+            color = TISSUE_COLORS_HEX[tissue]
+            st.markdown(f"""
+            <div class="tissue-item" style="border-left-color: {color};">
+                <div class="tissue-name">
+                    <div class="tissue-color-indicator" style="background-color: {color};"></div>
+                    {tissue.title()}
+                </div>
+                <div class="tissue-stats">
+                    <div class="tissue-percent">{info['percentage']:.1f}%</div>
+                    <div class="tissue-area">{info['area_px']:,} px</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with tab2:
+        st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
+        st.markdown('<div class="tab-title">AI-Enhanced Health Assessment</div>', unsafe_allow_html=True)
+
+        # Enhanced health score interpretation
+        if ai_health_score >= 80:
+            health_status = "Excellent"
+            health_color = COL['success']
+            health_icon = "🌟"
+        elif ai_health_score >= 60:
+            health_status = "Good"
+            health_color = COL['success']
+            health_icon = "✅"
+        elif ai_health_score >= 40:
+            health_status = "Fair"
+            health_color = COL['warning']
+            health_icon = "⚠"
+        else:
+            health_status = "Poor"
+            health_color = COL['danger']
+            health_icon = "🚨"
+
+        st.markdown(f"""
+        <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, {COL['dark']}, {COL['accent']}); 
+            border-radius: 15px; margin: 20px 0; color: white;">
+            <div style="font-size: 4rem; margin-bottom: 10px;">{health_icon}</div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: {health_color};">{ai_health_score:.0f}/100</div>
+            <div style="font-size: 1.5rem; margin-top: 10px;">AI Health Assessment: {health_status}</div>
+            <div style="font-size: 1.1rem; margin-top: 15px; opacity: 0.9;">{health_justification}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # AI-generated detailed assessment
+        st.markdown("**Detailed AI Health Assessment:**")
+        st.markdown(f"""
+        <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; 
+            margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
+            {health_assessment}
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+    with tab3:
+        st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
+        st.markdown('<div class="tab-title">AI Wound Classification Analysis</div>', unsafe_allow_html=True)
+        
+        # Classification confidence display
+        st.markdown(f"""
+        <div style="text-align: center; padding: 20px; background: {COL['card_bg']}; 
+            border-radius: 10px; margin: 20px 0; border: 1px solid {COL['border_color']};">
+            <div style="font-size: 1.8rem; font-weight: 700; color: {COL['highlight']};">
+                {pred_class.replace('_', ' ').title()}
+            </div>
+            <div style="font-size: 1.2rem; margin-top: 10px; color: {COL['text_primary']};">
+                AI Confidence: {confidence:.1%}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # AI-generated classification information
+        st.markdown("**AI Classification Analysis:**")
+        st.markdown(f"""
+        <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; 
+            margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
+            {classification_info}
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with tab4:
+        st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
+        st.markdown('<div class="tab-title">AI Clinical Recommendations</div>', unsafe_allow_html=True)
+        
+        if isinstance(ai_recommendations, list) and len(ai_recommendations) > 1:
+            # Display as numbered recommendations with better formatting
+            for i, recommendation in enumerate(ai_recommendations, 1):
+                # Clean up any remaining formatting issues
+                clean_rec = recommendation.strip()
                 
-                else:
-                    # Desktop: Use regular tabs (keep existing code)
-                    tab1, tab2, tab3, tab4 = st.tabs(["🧬 Tissue Composition", "📊 AI Health Assessment", "🏥 AI Wound Classification", "💡 AI Clinical Recommendations"])
-
-                with tab1:
-                    st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                    st.markdown('<div class="tab-title">Tissue Composition Breakdown</div>', unsafe_allow_html=True)
-
-                    # Color legend first
-                    st.markdown("Color Legend:")
-                    legend_cols = st.columns(3)
-                    for i, (tissue, color) in enumerate(TISSUE_COLORS_HEX.items()):
-                        # Skip unused classes
-                        if tissue not in DISPLAY_CLASSES:
-                            continue
-                        if tissue in tissue_data and tissue_data[tissue]['percentage'] > 0:
-                            col_idx = i % 3
-                            with legend_cols[col_idx]:
-                                st.markdown(f"""
-                                <div class="color-legend-item">
-                                    <div style="width: 20px; height: 20px; background-color: {color}; 
-                                        border-radius: 4px; margin-right: 10px; border: 1px solid {'#fff' if st.session_state.dark_mode else '#000'};"></div>
-                                    <span class="color-legend-text">{tissue}</span>
-                                </div>
-                                """, unsafe_allow_html=True)
-
-                    st.markdown("---")
-
-                    # Tissue percentages with area
-                    sorted_tissues = sorted(
-                        [(k, v) for k, v in tissue_data.items() if v['percentage'] > 0], 
-                        key=lambda x: x[1]['percentage'], reverse=True
-                    )
-
-                    for tissue, info in sorted_tissues:
-                        color = TISSUE_COLORS_HEX[tissue]
+                st.markdown(f"""
+                <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
+                    margin: 20px 0; border-left: 5px solid {COL['highlight']}; 
+                    border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 12px; font-size: 1.2rem;">
+                        🏥 Clinical Recommendation {i}
+                    </div>
+                    <div style="line-height: 1.7; font-size: 1.1rem; color: {COL['text_primary']};">
+                        {clean_rec}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            # Handle single recommendation or fallback
+            recommendations_text = ai_recommendations[0] if isinstance(ai_recommendations, list) else str(ai_recommendations)
+            
+            # Try to split into logical sections
+            import re
+            
+            # Split by common sentence patterns that indicate new recommendations
+            sections = re.split(r'(?<=[.!?])\s*(?=[A-Z][a-z]+\s+(?:the\s+)?(?:wound|patient|dressing|infection))', recommendations_text)
+            
+            if len(sections) > 1:
+                for i, section in enumerate(sections, 1):
+                    section = section.strip()
+                    if len(section) > 20:  # Only display substantial sections
                         st.markdown(f"""
-                        <div class="tissue-item" style="border-left-color: {color};">
-                            <div class="tissue-name">
-                                <div class="tissue-color-indicator" style="background-color: {color};"></div>
-                                {tissue.title()}
+                        <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
+                            margin: 20px 0; border-left: 5px solid {COL['highlight']}; 
+                            border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
+                            box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 12px; font-size: 1.2rem;">
+                                🏥 Clinical Recommendation {i}
                             </div>
-                            <div class="tissue-stats">
-                                <div class="tissue-percent">{info['percentage']:.1f}%</div>
-                                <div class="tissue-area">{info['area_px']:,} px</div>
+                            <div style="line-height: 1.7; font-size: 1.1rem; color: {COL['text_primary']};">
+                                {section}
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
-
-                    st.markdown('</div>', unsafe_allow_html=True)
-
-                with tab2:
-                    st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                    st.markdown('<div class="tab-title">AI-Enhanced Health Assessment</div>', unsafe_allow_html=True)
-
-                    # Enhanced health score interpretation
-                    if ai_health_score >= 80:
-                        health_status = "Excellent"
-                        health_color = COL['success']
-                        health_icon = "🌟"
-                    elif ai_health_score >= 60:
-                        health_status = "Good"
-                        health_color = COL['success']
-                        health_icon = "✅"
-                    elif ai_health_score >= 40:
-                        health_status = "Fair"
-                        health_color = COL['warning']
-                        health_icon = "⚠"
-                    else:
-                        health_status = "Poor"
-                        health_color = COL['danger']
-                        health_icon = "🚨"
-
-                    st.markdown(f"""
-                    <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, {COL['dark']}, {COL['accent']}); 
-                        border-radius: 15px; margin: 20px 0; color: white;">
-                        <div style="font-size: 4rem; margin-bottom: 10px;">{health_icon}</div>
-                        <div style="font-size: 2.5rem; font-weight: 800; color: {health_color};">{ai_health_score:.0f}/100</div>
-                        <div style="font-size: 1.5rem; margin-top: 10px;">AI Health Assessment: {health_status}</div>
-                        <div style="font-size: 1.1rem; margin-top: 15px; opacity: 0.9;">{health_justification}</div>
+            else:
+                # Display as single block with better formatting
+                st.markdown(f"""
+                <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
+                    margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
+                    line-height: 1.7; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 15px; font-size: 1.3rem;">
+                        🏥 Clinical Recommendations
                     </div>
-                    """, unsafe_allow_html=True)
-
-                    # AI-generated detailed assessment
-                    st.markdown("**Detailed AI Health Assessment:**")
-                    st.markdown(f"""
-                    <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; 
-                        margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
-                        {health_assessment}
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                    st.markdown('</div>', unsafe_allow_html=True)
-                    
-                with tab3:
-                    st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                    st.markdown('<div class="tab-title">AI Wound Classification Analysis</div>', unsafe_allow_html=True)
-                    
-                    # Classification confidence display
-                    st.markdown(f"""
-                    <div style="text-align: center; padding: 20px; background: {COL['card_bg']}; 
-                        border-radius: 10px; margin: 20px 0; border: 1px solid {COL['border_color']};">
-                        <div style="font-size: 1.8rem; font-weight: 700; color: {COL['highlight']};">
-                            {pred_class.replace('_', ' ').title()}
-                        </div>
-                        <div style="font-size: 1.2rem; margin-top: 10px; color: {COL['text_primary']};">
-                            AI Confidence: {confidence:.1%}
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # AI-generated classification information
-                    st.markdown("**AI Classification Analysis:**")
-                    st.markdown(f"""
-                    <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; 
-                        margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
-                        {classification_info}
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    st.markdown('</div>', unsafe_allow_html=True)
-
-                with tab4:
-                    st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                    st.markdown('<div class="tab-title">AI Clinical Recommendations</div>', unsafe_allow_html=True)
-                    
-                    if isinstance(ai_recommendations, list) and len(ai_recommendations) > 1:
-                        # Display as numbered recommendations with better formatting
-                        for i, recommendation in enumerate(ai_recommendations, 1):
-                            # Clean up any remaining formatting issues
-                            clean_rec = recommendation.strip()
-                            
-                            st.markdown(f"""
-                            <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
-                                margin: 20px 0; border-left: 5px solid {COL['highlight']}; 
-                                border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
-                                box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 12px; font-size: 1.2rem;">
-                                    🏥 Clinical Recommendation {i}
-                                </div>
-                                <div style="line-height: 1.7; font-size: 1.1rem; color: {COL['text_primary']};">
-                                    {clean_rec}
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                    else:
-                        # Handle single recommendation or fallback
-                        recommendations_text = ai_recommendations[0] if isinstance(ai_recommendations, list) else str(ai_recommendations)
-                        
-                        # Try to split into logical sections
-                        import re
-                        
-                        # Split by common sentence patterns that indicate new recommendations
-                        sections = re.split(r'(?<=[.!?])\s*(?=[A-Z][a-z]+\s+(?:the\s+)?(?:wound|patient|dressing|infection))', recommendations_text)
-                        
-                        if len(sections) > 1:
-                            for i, section in enumerate(sections, 1):
-                                section = section.strip()
-                                if len(section) > 20:  # Only display substantial sections
-                                    st.markdown(f"""
-                                    <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
-                                        margin: 20px 0; border-left: 5px solid {COL['highlight']}; 
-                                        border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
-                                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                        <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 12px; font-size: 1.2rem;">
-                                            🏥 Clinical Recommendation {i}
-                                        </div>
-                                        <div style="line-height: 1.7; font-size: 1.1rem; color: {COL['text_primary']};">
-                                            {section}
-                                        </div>
-                                    </div>
-                                    """, unsafe_allow_html=True)
-                        else:
-                            # Display as single block with better formatting
-                            st.markdown(f"""
-                            <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
-                                margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
-                                line-height: 1.7; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 15px; font-size: 1.3rem;">
-                                    🏥 Clinical Recommendations
-                                </div>
-                                <div>{recommendations_text}</div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                    
-                    st.markdown('</div>', unsafe_allow_html=True)
-                    
-            except Exception as e:
-                st.error(f"Error processing image: {str(e)}")
-                st.write("Exception details:")
-                st.exception(e)
-                progress_tracker.clear()
-                clear_memory()
+                    <div>{recommendations_text}</div>
+                </div>
+                """, unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
 
