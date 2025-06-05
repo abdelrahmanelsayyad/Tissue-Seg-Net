@@ -2900,8 +2900,6 @@ def create_mobile_camera_upload_section():
     
     st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
     
-    # Mobile vs Desktop detection
-    mobile_mode = st.checkbox("📱 Mobile Device", value=False, help="Check if using mobile device")
     
     if mobile_mode:
         # Mobile-first design
