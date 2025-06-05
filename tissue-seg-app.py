@@ -25,7 +25,6 @@ import pickle
 from fastai.basics import *
 import gc
 import re
-import streamlit.components.v1 as components
 # Gemini AI Integration
 import google.generativeai as genai
 import tempfile
@@ -469,7 +468,6 @@ model_download_success = download_models()
 # ──── Enhanced Camera Functions (Optional) ────────────────────────────────────────
 
 def create_enhanced_camera_section():
-    COL = get_theme_colors()
     """Create an enhanced camera capture section with additional features"""
     
     st.markdown(f"""
@@ -552,7 +550,6 @@ def create_enhanced_camera_section():
     
     return camera_image
 def create_mobile_camera_interface():
-    COL = get_theme_colors()
     """Create a mobile-optimized camera interface"""
     
     st.markdown(f"""
@@ -1021,128 +1018,6 @@ def generate_professional_report(tissue_data, wound_type, confidence, health_sco
 
 
 # ──── Dynamic Color Palette Based on Theme ───────────────────────────────────────────────────────
-def is_mobile():
-    """Detect if user is on mobile device"""
-    return False  # Simple implementation
-
-class MobileProgressBar:
-    def __init__(self, total_steps=100):
-        self.total_steps = total_steps
-        self.current_step = 0
-        self.start_time = time.time()
-        self.progress_bar = None
-        self.status_text = None
-        
-    def initialize(self):
-        """Initialize mobile-friendly progress bar"""
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, #074225 0%, #3B6C53 100%);
-                    padding: 15px; border-radius: 10px; margin: 15px 0;
-                    box-shadow: 0 6px 20px rgba(0,0,0,0.15); color: white; text-align: center;">
-            <h4 style="margin: 0 0 10px 0; color: white;">🩹 Analyzing Wound</h4>
-            <p style="margin: 0; font-size: 0.9rem;">AI processing in progress...</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        self.status_text = st.empty()
-        self.progress_bar = st.progress(0)
-        
-    def update(self, step, total_steps, status_message, step_details=None):
-        """Update progress with mobile-friendly display"""
-        progress_percent = step / total_steps
-        self.progress_bar.progress(progress_percent)
-        
-        self.status_text.markdown(f"""
-        <div style="text-align: center; padding: 10px; background: rgba(7, 66, 37, 0.1);
-                    border-radius: 8px; margin: 10px 0;">
-            <strong>{status_message}</strong><br>
-            <small>Step {step}/{total_steps} ({progress_percent:.0%})</small>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    def complete(self, success_message="Analysis Complete!"):
-        """Show mobile-friendly completion"""
-        self.progress_bar.progress(1.0)
-        self.status_text.markdown(f"""
-        <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #28a745, #20c997);
-                    border-radius: 10px; margin: 15px 0; color: white;">
-            <h4 style="margin: 0; color: white;">✅ {success_message}</h4>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        time.sleep(1)
-        self.clear()
-    
-    def clear(self):
-        """Clear progress display"""
-        if hasattr(self, 'status_text') and self.status_text:
-            self.status_text.empty()
-def create_mobile_camera_interface():
-    """Enhanced mobile camera interface"""
-    
-    st.markdown("""
-    <div style="background: linear-gradient(135deg, #074225 0%, #3B6C53 100%); 
-                padding: 20px; border-radius: 15px; text-align: center; color: white; margin: 20px 0;">
-        <h3 style="margin-top: 0;">📱 Mobile Wound Capture</h3>
-        <p>Tap the camera button below to capture a wound image</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Mobile-specific tips
-    st.info("""
-    📱 **Mobile Photography Tips:**
-    - Hold phone horizontally (landscape mode)
-    - Use both hands for stability
-    - Tap screen to focus on wound
-    - Use timer or volume button to reduce shake
-    - Take 2-3 photos and choose the best one
-    """)
-    
-    # Camera input
-    camera_image = st.camera_input(
-        "📸 Capture Wound Image",
-        help="Position camera over wound and tap to capture"
-    )
-    
-    if camera_image:
-        st.success("✅ Image captured! Scroll down to analyze.")
-    
-    return camera_image
-def display_mobile_results(tissue_data, ai_health_score, pred_class, confidence, mobile_mode):
-    """Display results optimized for mobile"""
-    
-    if mobile_mode:
-        # Mobile: Single column layout
-        st.markdown("### 📊 Analysis Results")
-        
-        # Key metrics in accordion for space saving
-        with st.expander("📈 Key Metrics", expanded=True):
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Health Score", f"{ai_health_score:.0f}/100")
-                st.metric("Wound Type", pred_class.replace('_', ' ').title())
-            with col2:
-                dominant_tissue, dominant_percent = get_dominant_tissue(tissue_data)
-                tissue_types = len([t for t in tissue_data.keys() if t != "background" and tissue_data[t]['percentage'] > 0])
-                st.metric("Dominant Tissue", dominant_tissue.title())
-                st.metric("Tissue Types", str(tissue_types))
-
-def display_tissue_composition_mobile(tissue_data):
-    """Mobile-optimized tissue composition display"""
-    
-    # Color legend in compact format
-    st.markdown("**Color Legend:**")
-    for tissue, info in tissue_data.items():
-        if info['percentage'] > 0:
-            color = TISSUE_COLORS_HEX[tissue]
-            st.markdown(f"""
-            <div style="display: flex; align-items: center; margin: 5px 0;">
-                <div style="width: 16px; height: 16px; background-color: {color}; 
-                           border-radius: 3px; margin-right: 8px; border: 1px solid #ccc;"></div>
-                <span><strong>{tissue.title()}:</strong> {info['percentage']:.1f}% ({info['area_px']:,} px)</span>
-            </div>
-            """, unsafe_allow_html=True)
-        
 def get_theme_colors():
     if st.session_state.dark_mode:
         return {
@@ -1184,911 +1059,6 @@ def get_theme_colors():
             "card_bg": "rgba(74, 138, 106, 0.05)",
             "border_color": "rgba(46, 125, 50, 0.2)",
         }
-
-def get_auto_responsive_css(COL):
-    return f"""
-<style>
-  /* Base Styles */
-  .stApp {{ 
-    background: {"linear-gradient(135deg, " + COL['surface'] + " 0%, " + COL['surface_secondary'] + " 100%)" if st.session_state.dark_mode else COL['surface']}; 
-    color: {COL['text_primary']}; 
-    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; 
-  }}
-  
-  /* Remove default Streamlit padding on mobile */
-  @media (max-width: 768px) {{
-    .main .block-container {{
-      padding-top: 1rem !important;
-      padding-left: 1rem !important;
-      padding-right: 1rem !important;
-      max-width: 100% !important;
-    }}
-    
-    .stApp > header {{
-      display: none !important;
-    }}
-  }}
-  
-  /* Header Styles - Mobile Optimized */
-  .header {{ 
-    text-align: center; 
-    padding: 25px 15px; 
-    background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 50%, {COL['dark']} 100%); 
-    color: {COL['text_secondary'] if st.session_state.dark_mode else '#ffffff'}; 
-    border-radius: 15px; 
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
-    margin-bottom: 20px; 
-    position: relative;
-    overflow: hidden;
-  }}
-  
-  .header h1 {{ 
-    margin: 0; 
-    font-size: 2rem; 
-    font-weight: 800; 
-    letter-spacing: 1px; 
-    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    color: #ffffff;
-  }}
-  
-  .header p {{ 
-    font-size: 1rem; 
-    margin-top: 10px; 
-    opacity: 0.95; 
-    font-weight: 400;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    color: #ffffff !important;
-    line-height: 1.4;
-  }}
-  
-  /* Mobile Header Adjustments */
-  @media (max-width: 768px) {{
-    .header {{
-      padding: 20px 10px;
-      margin: 10px -1rem 15px -1rem;
-      border-radius: 0;
-    }}
-    
-    .header h1 {{
-      font-size: 1.5rem;
-      letter-spacing: 0.5px;
-    }}
-    
-    .header p {{
-      font-size: 0.9rem;
-      margin-top: 8px;
-    }}
-  }}
-  
-  /* Instructions Box - Mobile Optimized */
-  .instructions {{ 
-    background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #e8f5e9 0%, #f1f8e9 100%)"}; 
-    padding: 20px; 
-    border-left: 6px solid {COL['highlight']}; 
-    border-radius: 12px; 
-    margin-bottom: 20px; 
-    color: {COL['text_primary']}; 
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    border: 1px solid {COL['border_color']};
-  }}
-  
-  .instructions strong {{ 
-    color: {COL['highlight']}; 
-    font-size: 1.2rem; 
-  }}
-  
-  .instructions ol {{ 
-    padding-left: 20px; 
-    margin-top: 15px; 
-  }}
-  
-  .instructions li {{ 
-    margin-bottom: 8px; 
-    font-size: 1rem; 
-    line-height: 1.5;
-    color: {COL['text_primary']};
-  }}
-  
-  /* Mobile Instructions */
-  @media (max-width: 768px) {{
-    .instructions {{
-      padding: 15px;
-      margin: 10px -1rem 15px -1rem;
-      border-radius: 0;
-      border-left: 4px solid {COL['highlight']};
-    }}
-    
-    .instructions strong {{
-      font-size: 1.1rem;
-    }}
-    
-    .instructions li {{
-      font-size: 0.95rem;
-      margin-bottom: 6px;
-    }}
-    
-    .instructions ol {{
-      padding-left: 15px;
-    }}
-  }}
-  
-  /* Logo Container - Mobile Responsive */
-  .logo-container {{
-    background: linear-gradient(145deg, {COL['highlight']} 0%, #4a7a5c 100%); 
-    padding: 20px; 
-    border-radius: 15px; 
-    text-align: center; 
-    margin-bottom: 20px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    border: 2px solid rgba(255,255,255,0.1);
-  }}
-  
-  @media (max-width: 768px) {{
-    .logo-container {{
-      padding: 15px 10px;
-      margin: 10px -1rem 15px -1rem;
-      border-radius: 0;
-    }}
-  }}
-  
-  img.logo {{ 
-    display: block; 
-    margin: 0 auto; 
-    width: 100%; 
-    max-width: 800px;
-    padding: 5px; 
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-  }}
-  
-  /* Button Styling - Mobile Optimized */
-  .stButton>button {{ 
-    background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 50%, {COL['dark']} 100%); 
-    color: white; 
-    border: none; 
-    border-radius: 12px; 
-    padding: 16px 30px; 
-    font-weight: 700; 
-    transition: all .3s ease; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
-    width: 100%;
-    font-size: 1.1rem;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    min-height: 50px;
-  }}
-  
-  .stButton>button:hover {{ 
-    background: linear-gradient(135deg, {COL['accent']} 0%, {COL['gradient_start']} 50%, {COL['primary']} 100%); 
-    transform: translateY(-2px); 
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2); 
-  }}
-  
-  /* Mobile Button Adjustments */
-  @media (max-width: 768px) {{
-    .stButton>button {{
-      padding: 14px 20px;
-      font-size: 1rem;
-      letter-spacing: 0.3px;
-      min-height: 45px;
-    }}
-    
-    .stButton>button:hover {{
-      transform: none; /* Disable hover transforms on mobile */
-    }}
-  }}
-  
-  /* File Uploader - Mobile Friendly */
-  .css-1cpxqw2, [data-testid="stFileUploader"] {{ 
-    border: 2px dashed {COL['accent']}; 
-    background: {COL['card_bg']}; 
-    border-radius: 15px; 
-    padding: 20px; 
-    transition: all 0.3s ease;
-  }}
-  
-  @media (max-width: 768px) {{
-    .css-1cpxqw2, [data-testid="stFileUploader"] {{
-      padding: 15px 10px;
-      border-radius: 10px;
-    }}
-  }}
-  
-  /* Image Container - Mobile Responsive */
-  .img-container {{ 
-    background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #f5f5f5 0%, #ffffff 100%)"}; 
-    padding: 20px; 
-    border-radius: 15px; 
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1); 
-    margin-bottom: 15px; 
-    text-align: center;
-    border: 1px solid {COL['border_color']};
-  }}
-  
-  @media (max-width: 768px) {{
-    .img-container {{
-      padding: 15px 10px;
-      border-radius: 10px;
-      margin: 10px -1rem 15px -1rem;
-    }}
-  }}
-  
-  /* Image Styling - Mobile Optimized */
-  .img-container img,
-  .stImage img {{ 
-    max-height: 1200px !important;
-    max-width: 100% !important;
-    width: auto !important; 
-    height: auto !important;
-    margin: 0 auto !important; 
-    display: block !important; 
-    border-radius: 10px !important;
-    object-fit: contain !important;
-    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.1));
-  }}
-  
-  @media (max-width: 768px) {{
-    .img-container img,
-    .stImage img {{
-      max-height: 400px !important;
-      border-radius: 8px !important;
-    }}
-  }}
-  
-  /* Image Captions - Mobile Friendly */
-  .img-container figcaption, .stImage figcaption, .css-1b0udgb, .css-83jbox {{
-    font-size: 1.2rem !important;
-    color: {COL['highlight']} !important;
-    margin-top: 15px !important;
-    font-weight: 700 !important;
-    text-align: center !important;
-    width: 100% !important;
-    letter-spacing: 0.3px;
-  }}
-  
-  @media (max-width: 768px) {{
-    .img-container figcaption, .stImage figcaption, .css-1b0udgb, .css-83jbox {{
-      font-size: 1rem !important;
-      margin-top: 10px !important;
-    }}
-  }}
-  
-  /* Guidelines Box - Mobile Optimized */
-  .guidelines-box {{ 
-    background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #f1f8e9 0%, #ffffff 100%)"}; 
-    padding: 20px; 
-    border-radius: 12px; 
-    color: {COL['text_primary']}; 
-    margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border-left: 4px solid {COL['highlight']};
-    border: 1px solid {COL['border_color']};
-  }}
-  
-  @media (max-width: 768px) {{
-    .guidelines-box {{
-      padding: 15px;
-      margin: 10px 0;
-    }}
-  }}
-  
-  .guidelines-box h4 {{ 
-    color: {COL['highlight']}; 
-    margin-top: 0; 
-    font-size: 1.2rem; 
-    font-weight: 700;
-  }}
-  
-  .guidelines-box ul li {{ 
-    padding-left: 2rem; 
-    position: relative;
-    margin-bottom: 8px;
-    font-size: 1rem;
-    line-height: 1.4;
-    color: {COL['text_primary']};
-  }}
-  
-  @media (max-width: 768px) {{
-    .guidelines-box h4 {{
-      font-size: 1.1rem;
-    }}
-    
-    .guidelines-box ul li {{
-      font-size: 0.9rem;
-      padding-left: 1.5rem;
-      margin-bottom: 6px;
-    }}
-  }}
-  
-  /* Results Header - Mobile Responsive */
-  .results-header {{
-    text-align: center;
-    color: {COL['highlight']};
-    margin: 30px 0 20px;
-    font-size: 1.8rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }}
-  
-  @media (max-width: 768px) {{
-    .results-header {{
-      font-size: 1.4rem;
-      margin: 20px 0 15px;
-      letter-spacing: 0.5px;
-    }}
-  }}
-  
-  /* Metrics Cards - Mobile Stack */
-  .metric-card {{
-    background: linear-gradient(145deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 100%);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    color: white;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    margin-bottom: 15px;
-    border: 1px solid {COL['border_color']};
-  }}
-  
-  @media (max-width: 768px) {{
-    .metric-card {{
-      padding: 15px 10px;
-      margin-bottom: 10px;
-    }}
-  }}
-  
-  .metric-value {{
-    font-size: 1.8rem;
-    font-weight: 900;
-    margin-bottom: 8px;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  }}
-  
-  .metric-label {{
-    font-size: 1rem;
-    color: rgba(255,255,255,0.9);
-    font-weight: 600;
-    letter-spacing: 0.3px;
-  }}
-  
-  @media (max-width: 768px) {{
-    .metric-value {{
-      font-size: 1.5rem;
-      margin-bottom: 5px;
-    }}
-    
-    .metric-label {{
-      font-size: 0.9rem;
-    }}
-  }}
-  
-  /* Tissue Composition - Mobile Friendly */
-  .tissue-item {{
-    background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%)"}; 
-    padding: 15px 20px;
-    margin: 12px 0;
-    border-radius: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border-left: 4px solid transparent;
-    border: 1px solid {COL['border_color']};
-    color: {COL['text_primary']};
-  }}
-  
-  @media (max-width: 768px) {{
-    .tissue-item {{
-      padding: 12px 15px;
-      margin: 8px -1rem;
-      border-radius: 0;
-      flex-direction: column;
-      text-align: center;
-      gap: 10px;
-    }}
-  }}
-  
-  .tissue-name {{
-    font-weight: 700;
-    font-size: 1.2rem;
-    text-transform: capitalize;
-    display: flex;
-    align-items: center;
-    color: {COL['text_primary']};
-  }}
-  
-  @media (max-width: 768px) {{
-    .tissue-name {{
-      font-size: 1.1rem;
-      justify-content: center;
-    }}
-  }}
-  
-  .tissue-color-indicator {{
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    margin-right: 12px;
-    border: 2px solid {"rgba(255,255,255,0.4)" if st.session_state.dark_mode else "rgba(0,0,0,0.2)"};
-    display: inline-block;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  }}
-  
-  .tissue-stats {{
-    display: flex;
-    gap: 20px;
-    align-items: center;
-  }}
-  
-  @media (max-width: 768px) {{
-    .tissue-stats {{
-      gap: 15px;
-      justify-content: center;
-    }}
-  }}
-  
-  .tissue-percent {{
-    font-weight: 800;
-    font-size: 1.3rem;
-    color: {COL['highlight']};
-  }}
-  
-  .tissue-area {{
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: {COL['text_primary']};
-    opacity: 0.9;
-  }}
-  
-  @media (max-width: 768px) {{
-    .tissue-percent {{
-      font-size: 1.2rem;
-    }}
-    
-    .tissue-area {{
-      font-size: 1rem;
-    }}
-  }}
-  
-  /* Analysis Tabs - Mobile Optimized */
-  .analysis-tab {{
-    background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%)"};  
-    border-radius: 12px;
-    padding: 20px;
-    margin: 20px 0;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    border: 1px solid {COL['border_color']};
-  }}
-  
-  @media (max-width: 768px) {{
-    .analysis-tab {{
-      padding: 15px;
-      margin: 15px -1rem;
-      border-radius: 0;
-    }}
-  }}
-  
-  .tab-title {{
-    color: {COL['highlight']};
-    font-size: 1.4rem;
-    font-weight: 800;
-    margin-bottom: 20px;
-    text-align: center;
-    border-bottom: 2px solid {COL['accent']};
-    padding-bottom: 12px;
-    letter-spacing: 0.5px;
-  }}
-  
-  @media (max-width: 768px) {{
-    .tab-title {{
-      font-size: 1.2rem;
-      margin-bottom: 15px;
-      padding-bottom: 8px;
-    }}
-  }}
-  
-  /* Tabs Styling - Mobile Responsive */
-  .stTabs [data-baseweb="tab-list"] {{
-    gap: 4px;
-    background: transparent !important;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }}
-  
-  .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {{
-    display: none;
-  }}
-  
-  .stTabs [data-baseweb="tab"] {{
-    height: 45px;
-    white-space: nowrap;
-    background-color: transparent !important;
-    border: 2px solid {COL['accent']} !important;
-    border-radius: 10px !important;
-    color: {COL['text_primary']} !important;
-    font-weight: 600 !important;
-    padding: 8px 15px !important;
-    margin: 0 2px !important;
-    transition: all 0.3s ease !important;
-    min-width: 120px;
-  }}
-  
-  @media (max-width: 768px) {{
-    .stTabs [data-baseweb="tab"] {{
-      height: 40px;
-      padding: 6px 10px !important;
-      font-size: 0.9rem !important;
-      min-width: 100px;
-    }}
-  }}
-  
-  .stTabs [data-baseweb="tab"]:hover {{
-    background-color: {COL['accent']} !important;
-    color: white !important;
-  }}
-  
-  .stTabs [aria-selected="true"] {{
-    background: linear-gradient(135deg, {COL['gradient_start']}, {COL['gradient_end']}) !important;
-    color: white !important;
-    border-color: {COL['highlight']} !important;
-  }}
-  
-  /* Progress Bar Enhancements - Mobile */
-  .enhanced-progress-container {{
-    background: linear-gradient(135deg, #074225 0%, #3B6C53 100%);
-    padding: 20px;
-    border-radius: 15px;
-    margin: 15px 0;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    border: 2px solid rgba(122,164,140,0.3);
-  }}
-  
-  @media (max-width: 768px) {{
-    .enhanced-progress-container {{
-      padding: 15px 10px;
-      margin: 10px -1rem;
-      border-radius: 0;
-    }}
-  }}
-  
-  .progress-title {{
-    color: #ffffff;
-    font-size: 1.6rem;
-    font-weight: 800;
-    text-align: center;
-    margin-bottom: 12px;
-    letter-spacing: 1px;
-  }}
-  
-  @media (max-width: 768px) {{
-    .progress-title {{
-      font-size: 1.3rem;
-      margin-bottom: 8px;
-      letter-spacing: 0.5px;
-    }}
-  }}
-  
-  .progress-subtitle {{
-    color: rgba(255,255,255,0.95);
-    font-size: 1.1rem;
-    text-align: center;
-    margin-bottom: 20px;
-    font-weight: 600;
-  }}
-  
-  @media (max-width: 768px) {{
-    .progress-subtitle {{
-      font-size: 1rem;
-      margin-bottom: 15px;
-    }}
-  }}
-  
-  .progress-stats {{
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-    color: rgba(255,255,255,0.9);
-    font-size: 0.9rem;
-    font-weight: 500;
-  }}
-  
-  @media (max-width: 768px) {{
-    .progress-stats {{
-      font-size: 0.8rem;
-      flex-direction: column;
-      gap: 5px;
-      text-align: center;
-    }}
-  }}
-  
-  /* Camera Interface - Mobile Optimized */
-  .mobile-camera-container {{
-    background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 100%);
-    padding: 20px;
-    border-radius: 15px;
-    text-align: center;
-    color: white;
-    margin: 20px 0;
-  }}
-  
-  @media (max-width: 768px) {{
-    .mobile-camera-container {{
-      margin: 10px -1rem;
-      border-radius: 0;
-      padding: 15px 10px;
-    }}
-  }}
-  
-  /* Footer - Mobile Friendly */
-  .footer {{ 
-    text-align: center; 
-    padding: 25px 15px; 
-    margin-top: 40px; 
-    border-top: 2px solid {COL['dark']}; 
-    color: {COL['text_primary']}; 
-    font-size: 1rem; 
-    font-weight: 500;
-    background: {COL['card_bg']};
-    border-radius: 15px 15px 0 0;
-  }}
-  
-  @media (max-width: 768px) {{
-    .footer {{
-      padding: 20px 10px;
-      margin: 20px -1rem 0 -1rem;
-      border-radius: 0;
-      font-size: 0.9rem;
-    }}
-  }}
-  
-  /* Section Wrapper - Mobile Adjustments */
-  .section-wrapper {{
-    width: 100%;
-    margin: 15px 0;
-  }}
-  
-  @media (max-width: 768px) {{
-    .section-wrapper {{
-      margin: 10px 0;
-    }}
-  }}
-  
-  /* Color Legend - Mobile Friendly */
-  .color-legend-item {{
-    display: flex;
-    align-items: center;
-    margin: 4px 0;
-    color: {COL['text_primary']};
-  }}
-  
-  @media (max-width: 768px) {{
-    .color-legend-item {{
-      justify-content: center;
-      margin: 3px 0;
-    }}
-  }}
-  
-  /* Report Container - Mobile Optimized */
-  .report-container {{
-    background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%)"};
-    border-radius: 12px;
-    padding: 20px;
-    margin: 20px 0;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    border: 1px solid {COL['border_color']};
-    color: {COL['text_primary']};
-    line-height: 1.6;
-  }}
-  
-  @media (max-width: 768px) {{
-    .report-container {{
-      padding: 15px;
-      margin: 15px -1rem;
-      border-radius: 0;
-    }}
-  }}
-  
-  /* Touch-friendly improvements */
-  @media (hover: none) and (pointer: coarse) {{
-    .stButton>button:hover {{
-      transform: none !important;
-      background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 50%, {COL['dark']} 100%) !important;
-    }}
-    
-    .metric-card:hover {{
-      transform: none !important;
-    }}
-    
-    .tissue-item:hover {{
-      transform: none !important;
-    }}
-    
-    .img-container:hover {{
-      transform: none !important;
-    }}
-  }}
-  
-  /* Prevent horizontal scroll */
-  .main .block-container {{
-    overflow-x: hidden;
-  }}
-  
-  /* Better tap targets */
-  @media (max-width: 768px) {{
-    .stTabs [data-baseweb="tab"] {{
-      min-height: 44px !important;
-    }}
-    
-    .stButton > button {{
-      min-height: 44px !important;
-    }}
-  }}
-</style>
-"""
-
-def detect_mobile_device():
-    """Automatically detect if user is on mobile device using JavaScript"""
-    
-    # JavaScript code to detect mobile devices
-    mobile_detection_js = """
-    <script>
-    function detectMobile() {
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        
-        // Check for mobile user agents
-        const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
-        const isMobileUA = mobileRegex.test(userAgent.toLowerCase());
-        
-        // Check screen size (mobile typically < 768px width)
-        const isMobileScreen = window.innerWidth <= 768;
-        
-        // Check for touch capability
-        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-        
-        // Combine checks - if any indicate mobile, consider it mobile
-        const isMobile = isMobileUA || (isMobileScreen && isTouchDevice);
-        
-        // Store result in sessionStorage for persistence
-        sessionStorage.setItem('isMobile', isMobile.toString());
-        
-        // Also send to Streamlit via query params (fallback method)
-        if (isMobile && !window.location.search.includes('mobile=true')) {
-            const url = new URL(window.location);
-            url.searchParams.set('mobile', 'true');
-            // Don't redirect, just set the param for next load
-        }
-        
-        return isMobile;
-    }
-    
-    // Run detection
-    const mobileResult = detectMobile();
-    
-    // Create a custom event to communicate with Streamlit
-    const event = new CustomEvent('mobileDetected', {
-        detail: { isMobile: mobileResult }
-    });
-    document.dispatchEvent(event);
-    
-    // Also try to set a data attribute on body for CSS targeting
-    if (mobileResult) {
-        document.body.setAttribute('data-mobile', 'true');
-        document.body.classList.add('mobile-device');
-    } else {
-        document.body.setAttribute('data-mobile', 'false');
-        document.body.classList.add('desktop-device');
-    }
-    </script>
-    """
-    
-    # Inject the JavaScript
-    components.html(mobile_detection_js, height=0)
-    
-    # Check URL parameters as fallback
-    query_params = st.experimental_get_query_params()
-    mobile_from_url = query_params.get('mobile', ['false'])[0].lower() == 'true'
-    
-    return mobile_from_url
-
-def get_mobile_status():
-    """Get mobile status with multiple detection methods"""
-    
-    # Method 1: Check session state (persisted across reruns)
-    if 'is_mobile_detected' in st.session_state:
-        return st.session_state.is_mobile_detected
-    
-    # Method 2: Try URL parameters
-    query_params = st.experimental_get_query_params()
-    if 'mobile' in query_params:
-        is_mobile = query_params['mobile'][0].lower() == 'true'
-        st.session_state.is_mobile_detected = is_mobile
-        return is_mobile
-    
-    # Method 3: Check user agent string (server-side detection)
-    try:
-        # Get headers if available (this is limited in Streamlit)
-        user_agent = st.context.headers.get('User-Agent', '').lower() if hasattr(st, 'context') and hasattr(st.context, 'headers') else ''
-        
-        mobile_keywords = ['android', 'webos', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone']
-        is_mobile_ua = any(keyword in user_agent for keyword in mobile_keywords)
-        
-        if is_mobile_ua:
-            st.session_state.is_mobile_detected = True
-            return True
-    except:
-        pass
-    
-    # Method 4: JavaScript detection (run this and check next time)
-    detect_mobile_device()
-    
-    # Default to desktop if unable to detect
-    is_mobile = False
-    st.session_state.is_mobile_detected = is_mobile
-    return is_mobile
-# 4. MOBILE-OPTIMIZED LAYOUT FUNCTION
-# Replace the existing layout sections with this:
-
-def create_mobile_responsive_layout():
-    """Create a mobile-responsive layout"""
-    
-    # Detect if we need mobile layout
-    mobile_mode = st.checkbox("📱 Mobile Mode", help="Enable mobile-optimized interface")
-    
-    if mobile_mode:
-        # Mobile-specific layout
-        st.markdown("### 📱 Mobile Upload")
-        
-        # Single column layout for mobile
-        uploaded = st.file_uploader("Upload wound image", type=["png","jpg","jpeg"])
-        
-        # Mobile camera section
-        st.markdown("---")
-        st.markdown("### 📸 Camera Capture")
-        camera_image = st.camera_input("Take a photo of the wound")
-        
-        # Mobile guidelines in expandable section
-        with st.expander("📋 Mobile Photography Tips"):
-            st.markdown("""
-            **Quick Mobile Tips:**
-            - Use landscape orientation for better results
-            - Tap screen to focus on wound area
-            - Use volume buttons as shutter if available
-            - Ensure good lighting (natural light preferred)
-            - Keep device steady against a surface
-            - Take multiple shots and choose the best one
-            """)
-    else:
-        # Desktop layout (existing)
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            upload_tab, camera_tab = st.tabs(["📁 Upload Image", "📸 Camera Capture"])
-            
-            with upload_tab:
-                uploaded = st.file_uploader("Upload wound image", type=["png","jpg","jpeg"])
-            
-            with camera_tab:
-                camera_image = create_enhanced_camera_section()
-        
-        with col2:
-            st.markdown("""
-            <div class="guidelines-box">
-                <h4>📸 Image Guidelines</h4>
-                <ul>
-                    <li>Good lighting & focus</li>
-                    <li>Wound clearly visible</li>
-                    <li>Consistent distance</li>
-                    <li>Include reference scale</li>
-                    <li>Clean wound area</li>
-                </ul>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    return uploaded, camera_image, mobile_mode
-
-
 # Add this function after your existing helper functions (around line 500-600)
 def create_pdf_report(tissue_data, wound_type, confidence, health_score, recommendations, 
                      original_image, tissue_analysis_image, overlay_image, timestamp_str):
@@ -2499,13 +1469,600 @@ with col3:
 COL = get_theme_colors()
 
 # Enhanced CSS with theme support (keeping the same CSS as before)
-# Apply mobile-friendly CSS
-def apply_mobile_css():
-    COL = get_theme_colors()
-    mobile_css = get_auto_responsive_css(COL)  # <- Changed this line
-    st.markdown(mobile_css, unsafe_allow_html=True)
+st.markdown(f"""
+<style>
+  /* Base Styles */
+  .stApp {{ 
+    background: {"linear-gradient(135deg, " + COL['surface'] + " 0%, " + COL['surface_secondary'] + " 100%)" if st.session_state.dark_mode else COL['surface']}; 
+    color: {COL['text_primary']}; 
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; 
+  }}
+  
+  /* Header Styles with enhanced gradient and animations */
+  .header {{ 
+    text-align: center; 
+    padding: 40px 30px; 
+    background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 50%, {COL['dark']} 100%); 
+    color: {COL['text_secondary'] if st.session_state.dark_mode else '#ffffff'}; 
+    border-radius: 20px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2), 0 0 50px {COL['border_color']}; 
+    margin-bottom: 40px; 
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }}
+  
+  .header::before {{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    animation: shimmer 3s infinite;
+  }}
+  
+  @keyframes shimmer {{
+    0% {{ left: -100%; }}
+    100% {{ left: 100%; }}
+  }}
+  
+  .header h1 {{ 
+    margin: 0; 
+    font-size: 3rem; 
+    font-weight: 800; 
+    letter-spacing: 2px; 
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    color: #ffffff;
+  }}
+  
+  .header p {{ 
+    font-size: 1.3rem; 
+    margin-top: 15px; 
+    opacity: 0.95; 
+    font-weight: 400;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    color: #ffffff !important;
+  }}
+  
+  /* Enhanced Instructions Box */
+  .instructions {{ 
+    background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #e8f5e9 0%, #f1f8e9 100%)"}; 
+    padding: 35px; 
+    border-left: 8px solid {COL['highlight']}; 
+    border-radius: 15px; 
+    margin-bottom: 40px; 
+    color: {COL['text_primary']}; 
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.1);
+    border: 1px solid {COL['border_color']};
+  }}
+  
+  .instructions strong {{ 
+    color: {COL['highlight']}; 
+    font-size: 1.4rem; 
+    text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }}
+  
+  .instructions ol {{ 
+    padding-left: 35px; 
+    margin-top: 20px; 
+    counter-reset: item;
+  }}
+  
+  .instructions li {{ 
+    margin-bottom: 12px; 
+    font-size: 1.15rem; 
+    line-height: 1.6;
+    counter-increment: item;
+    position: relative;
+    color: {COL['text_primary']};
+  }}
+  
+  .instructions li::marker {{
+    color: {COL['highlight']};
+    font-weight: bold;
+  }}
+  
+  /* Enhanced Logo Container */
+  .logo-container {{
+    background: linear-gradient(145deg, {COL['highlight']} 0%, #4a7a5c 100%); 
+    padding: 25px; 
+    border-radius: 20px; 
+    text-align: center; 
+    margin-bottom: 35px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+  }}
+  
+  .logo-container:hover {{
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2);
+  }}
+  
+  img.logo {{ 
+    display: block; 
+    margin: 0 auto; 
+    width: 100%; 
+    max-width: 1000px;
+    padding: 10px; 
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  }}
+  
+  /* Enhanced Button Styling */
+  .stButton>button {{ 
+    background: linear-gradient(135deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 50%, {COL['dark']} 100%); 
+    color: white; 
+    border: none; 
+    border-radius: 15px; 
+    padding: 20px 40px; 
+    font-weight: 700; 
+    transition: all .4s ease; 
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15); 
+    width: 100%;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+  }}
+  
+  .stButton>button::before {{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: all 0.5s;
+  }}
+  
+  .stButton>button:hover::before {{
+    left: 100%;
+  }}
+  
+  .stButton>button:hover {{ 
+    background: linear-gradient(135deg, {COL['accent']} 0%, {COL['gradient_start']} 50%, {COL['primary']} 100%); 
+    transform: translateY(-4px); 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25), 0 0 20px {COL['border_color']}; 
+  }}
+  
+  /* Enhanced File Uploader */
+  .css-1cpxqw2, [data-testid="stFileUploader"] {{ 
+    border: 3px dashed {COL['accent']}; 
+    background: {COL['card_bg']}; 
+    border-radius: 20px; 
+    padding: 35px; 
+    transition: all 0.4s ease;
+    backdrop-filter: blur(10px);
+  }}
+  
+  .css-1cpxqw2:hover, [data-testid="stFileUploader"]:hover {{ 
+    border-color: {COL['highlight']}; 
+    background: {"linear-gradient(145deg, rgba(59, 108, 83, 0.2), rgba(59, 108, 83, 0.3))" if st.session_state.dark_mode else "linear-gradient(145deg, rgba(74, 138, 106, 0.1), rgba(74, 138, 106, 0.15))"}; 
+    box-shadow: 0 8px 25px {COL['border_color']};
+    transform: translateY(-2px);
+  }}
+  
+  /* Enhanced Image Container */
+  .img-container {{ 
+    background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #f5f5f5 0%, #ffffff 100%)"}; 
+    padding: 30px; 
+    border-radius: 20px; 
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.1); 
+    margin-bottom: 15px; 
+    transition: all 0.4s ease;
+    overflow: hidden;
+    text-align: center;
+    height: 100%;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center !important;
+    width: 100% !important;
+    border: 1px solid {COL['border_color']};
+  }}
+  
+  .img-container:hover {{
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+  }}
+  
+  /* Enhanced Image Styling */
+  .img-container img,
+  .stImage img {{ 
+    max-height: 1400px !important;
+    max-width: 100% !important;
+    width: auto !important; 
+    height: auto !important;
+    margin: 0 auto !important; 
+    display: block !important; 
+    border-radius: 12px !important;
+    transition: all 0.4s ease;
+    object-fit: contain !important;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15));
+  }}
+  
+  .img-container img:hover,
+  .stImage img:hover {{
+    transform: scale(1.02);
+    filter: drop-shadow(0 12px 24px rgba(0,0,0,0.2));
+  }}
+  
+  /* Center all Streamlit images */
+  [data-testid="stImage"] {{
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+  }}
+  
+  /* Enhanced Image Captions */
+  .img-container figcaption, .stImage figcaption, .css-1b0udgb, .css-83jbox {{
+    font-size: 1.4rem !important;
+    color: {COL['highlight']} !important;
+    margin-top: 20px !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    width: 100% !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    letter-spacing: 0.5px;
+  }}
+  
+  figcaption p {{
+    font-size: 1.4rem !important;
+    margin: 15px 0 !important;
+    color: {COL['highlight']} !important;
+    text-align: center !important;
+    font-weight: 700 !important;
+  }}
 
-apply_mobile_css()
+  /* Enhanced Guidelines Box */
+  .guidelines-box {{ 
+    background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #f1f8e9 0%, #ffffff 100%)"}; 
+    padding: 25px; 
+    border-radius: 15px; 
+    color: {COL['text_primary']}; 
+    margin-bottom: 30px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.1);
+    border-left: 6px solid {COL['highlight']};
+    border: 1px solid {COL['border_color']};
+  }}
+  
+  .guidelines-box h4 {{ 
+    color: {COL['highlight']}; 
+    margin-top: 0; 
+    font-size: 1.4rem; 
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }}
+  
+  .guidelines-box ul {{ 
+    padding-left: 1rem; 
+    margin-bottom: 0; 
+    list-style-type: none; 
+  }}
+  
+  .guidelines-box ul li {{ 
+    padding-left: 2.5rem; 
+    position: relative;
+    margin-bottom: 12px;
+    font-size: 1.15rem;
+    line-height: 1.5;
+    color: {COL['text_primary']};
+  }}
+  
+  .guidelines-box ul li:before {{ 
+    content: "✓"; 
+    color: {COL['highlight']};
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+    font-size: 1.3rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }}
+  
+  /* Enhanced Results Section */
+  .results-header {{
+    text-align: center;
+    color: {COL['highlight']};
+    margin: 40px 0 30px;
+    font-size: 2.2rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }}
+  
+  /* Enhanced Metrics Cards */
+  .metric-card {{
+    background: linear-gradient(145deg, {COL['gradient_start']} 0%, {COL['gradient_end']} 100%);
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+    transition: all 0.4s ease;
+    margin-bottom: 20px;
+    border: 1px solid {COL['border_color']};
+    position: relative;
+    overflow: hidden;
+  }}
+  
+  .metric-card::before {{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: all 0.5s;
+  }}
+  
+  .metric-card:hover {{
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2), 0 0 20px {COL['border_color']};
+  }}
+  
+  .metric-card:hover::before {{
+    left: 100%;
+  }}
+  
+  .metric-value {{
+    font-size: 2.2rem;
+    font-weight: 900;
+    margin-bottom: 10px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }}
+  
+  .metric-label {{
+    font-size: 1.2rem;
+    color: rgba(255,255,255,0.9);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }}
+  
+  /* Enhanced Tissue Composition */
+  .tissue-item {{
+    background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%)"}; 
+    padding: 20px 25px;
+    margin: 15px 0;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+    border-left: 6px solid transparent;
+    transition: all 0.4s ease;
+    border: 1px solid {COL['border_color']};
+    color: {COL['text_primary']};
+  }}
+  
+  .tissue-item:hover {{
+    transform: translateX(8px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }}
+  
+  .tissue-name {{
+    font-weight: 700;
+    font-size: 1.3rem;
+    text-transform: capitalize;
+    display: flex;
+    align-items: center;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: {COL['text_primary']};
+  }}
+  
+  .tissue-color-indicator {{
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    margin-right: 15px;
+    border: 2px solid {"rgba(255,255,255,0.4)" if st.session_state.dark_mode else "rgba(0,0,0,0.2)"};
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }}
+  
+  .tissue-stats {{
+    display: flex;
+    gap: 30px;
+    align-items: center;
+  }}
+  
+  .tissue-percent {{
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: {COL['highlight']};
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }}
+  
+  .tissue-area {{
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: {COL['text_primary']};
+    opacity: 0.9;
+  }}
+  
+  /* Enhanced Analysis Tabs */
+  .analysis-tab {{
+    background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%)"};  
+    border-radius: 15px;
+    padding: 30px;
+    margin: 25px 0;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.1);
+    border: 1px solid {COL['border_color']};
+  }}
+  
+  .tab-title {{
+    color: {COL['highlight']};
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 25px;
+    text-align: center;
+    border-bottom: 3px solid {COL['accent']};
+    padding-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    letter-spacing: 1px;
+  }}
+  
+  /* Remove black boxes from tabs */
+  .stTabs [data-baseweb="tab-list"] {{
+    gap: 8px;
+    background: transparent !important;
+  }}
+  
+  .stTabs [data-baseweb="tab"] {{
+    height: 50px;
+    white-space: pre-wrap;
+    background-color: transparent !important;
+    border: 2px solid {COL['accent']} !important;
+    border-radius: 15px !important;
+    color: {COL['text_primary']} !important;
+    font-weight: 600 !important;
+    padding: 10px 20px !important;
+    margin: 0 5px !important;
+    transition: all 0.3s ease !important;
+  }}
+  
+  .stTabs [data-baseweb="tab"]:hover {{
+    background-color: {COL['accent']} !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  }}
+  
+  .stTabs [aria-selected="true"] {{
+    background: linear-gradient(135deg, {COL['gradient_start']}, {COL['gradient_end']}) !important;
+    color: white !important;
+    border-color: {COL['highlight']} !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+  }}
+  
+  .stTabs [data-baseweb="tab-panel"] {{
+    background: transparent !important;
+    padding: 0 !important;
+  }}
+  
+  /* Enhanced Footer */
+  .footer {{ 
+    text-align: center; 
+    padding: 35px 0; 
+    margin-top: 60px; 
+    border-top: 3px solid {COL['dark']}; 
+    color: {COL['text_primary']}; 
+    font-size: 1.2rem; 
+    font-weight: 500;
+    background: {COL['card_bg']};
+    border-radius: 15px 15px 0 0;
+  }}
+  
+  .section-wrapper {{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+  }}
+  
+  /* Color legend light mode friendly */
+  .color-legend-item {{
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    color: {COL['text_primary']};
+  }}
+  
+  .color-legend-text {{
+    color: {COL['text_primary']};
+    font-weight: 600;
+    text-transform: capitalize;
+  }}
+  
+  /* Professional Report Styling */
+  .report-container {{
+    background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%)"};
+    border-radius: 15px;
+    padding: 30px;
+    margin: 25px 0;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.1);
+    border: 1px solid {COL['border_color']};
+    color: {COL['text_primary']};
+    font-family: 'Georgia', serif;
+    line-height: 1.6;
+  }}
+  
+  .report-container h1, .report-container h2, .report-container h3 {{
+    color: {COL['highlight']};
+    margin-top: 25px;
+    margin-bottom: 15px;
+  }}
+  
+  .report-container h1 {{
+    font-size: 1.8rem;
+    border-bottom: 2px solid {COL['accent']};
+    padding-bottom: 10px;
+  }}
+  
+  .report-container h2 {{
+    font-size: 1.4rem;
+  }}
+  
+  .report-container h3 {{
+    font-size: 1.2rem;
+  }}
+  
+  /* Enhanced Responsive Design */
+  @media screen and (max-width: 768px) {{
+    .header {{ padding: 25px 20px; }}
+    .header h1 {{ font-size: 2rem; }}
+    .header p {{ font-size: 1.1rem; }}
+    .instructions {{ padding: 25px; }}
+    .img-container img, .stImage img {{ max-height: 800px !important; }}
+    .metric-value {{ font-size: 1.8rem; }}
+    .results-header {{ font-size: 1.7rem; }}
+    .stButton>button {{ padding: 15px 30px; font-size: 1.1rem; }}
+  }}
+  
+  @media screen and (min-width: 769px) and (max-width: 1024px) {{
+    .header h1 {{ font-size: 2.5rem; }}
+    .img-container img, .stImage img {{ max-height: 1200px !important; }}
+  }}
+  
+  @media screen and (min-width: 1025px) {{
+    .content-wrapper {{ max-width: 1500px; margin: 0 auto; }}
+    .section-wrapper {{ max-width: 95%; margin: 0 auto; }}
+    .img-container img, .stImage img {{ max-height: 1400px !important; }}
+  }}
+  
+  /* Smooth scrolling */
+  html {{
+    scroll-behavior: smooth;
+  }}
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {{
+    width: 12px;
+  }}
+  
+  ::-webkit-scrollbar-track {{
+    background: {COL['surface']};
+  }}
+  
+  ::-webkit-scrollbar-thumb {{
+    background: linear-gradient(135deg, {COL['accent']}, {COL['highlight']});
+    border-radius: 6px;
+  }}
+  
+  ::-webkit-scrollbar-thumb:hover {{
+    background: linear-gradient(135deg, {COL['highlight']}, {COL['primary']});
+  }}
+</style>
+""", unsafe_allow_html=True)
 
 # ──── Tissue Analysis Model Functions ────────────────────────────────────────────
 @st.cache_resource
@@ -2893,194 +2450,51 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ──── Enhanced Upload Section with Native Camera ────────────────────────────────────────
-st.markdown('</div>', unsafe_allow_html=True)
+# ──── Upload & Analysis with Camera Capture ────────────────────────────────────────
+col1, col2 = st.columns([2, 1]) 
 
-# ──── Fully Automatic Mobile Detection Upload ────────────────────────────────────────
-def create_fully_automatic_mobile_upload():
-    """Fully automatic mobile detection - NO manual options"""
+with col1:
+    # Create tabs for different input methods
+    upload_tab, camera_tab = st.tabs(["📁 Upload Image", "📸 Camera Capture"])
     
-    # Automatic mobile detection JavaScript
-    st.markdown("""
-    <script>
-    // Immediate mobile detection
-    function detectMobileAndSetup() {
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        
-        // Multiple detection methods
-        const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
-        const isMobileUA = mobileRegex.test(userAgent.toLowerCase());
-        const isMobileScreen = window.innerWidth <= 768;
-        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-        
-        // Final mobile determination
-        const isMobile = isMobileUA || (isMobileScreen && isTouchDevice);
-        
-        // Set CSS classes for automatic styling
-        document.body.classList.remove('mobile-device', 'desktop-device');
-        document.body.classList.add(isMobile ? 'mobile-device' : 'desktop-device');
-        document.body.setAttribute('data-is-mobile', isMobile.toString());
-        
-        // Store for reference
-        window.isMobileDevice = isMobile;
-        sessionStorage.setItem('isMobile', isMobile.toString());
-        
-        console.log('Device detected as:', isMobile ? 'MOBILE' : 'DESKTOP');
-        
-        // Setup file uploaders for mobile if needed
-        if (isMobile) {
-            setupMobileUploaders();
-        }
-        
-        return isMobile;
-    }
+    uploaded = None
+    camera_image = None
     
-    function setupMobileUploaders() {
-        setTimeout(function() {
-            const fileInputs = document.querySelectorAll('input[type="file"]');
-            fileInputs.forEach(input => {
-                // Add mobile camera attributes to ALL file inputs
-                input.setAttribute('capture', 'environment');
-                input.setAttribute('accept', 'image/*');
-                
-                // Style for mobile
-                const container = input.closest('[data-testid="stFileUploader"]');
-                if (container) {
-                    container.style.fontSize = '18px';
-                }
-            });
-            console.log('Mobile file uploaders configured');
-        }, 1000);
-    }
+    with upload_tab:
+        uploaded = st.file_uploader("Upload wound image", type=["png","jpg","jpeg"])
     
-    // Run detection immediately
-    detectMobileAndSetup();
-    
-    // Re-run on window resize
-    window.addEventListener('resize', detectMobileAndSetup);
-    
-    // Re-run when new elements are added (Streamlit updates)
-    const observer = new MutationObserver(function() {
-        if (window.isMobileDevice) {
-            setupMobileUploaders();
-        }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    </script>
-    
-    <style>
-    /* Automatic responsive styling based on detected device */
-    .mobile-device .upload-container {
-        padding: 15px 10px !important;
-        margin: 10px -1rem !important;
-    }
-    
-    .desktop-device .upload-container {
-        padding: 20px !important;
-        margin: 20px 0 !important;
-    }
-    
-    .mobile-device .stFileUploader label {
-        font-size: 18px !important;
-        padding: 15px !important;
-    }
-    
-    .mobile-device #mobile-tips {
-        display: block !important;
-    }
-    
-    .desktop-device #mobile-tips {
-        display: none !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    st.markdown('<div class="section-wrapper upload-container">', unsafe_allow_html=True)
-    
-    # Universal upload section (automatically adapts based on device)
-    st.markdown("### 📸 Upload Wound Image")
-    
-    # Mobile-specific tips (only show on mobile via CSS)
-# Mobile-specific tips (only show on mobile via CSS and JavaScript)
-    st.markdown("""
-    <div id="mobile-tips" class="upload-tips" style="background: rgba(7, 66, 37, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; display: none;">
-        <strong>📱 Mobile Photography Tips:</strong><br>
-        • This will open your phone's camera app<br>
-        • Hold phone steady and tap to focus on wound<br>
-        • Use good lighting for best results<br>
-        • Take multiple shots and choose the best one
-    </div>
-    
-    <script>
-    // Show tips only on mobile devices
-    setTimeout(function() {
-        const tipsDiv = document.getElementById('mobile-tips');
-        if (tipsDiv && window.isMobileDevice) {
-            tipsDiv.style.display = 'block';
-        } else if (tipsDiv) {
-            tipsDiv.style.display = 'none';
-        }
-    }, 1000);
-    </script>
-    """, unsafe_allow_html=True)
-    
-    # Universal file uploader
-    uploaded = st.file_uploader(
-        "📸 Select or Capture Image",
-        type=["png", "jpg", "jpeg"],
-        help="On mobile: Opens camera app | On desktop: Opens file browser",
-        key="auto_detecting_upload"
-    )
-    
-    # Additional mobile enhancement
-    st.markdown("""
-    <script>
-    // Enhanced mobile setup that runs after Streamlit renders
-    setTimeout(function() {
-        if (window.isMobileDevice) {
-            const fileInput = document.querySelector('input[type="file"][data-testid*="auto_detecting_upload"]') ||
-                             document.querySelector('input[type="file"]');
-            
-            if (fileInput) {
-                fileInput.setAttribute('capture', 'environment');
-                fileInput.setAttribute('accept', 'image/*');
-                
-                // Make it more prominent on mobile
-                fileInput.style.minHeight = '50px';
-                fileInput.style.fontSize = '16px';
-                
-                console.log('Mobile camera attributes applied successfully');
-            }
-        }
-    }, 2000);
-    </script>
-    """, unsafe_allow_html=True)
-    
-
-    
-    # Success feedback
-    if uploaded:
-        st.success("✅ Image ready for analysis!")
-        
-        # Show different messages based on likely device type
-        st.markdown("""
-        <script>
-        if (window.isMobileDevice) {
-            // Mobile success message
-            console.log('Mobile upload successful');
-        } else {
-            // Desktop success message  
-            console.log('Desktop upload successful');
-        }
-        </script>
+    with camera_tab:
+        st.markdown(f"""
+        <div style="background: {"linear-gradient(145deg, " + COL['dark'] + " 0%, #2a4a37 100%)" if st.session_state.dark_mode else "linear-gradient(145deg, #e8f5e9 0%, #f1f8e9 100%)"}; 
+                    padding: 20px; border-radius: 10px; margin-bottom: 20px;
+                    border-left: 4px solid {COL['highlight']}; color: {COL['text_primary']};">
+            <h4 style="color: {COL['highlight']}; margin-top: 0;">📱 Camera Capture Instructions</h4>
+            <ul style="color: {COL['text_primary']}; margin-bottom: 0;">
+                <li>Ensure good lighting conditions</li>
+                <li>Hold camera steady and focus on the wound</li>
+                <li>Maintain consistent distance from wound</li>
+                <li>Include a reference object for scale if possible</li>
+                <li>Click "Take Photo" when ready</li>
+            </ul>
+        </div>
         """, unsafe_allow_html=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    return uploaded
+        
+        # Camera input widget
+        camera_image = create_enhanced_camera_section()
 
-# Call the automatic upload function
-uploaded = create_fully_automatic_mobile_upload()
-
+with col2:
+    st.markdown("""
+    <div class="guidelines-box">
+        <h4>📸 Image Guidelines</h4>
+        <ul>
+            <li>Good lighting & focus</li>
+            <li>Wound clearly visible</li>
+            <li>Consistent distance</li>
+            <li>Include reference scale</li>
+            <li>Clean wound area</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Determine which image source to use
 image_source = None
@@ -3088,7 +2502,10 @@ source_type = None
 
 if uploaded is not None:
     image_source = uploaded
-    source_type = "uploaded"  # This covers both gallery and camera uploads now
+    source_type = "uploaded"
+elif camera_image is not None:
+    image_source = camera_image
+    source_type = "camera"
 
 if image_source:
     try:
@@ -3102,7 +2519,7 @@ if image_source:
             timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
 
         # Read and resize image if needed to reduce memory usage
-        pil_img = Image.open(image_source).convert("RGB")
+        pil_img = Image.open(image_source).convert("RGB")  # ← FIXED!
         orig_bgr = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
         
         # Resize if too large
@@ -3111,40 +2528,29 @@ if image_source:
         
         # Clear memory
         clear_memory()
-        
-# Display uploaded image
+
+        # Display uploaded image
         st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
         st.markdown('<div class="img-container">', unsafe_allow_html=True)
-        caption_text = "📸 Wound Image Ready for Analysis"
+        caption_text = "📁 Uploaded Wound Image" if source_type == "uploaded" else "📸 Captured Wound Image"
         st.image(pil_img, caption=caption_text)
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
-        
         # Show image source info
-        st.info("✅ Image ready for analysis! You can now proceed with AI assessment.")
-        # Analysis button - Mobile responsive
-        st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
-        
-        # Mobile-responsive button
-        if mobile_mode:
-            analyze_button = st.button(
-                "🚀 Analyze Wound",
-                help="Start AI analysis",
-                use_container_width=True
-            )
+        if source_type == "camera":
+            st.info("📸 Image captured successfully! You can now proceed with analysis.")
         else:
-            analyze_button = st.button("🚀 Analyze Wound", help="Click to run comprehensive AI analysis")
-        
-        if analyze_button:
-            # Initialize mobile-aware progress bar
-            if mobile_mode:
-                progress_tracker = MobileProgressBar()
-            else:
-                progress_tracker = EnhancedProgressBar()
+            st.info("📁 Image uploaded successfully! You can now proceed with analysis.")
+
+# Analysis button
+        st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
+        if st.button("🚀 Analyze Wound", help="Click to run comprehensive AI analysis"):
+            
+            # Initialize enhanced progress bar
+            progress_tracker = EnhancedProgressBar()
             progress_tracker.initialize()
             
             try:
-                # [Keep all the existing analysis logic here - Steps 1-5]
                 # Step 1: Initialize models (0-15%)
                 progress_tracker.update(5, 100, "🔄 Initializing AI models...", 
                                        "Loading tissue analysis and classification models")
@@ -3252,16 +2658,17 @@ if image_source:
 
                 # ──── Image Results Display ────────────────────────────────────────────────
                 st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
-                
-                # Mobile-responsive image display
-                if mobile_mode:
-                    # Mobile: Stack images vertically
-                    tissue_display = cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB)
-                    
+                col1, col2 = st.columns(2)
+
+                # Prepare images for display
+                tissue_display = cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB)
+
+                with col1:
                     st.markdown('<div class="img-container">', unsafe_allow_html=True)
                     st.image(tissue_display, caption="🧬 Tissue Composition Analysis")
                     st.markdown('</div>', unsafe_allow_html=True)
-                    
+
+                with col2:
                     st.markdown('<div class="img-container">', unsafe_allow_html=True)
                     # Combined overlay
                     alpha = 0.5
@@ -3270,25 +2677,6 @@ if image_source:
                     tissue_overlay_rgb = cv2.cvtColor(tissue_overlay, cv2.COLOR_BGR2RGB)
                     st.image(tissue_overlay_rgb, caption="🔗 Combined Analysis Overlay")
                     st.markdown('</div>', unsafe_allow_html=True)
-                else:
-                    # Desktop: Side by side
-                    col1, col2 = st.columns(2)
-                    tissue_display = cv2.cvtColor(tissue_mask_bgr, cv2.COLOR_BGR2RGB)
-
-                    with col1:
-                        st.markdown('<div class="img-container">', unsafe_allow_html=True)
-                        st.image(tissue_display, caption="🧬 Tissue Composition Analysis")
-                        st.markdown('</div>', unsafe_allow_html=True)
-
-                    with col2:
-                        st.markdown('<div class="img-container">', unsafe_allow_html=True)
-                        # Combined overlay
-                        alpha = 0.5
-                        orig_bgr_resized = cv2.resize(orig_bgr, (IMG_SIZE, IMG_SIZE))
-                        tissue_overlay = cv2.addWeighted(orig_bgr_resized, 1 - alpha, tissue_mask_bgr, alpha, 0)
-                        tissue_overlay_rgb = cv2.cvtColor(tissue_overlay, cv2.COLOR_BGR2RGB)
-                        st.image(tissue_overlay_rgb, caption="🔗 Combined Analysis Overlay")
-                        st.markdown('</div>', unsafe_allow_html=True)
     
                 st.markdown('</div>', unsafe_allow_html=True)
                 
@@ -3298,95 +2686,49 @@ if image_source:
 
                 # ──── Key Metrics Dashboard ────────────────────────────────────────────────
                 st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
-                
-                # Mobile-responsive metrics
-                if mobile_mode:
-                    # Mobile: 2x3 grid or vertical stack
-                    col1, col2 = st.columns(2)
-                    tissue_types_count = len([t for t in tissue_data.keys() if t != "background" and tissue_data[t]['percentage'] > 0])
-                    dominant_tissue, dominant_percent = get_dominant_tissue(tissue_data)
+                col1, col2, col3, col4, col5 = st.columns(5)
+                tissue_types_count = len([t for t in tissue_data.keys() if t != "background" and tissue_data[t]['percentage'] > 0])
+                dominant_tissue, dominant_percent = get_dominant_tissue(tissue_data)
 
-                    with col1:
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <div class="metric-value">{ai_health_score:.0f}</div>
-                            <div class="metric-label">AI Health Score</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <div class="metric-value">{dominant_tissue.title()}</div>
-                            <div class="metric-label">Dominant Tissue</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <div class="metric-value">{pred_class}</div>
-                            <div class="metric-label">Wound Type</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                with col1:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{ai_health_score:.0f}</div>
+                        <div class="metric-label">AI Health Score</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
-                    with col2:
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <div class="metric-value">{open_defect_area:,}</div>
-                            <div class="metric-label">Open Defect Area (px)</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <div class="metric-value">{tissue_types_count}</div>
-                            <div class="metric-label">Tissue Types</div>
-                        </div>    
-                        """, unsafe_allow_html=True)
-                else:
-                    # Desktop: 5 columns
-                    col1, col2, col3, col4, col5 = st.columns(5)
-                    tissue_types_count = len([t for t in tissue_data.keys() if t != "background" and tissue_data[t]['percentage'] > 0])
-                    dominant_tissue, dominant_percent = get_dominant_tissue(tissue_data)
+                with col2:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{open_defect_area:,}</div>
+                        <div class="metric-label">Open Defect Area (px)</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
-                    with col1:
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <div class="metric-value">{ai_health_score:.0f}</div>
-                            <div class="metric-label">AI Health Score</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                with col3:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{dominant_tissue.title()}</div>
+                        <div class="metric-label">Dominant Tissue</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
-                    with col2:
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <div class="metric-value">{open_defect_area:,}</div>
-                            <div class="metric-label">Open Defect Area (px)</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                with col4:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{tissue_types_count}</div>
+                        <div class="metric-label">Tissue Types</div>
+                    </div>    
+                    """, unsafe_allow_html=True)
 
-                    with col3:
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <div class="metric-value">{dominant_tissue.title()}</div>
-                            <div class="metric-label">Dominant Tissue</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-
-                    with col4:
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <div class="metric-value">{tissue_types_count}</div>
-                            <div class="metric-label">Tissue Types</div>
-                        </div>    
-                        """, unsafe_allow_html=True)
-
-                    with col5:
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <div class="metric-value">{pred_class}</div>
-                            <div class="metric-label">Wound Type</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                with col5:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{pred_class}</div>
+                        <div class="metric-label">Wound Type</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
                 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -3414,347 +2756,211 @@ if image_source:
                     "tissue_analysis": st.session_state.analysis_images['tissue_analysis'],
                     "overlay"        : st.session_state.analysis_images['overlay'],
                 }
-                
-                # Auto-save to cloud
                 save_analysis_to_cloud_auto(tissue_data, pred_class, confidence, ai_health_score, 
                                             ai_recommendations, st.session_state.analysis_images['original'],
                                             st.session_state.analysis_images['tissue_analysis'],
                                             st.session_state.analysis_images['overlay'], timestamp_str)
 
-                # ──── Mobile-Responsive Analysis Display ────────────────────────────────────────────────
-                if mobile_mode:
-                    # Mobile: Use expanders for better space management
-                    st.markdown("### 📋 Detailed Analysis")
-                    
-                    with st.expander("🧬 Tissue Composition", expanded=True):
-                        # Color legend in compact format
-                        st.markdown("**Color Legend:**")
-                        for tissue, info in tissue_data.items():
-                            if info['percentage'] > 0:
-                                color = TISSUE_COLORS_HEX[tissue]
+                # ──── Detailed Analysis Tabs with AI Enhancement ────────────────────────────────────────────────
+                tab1, tab2, tab3, tab4 = st.tabs(["🧬 Tissue Composition", "📊 AI Health Assessment", "🏥 AI Wound Classification", "💡 AI Clinical Recommendations"])
+
+                with tab1:
+                    st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
+                    st.markdown('<div class="tab-title">Tissue Composition Breakdown</div>', unsafe_allow_html=True)
+
+                    # Color legend first
+                    st.markdown("Color Legend:")
+                    legend_cols = st.columns(3)
+                    for i, (tissue, color) in enumerate(TISSUE_COLORS_HEX.items()):
+                        # Skip unused classes
+                        if tissue not in DISPLAY_CLASSES:
+                            continue
+                        if tissue in tissue_data and tissue_data[tissue]['percentage'] > 0:
+                            col_idx = i % 3
+                            with legend_cols[col_idx]:
                                 st.markdown(f"""
-                                <div style="display: flex; align-items: center; margin: 5px 0;">
-                                    <div style="width: 16px; height: 16px; background-color: {color}; 
-                                               border-radius: 3px; margin-right: 8px; border: 1px solid #ccc;"></div>
-                                    <span><strong>{tissue.title()}:</strong> {info['percentage']:.1f}% ({info['area_px']:,} px)</span>
+                                <div class="color-legend-item">
+                                    <div style="width: 20px; height: 20px; background-color: {color}; 
+                                        border-radius: 4px; margin-right: 10px; border: 1px solid {'#fff' if st.session_state.dark_mode else '#000'};"></div>
+                                    <span class="color-legend-text">{tissue}</span>
                                 </div>
                                 """, unsafe_allow_html=True)
-                        
-                        st.markdown("---")
-                        
-                        # Tissue breakdown
-                        sorted_tissues = sorted(
-                            [(k, v) for k, v in tissue_data.items() if v['percentage'] > 0], 
-                            key=lambda x: x[1]['percentage'], reverse=True
-                        )
 
-                        for tissue, info in sorted_tissues:
-                            color = TISSUE_COLORS_HEX[tissue]
+                    st.markdown("---")
+
+                    # Tissue percentages with area
+                    sorted_tissues = sorted(
+                        [(k, v) for k, v in tissue_data.items() if v['percentage'] > 0], 
+                        key=lambda x: x[1]['percentage'], reverse=True
+                    )
+
+                    for tissue, info in sorted_tissues:
+                        color = TISSUE_COLORS_HEX[tissue]
+                        st.markdown(f"""
+                        <div class="tissue-item" style="border-left-color: {color};">
+                            <div class="tissue-name">
+                                <div class="tissue-color-indicator" style="background-color: {color};"></div>
+                                {tissue.title()}
+                            </div>
+                            <div class="tissue-stats">
+                                <div class="tissue-percent">{info['percentage']:.1f}%</div>
+                                <div class="tissue-area">{info['area_px']:,} px</div>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+                with tab2:
+                    st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
+                    st.markdown('<div class="tab-title">AI-Enhanced Health Assessment</div>', unsafe_allow_html=True)
+
+                    # Enhanced health score interpretation
+                    if ai_health_score >= 80:
+                        health_status = "Excellent"
+                        health_color = COL['success']
+                        health_icon = "🌟"
+                    elif ai_health_score >= 60:
+                        health_status = "Good"
+                        health_color = COL['success']
+                        health_icon = "✅"
+                    elif ai_health_score >= 40:
+                        health_status = "Fair"
+                        health_color = COL['warning']
+                        health_icon = "⚠"
+                    else:
+                        health_status = "Poor"
+                        health_color = COL['danger']
+                        health_icon = "🚨"
+
+                    st.markdown(f"""
+                    <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, {COL['dark']}, {COL['accent']}); 
+                        border-radius: 15px; margin: 20px 0; color: white;">
+                        <div style="font-size: 4rem; margin-bottom: 10px;">{health_icon}</div>
+                        <div style="font-size: 2.5rem; font-weight: 800; color: {health_color};">{ai_health_score:.0f}/100</div>
+                        <div style="font-size: 1.5rem; margin-top: 10px;">AI Health Assessment: {health_status}</div>
+                        <div style="font-size: 1.1rem; margin-top: 15px; opacity: 0.9;">{health_justification}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    # AI-generated detailed assessment
+                    st.markdown("**Detailed AI Health Assessment:**")
+                    st.markdown(f"""
+                    <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; 
+                        margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
+                        {health_assessment}
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
+                with tab3:
+                    st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
+                    st.markdown('<div class="tab-title">AI Wound Classification Analysis</div>', unsafe_allow_html=True)
+                    
+                    # Classification confidence display
+                    st.markdown(f"""
+                    <div style="text-align: center; padding: 20px; background: {COL['card_bg']}; 
+                        border-radius: 10px; margin: 20px 0; border: 1px solid {COL['border_color']};">
+                        <div style="font-size: 1.8rem; font-weight: 700; color: {COL['highlight']};">
+                            {pred_class.replace('_', ' ').title()}
+                        </div>
+                        <div style="font-size: 1.2rem; margin-top: 10px; color: {COL['text_primary']};">
+                            AI Confidence: {confidence:.1%}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # AI-generated classification information
+                    st.markdown("**AI Classification Analysis:**")
+                    st.markdown(f"""
+                    <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; 
+                        margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
+                        {classification_info}
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+                with tab4:
+                    st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
+                    st.markdown('<div class="tab-title">AI Clinical Recommendations</div>', unsafe_allow_html=True)
+                    
+                    if isinstance(ai_recommendations, list) and len(ai_recommendations) > 1:
+                        # Display as numbered recommendations with better formatting
+                        for i, recommendation in enumerate(ai_recommendations, 1):
+                            # Clean up any remaining formatting issues
+                            clean_rec = recommendation.strip()
+                            
                             st.markdown(f"""
-                            <div style="background: rgba(7, 66, 37, 0.1); padding: 15px; border-radius: 8px;
-                                margin: 10px 0; border-left: 4px solid {color}; display: flex; 
-                                justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                                <div style="display: flex; align-items: center;">
-                                    <div style="width: 20px; height: 20px; background-color: {color}; 
-                                        border-radius: 4px; margin-right: 10px; border: 1px solid #ccc;"></div>
-                                    <strong>{tissue.title()}</strong>
+                            <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
+                                margin: 20px 0; border-left: 5px solid {COL['highlight']}; 
+                                border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
+                                box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 12px; font-size: 1.2rem;">
+                                    🏥 Clinical Recommendation {i}
                                 </div>
-                                <div style="text-align: right;">
-                                    <div style="font-size: 1.2rem; font-weight: bold; color: #074225;">{info['percentage']:.1f}%</div>
-                                    <div style="font-size: 0.9rem; color: #666;">{info['area_px']:,} px</div>
+                                <div style="line-height: 1.7; font-size: 1.1rem; color: {COL['text_primary']};">
+                                    {clean_rec}
                                 </div>
                             </div>
                             """, unsafe_allow_html=True)
-                    
-                    with st.expander("📊 AI Health Assessment", expanded=False):
-                        # Health score display
-                        if ai_health_score >= 80:
-                            score_color = "#28a745"
-                            score_icon = "🌟"
-                        elif ai_health_score >= 60:
-                            score_color = "#28a745"
-                            score_icon = "✅"
-                        elif ai_health_score >= 40:
-                            score_color = "#ffc107"
-                            score_icon = "⚠️"
-                        else:
-                            score_color = "#dc3545"
-                            score_icon = "🚨"
+                    else:
+                        # Handle single recommendation or fallback
+                        recommendations_text = ai_recommendations[0] if isinstance(ai_recommendations, list) else str(ai_recommendations)
                         
-                        st.markdown(f"""
-                        <div style="text-align: center; padding: 20px; background: {score_color};
-                                    border-radius: 10px; color: white; margin: 15px 0;">
-                            <div style="font-size: 2rem;">{score_icon}</div>
-                            <div style="font-size: 2rem; font-weight: bold;">{ai_health_score:.0f}/100</div>
-                            <div style="font-size: 1.1rem;">AI Health Score</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        # Try to split into logical sections
+                        import re
                         
-                        st.markdown("**Detailed Assessment:**")
-                        st.write(health_assessment)
-                    
-                    with st.expander("🏥 Wound Classification", expanded=False):
-                        st.markdown(f"""
-                        <div style="text-align: center; padding: 20px; background: rgba(7, 66, 37, 0.1); 
-                            border-radius: 10px; margin: 20px 0; border: 1px solid #074225;">
-                            <div style="font-size: 1.5rem; font-weight: 700; color: #074225;">
-                                {pred_class.replace('_', ' ').title()}
-                            </div>
-                            <div style="font-size: 1rem; margin-top: 10px; color: #666;">
-                                AI Confidence: {confidence:.1%}
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        # Split by common sentence patterns that indicate new recommendations
+                        sections = re.split(r'(?<=[.!?])\s*(?=[A-Z][a-z]+\s+(?:the\s+)?(?:wound|patient|dressing|infection))', recommendations_text)
                         
-                        st.markdown("**Classification Analysis:**")
-                        st.write(classification_info)
-                    
-                    with st.expander("💡 Clinical Recommendations", expanded=False):
-                        if isinstance(ai_recommendations, list):
-                            for i, rec in enumerate(ai_recommendations, 1):
-                                st.markdown(f"""
-                                <div style="background: rgba(7, 66, 37, 0.1); padding: 15px; border-radius: 8px;
-                                            margin: 10px 0; border-left: 4px solid #074225;">
-                                    <strong>Recommendation {i}:</strong><br>
-                                    {rec}
-                                </div>
-                                """, unsafe_allow_html=True)
-                        else:
-                            st.write(ai_recommendations)
-
-                else:
-                    # Desktop: Use regular tabs (existing logic)
-                    tab1, tab2, tab3, tab4 = st.tabs(["🧬 Tissue Composition", "📊 AI Health Assessment", "🏥 AI Wound Classification", "💡 AI Clinical Recommendations"])
-
-                    with tab1:
-                        st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                        st.markdown('<div class="tab-title">Tissue Composition Breakdown</div>', unsafe_allow_html=True)
-
-                        # Color legend first
-                        st.markdown("Color Legend:")
-                        legend_cols = st.columns(3)
-                        for i, (tissue, color) in enumerate(TISSUE_COLORS_HEX.items()):
-                            # Skip unused classes
-                            if tissue not in DISPLAY_CLASSES:
-                                continue
-                            if tissue in tissue_data and tissue_data[tissue]['percentage'] > 0:
-                                col_idx = i % 3
-                                with legend_cols[col_idx]:
+                        if len(sections) > 1:
+                            for i, section in enumerate(sections, 1):
+                                section = section.strip()
+                                if len(section) > 20:  # Only display substantial sections
                                     st.markdown(f"""
-                                    <div class="color-legend-item">
-                                        <div style="width: 20px; height: 20px; background-color: {color}; 
-                                            border-radius: 4px; margin-right: 10px; border: 1px solid {'#fff' if st.session_state.dark_mode else '#000'};"></div>
-                                        <span class="color-legend-text">{tissue}</span>
+                                    <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
+                                        margin: 20px 0; border-left: 5px solid {COL['highlight']}; 
+                                        border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
+                                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                        <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 12px; font-size: 1.2rem;">
+                                            🏥 Clinical Recommendation {i}
+                                        </div>
+                                        <div style="line-height: 1.7; font-size: 1.1rem; color: {COL['text_primary']};">
+                                            {section}
+                                        </div>
                                     </div>
                                     """, unsafe_allow_html=True)
-
-                        st.markdown("---")
-
-                        # Tissue percentages with area
-                        sorted_tissues = sorted(
-                            [(k, v) for k, v in tissue_data.items() if v['percentage'] > 0], 
-                            key=lambda x: x[1]['percentage'], reverse=True
-                        )
-
-                        for tissue, info in sorted_tissues:
-                            color = TISSUE_COLORS_HEX[tissue]
+                        else:
+                            # Display as single block with better formatting
                             st.markdown(f"""
-                            <div class="tissue-item" style="border-left-color: {color};">
-                                <div class="tissue-name">
-                                    <div class="tissue-color-indicator" style="background-color: {color};"></div>
-                                    {tissue.title()}
+                            <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
+                                margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
+                                line-height: 1.7; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 15px; font-size: 1.3rem;">
+                                    🏥 Clinical Recommendations
                                 </div>
-                                <div class="tissue-stats">
-                                    <div class="tissue-percent">{info['percentage']:.1f}%</div>
-                                    <div class="tissue-area">{info['area_px']:,} px</div>
-                                </div>
+                                <div>{recommendations_text}</div>
                             </div>
                             """, unsafe_allow_html=True)
-
-                        st.markdown('</div>', unsafe_allow_html=True)
-
-                    with tab2:
-                        st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                        st.markdown('<div class="tab-title">AI-Enhanced Health Assessment</div>', unsafe_allow_html=True)
-
-                        # Enhanced health score interpretation
-                        if ai_health_score >= 80:
-                            health_status = "Excellent"
-                            health_color = COL['success']
-                            health_icon = "🌟"
-                        elif ai_health_score >= 60:
-                            health_status = "Good"
-                            health_color = COL['success']
-                            health_icon = "✅"
-                        elif ai_health_score >= 40:
-                            health_status = "Fair"
-                            health_color = COL['warning']
-                            health_icon = "⚠"
-                        else:
-                            health_status = "Poor"
-                            health_color = COL['danger']
-                            health_icon = "🚨"
-
-                        st.markdown(f"""
-                        <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, {COL['dark']}, {COL['accent']}); 
-                            border-radius: 15px; margin: 20px 0; color: white;">
-                            <div style="font-size: 4rem; margin-bottom: 10px;">{health_icon}</div>
-                            <div style="font-size: 2.5rem; font-weight: 800; color: {health_color};">{ai_health_score:.0f}/100</div>
-                            <div style="font-size: 1.5rem; margin-top: 10px;">AI Health Assessment: {health_status}</div>
-                            <div style="font-size: 1.1rem; margin-top: 15px; opacity: 0.9;">{health_justification}</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-
-                        # AI-generated detailed assessment
-                        st.markdown("**Detailed AI Health Assessment:**")
-                        st.markdown(f"""
-                        <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; 
-                            margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
-                            {health_assessment}
-                        </div>
-                        """, unsafe_allow_html=True)
-
-                        st.markdown('</div>', unsafe_allow_html=True)
-                        
-                    with tab3:
-                        st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                        st.markdown('<div class="tab-title">AI Wound Classification Analysis</div>', unsafe_allow_html=True)
-                        
-                        # Classification confidence display
-                        st.markdown(f"""
-                        <div style="text-align: center; padding: 20px; background: {COL['card_bg']}; 
-                            border-radius: 10px; margin: 20px 0; border: 1px solid {COL['border_color']};">
-                            <div style="font-size: 1.8rem; font-weight: 700; color: {COL['highlight']};">
-                                {pred_class.replace('_', ' ').title()}
-                            </div>
-                            <div style="font-size: 1.2rem; margin-top: 10px; color: {COL['text_primary']};">
-                                AI Confidence: {confidence:.1%}
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        # AI-generated classification information
-                        st.markdown("**AI Classification Analysis:**")
-                        st.markdown(f"""
-                        <div style="background: {COL['card_bg']}; padding: 20px; border-radius: 10px; 
-                            margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};">
-                            {classification_info}
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        st.markdown('</div>', unsafe_allow_html=True)
-
-                    with tab4:
-                        st.markdown('<div class="analysis-tab">', unsafe_allow_html=True)
-                        st.markdown('<div class="tab-title">AI Clinical Recommendations</div>', unsafe_allow_html=True)
-                        
-                        if isinstance(ai_recommendations, list) and len(ai_recommendations) > 1:
-                            # Display as numbered recommendations with better formatting
-                            for i, recommendation in enumerate(ai_recommendations, 1):
-                                # Clean up any remaining formatting issues
-                                clean_rec = recommendation.strip()
-                                
-                                st.markdown(f"""
-                                <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
-                                    margin: 20px 0; border-left: 5px solid {COL['highlight']}; 
-                                    border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
-                                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                    <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 12px; font-size: 1.2rem;">
-                                        🏥 Clinical Recommendation {i}
-                                    </div>
-                                    <div style="line-height: 1.7; font-size: 1.1rem; color: {COL['text_primary']};">
-                                        {clean_rec}
-                                    </div>
-                                </div>
-                                """, unsafe_allow_html=True)
-                        else:
-                            # Handle single recommendation or fallback
-                            recommendations_text = ai_recommendations[0] if isinstance(ai_recommendations, list) else str(ai_recommendations)
-                            
-                            # Try to split into logical sections
-                            import re
-                            
-                            # Split by common sentence patterns that indicate new recommendations
-                            sections = re.split(r'(?<=[.!?])\s*(?=[A-Z][a-z]+\s+(?:the\s+)?(?:wound|patient|dressing|infection))', recommendations_text)
-                            
-                            if len(sections) > 1:
-                                for i, section in enumerate(sections, 1):
-                                    section = section.strip()
-                                    if len(section) > 20:  # Only display substantial sections
-                                        st.markdown(f"""
-                                        <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
-                                            margin: 20px 0; border-left: 5px solid {COL['highlight']}; 
-                                            border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
-                                            box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                            <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 12px; font-size: 1.2rem;">
-                                                🏥 Clinical Recommendation {i}
-                                            </div>
-                                            <div style="line-height: 1.7; font-size: 1.1rem; color: {COL['text_primary']};">
-                                                {section}
-                                            </div>
-                                        </div>
-                                        """, unsafe_allow_html=True)
-                            else:
-                                # Display as single block with better formatting
-                                st.markdown(f"""
-                                <div style="background: {COL['card_bg']}; padding: 25px; border-radius: 12px;
-                                    margin: 20px 0; border: 1px solid {COL['border_color']}; color: {COL['text_primary']};
-                                    line-height: 1.7; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                    <div style="font-weight: bold; color: {COL['highlight']}; margin-bottom: 15px; font-size: 1.3rem;">
-                                        🏥 Clinical Recommendations
-                                    </div>
-                                    <div>{recommendations_text}</div>
-                                </div>
-                                """, unsafe_allow_html=True)
-                        
-                        st.markdown('</div>', unsafe_allow_html=True)
-
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
             except Exception as e:
                 st.error(f"Error processing image: {str(e)}")
                 st.write("Exception details:")
                 st.exception(e)
+                progress_tracker.clear()
                 clear_memory()
-
+        
         st.markdown('</div>', unsafe_allow_html=True)
+
     except Exception as e:
         st.error(f"Error processing image: {str(e)}")
         st.write("Exception details:")
         st.exception(e)
         clear_memory()
-
-# ──── Mobile Camera Interface Function ─────────────────────────────────
-def create_mobile_camera_interface():
-    """Create a mobile-optimized camera interface"""
-    
-    st.markdown("""
-    <div style="background: linear-gradient(135deg, #074225 0%, #3B6C53 100%); 
-                padding: 20px; border-radius: 15px; text-align: center; color: white; margin: 20px 0;">
-        <h3 style="margin-top: 0;">📱 Mobile Wound Capture</h3>
-        <p>Tap the camera button below to capture a wound image</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Mobile-specific tips
-    st.info("""
-    📱 **Mobile Photography Tips:**
-    - Hold phone horizontally (landscape mode)
-    - Use both hands for stability
-    - Tap screen to focus on wound
-    - Use timer or volume button to reduce shake
-    - Take 2-3 photos and choose the best one
-    """)
-    
-    # Camera input
-    camera_image = st.camera_input(
-        "📸 Capture Wound Image",
-        help="Position camera over wound and tap to capture"
-    )
-    
-    if camera_image:
-        st.success("✅ Image captured! Scroll down to analyze.")
-    
-    return camera_image
-
 # ──── Report Buttons (stand-alone) ─────────────────────────────────
 
 if st.session_state.get("analysis_ready"):
