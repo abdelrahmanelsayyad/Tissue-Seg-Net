@@ -2943,46 +2943,62 @@ def create_mobile_camera_upload_section():
                 - Ensure wound is clearly visible and in focus
                 """)
             
-            # The key HTML for mobile camera
-            st.markdown("""
-            <div style="text-align: center; margin: 30px 0;">
-                <button onclick="document.getElementById('mobile-camera-input').click()" 
-                        style="background: linear-gradient(135deg, #074225 0%, #3B6C53 100%);
-                               color: white; border: none; padding: 20px 40px; 
-                               border-radius: 15px; font-size: 1.2rem; font-weight: bold;
-                               cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                               transition: all 0.3s ease;">
-                    📸 Open Camera & Take Photo
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # The actual file input with camera attributes
+            # IMPORTANT: Use a unique key for mobile camera
             uploaded = st.file_uploader(
-                "Camera Input",
+                "📸 Open Camera & Take Photo",
                 type=["png", "jpg", "jpeg"],
-                help="This will open your camera app",
-                key="mobile_camera_capture",
-                label_visibility="hidden"
+                help="This will open your camera app on mobile devices",
+                key="mobile_camera_capture_unique",
+                accept_multiple_files=False
             )
             
-            # Add JavaScript to enhance the file input
+            # Enhanced JavaScript that actually works with Streamlit
             st.markdown("""
             <script>
-            // Enhance the file input for camera capture
-            setTimeout(function() {
-                const fileInputs = document.querySelectorAll('input[type="file"]');
-                fileInputs.forEach(input => {
-                    if (input.closest('[data-testid*="mobile_camera_capture"]')) {
-                        // Add camera capture attributes
-                        input.setAttribute('capture', 'environment');
-                        input.setAttribute('accept', 'image/*');
-                        input.id = 'mobile-camera-input';
-                    }
-                });
-            }, 1000);
+            function setupMobileCamera() {
+                // Wait for Streamlit to fully load
+                setTimeout(function() {
+                    // Find the file input for mobile camera
+                    const fileInputs = document.querySelectorAll('input[type="file"]');
+                    
+                    fileInputs.forEach(input => {
+                        // Check if this is our mobile camera input
+                        const parent = input.closest('[data-testid="stFileUploader"]');
+                        if (parent && parent.textContent.includes('Open Camera & Take Photo')) {
+                            console.log('Found mobile camera input, setting up...');
+                            
+                            // Set camera attributes
+                            input.setAttribute('capture', 'environment');
+                            input.setAttribute('accept', 'image/*');
+                            input.id = 'mobile-camera-input';
+                            
+                            // Style the file input to be more prominent
+                            input.style.display = 'block';
+                            input.style.width = '100%';
+                            input.style.padding = '15px';
+                            input.style.fontSize = '16px';
+                            input.style.backgroundColor = '#074225';
+                            input.style.color = 'white';
+                            input.style.border = 'none';
+                            input.style.borderRadius = '10px';
+                            input.style.cursor = 'pointer';
+                            
+                            console.log('Mobile camera setup complete!');
+                        }
+                    });
+                }, 2000); // Wait 2 seconds for Streamlit to fully render
+            }
+            
+            // Run setup when page loads
+            setupMobileCamera();
+            
+            // Also run when Streamlit updates the page
+            document.addEventListener('DOMContentLoaded', setupMobileCamera);
             </script>
             """, unsafe_allow_html=True)
+            
+            # Additional info for users
+            st.info("📱 **On mobile:** The file selector above will automatically open your camera app when tapped.")
             
         else:  # Choose from Gallery
             st.markdown("""
@@ -2996,7 +3012,8 @@ def create_mobile_camera_upload_section():
             uploaded = st.file_uploader(
                 "Choose from gallery",
                 type=["png", "jpg", "jpeg"],
-                help="Select a wound image from your photo gallery"
+                help="Select a wound image from your photo gallery",
+                key="gallery_upload_unique"
             )
     
     else:
@@ -3011,7 +3028,8 @@ def create_mobile_camera_upload_section():
             uploaded = st.file_uploader(
                 "Choose wound image file",
                 type=["png", "jpg", "jpeg"],
-                help="Select a wound image from your computer"
+                help="Select a wound image from your computer",
+                key="desktop_upload_unique"
             )
         
         with camera_tab:
@@ -3043,7 +3061,7 @@ def create_mobile_camera_upload_section():
                     "Open mobile camera",
                     type=["png", "jpg", "jpeg"],
                     help="Use this option from mobile for camera access",
-                    key="desktop_mobile_camera"
+                    key="desktop_mobile_camera_unique"
                 )
     
     # Success feedback
