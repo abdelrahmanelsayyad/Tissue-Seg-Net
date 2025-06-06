@@ -288,17 +288,9 @@ class EnhancedProgressBar:
 st.set_page_config(
     page_title="Advanced Wound Analysis",
     page_icon="🩹",
-    # Wide on desktop, centered on phones
     layout="wide",
     initial_sidebar_state="collapsed"
 )
-
-# 👉  keeps the phone from zooming out
-st.markdown(
-    '<meta name="viewport" content="width=device-width, initial-scale=1">',
-    unsafe_allow_html=True,
-)
-
 
 # Create session state variables for models - removed since we're using @st.cache_resource
 # Session state now only tracks theme
@@ -1898,37 +1890,6 @@ st.markdown(f"""
   ::-webkit-scrollbar-thumb:hover {{
     background: linear-gradient(135deg, {COL['highlight']}, {COL['primary']});
   }}
-/* ============  MOBILE PATCH  ================================ */
-
-/* 1️⃣ Stack Streamlit columns vertically on small phones */
-@media screen and (max-width:600px){{        /* ← escaped */
-  .block-container .css-1kyxreq{{            /* ← escaped */
-      flex-direction:column!important;
-  }}                                         /* ← escaped */
-}}
-
-/* 2️⃣ Keep big images inside the viewport & drop heavy shadows */
-@media screen and (max-width:480px){{        /* ← escaped */
-  .img-container img,
-  .stImage img{{                             /* ← escaped */
-      max-width:95vw!important;
-      height:auto!important;
-  }}
-  .metric-card,
-  .img-container,
-  .analysis-tab{{                            /* ← escaped */
-      box-shadow:none!important;
-  }}
-}}
-
-/* 3️⃣ Disable the shimmer animation so low-end mobiles don’t stutter */
-@media screen and (max-width:768px){{        /* ← escaped */
-  .enhanced-progress-container::before{{     /* ← escaped */
-      display:none;
-  }}
-}}
-
-/* ============================================================ */
 </style>
 """, unsafe_allow_html=True)
 
@@ -2322,14 +2283,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 col1, col2 = st.columns([2, 1]) 
 
 with col1:
-    uploaded = st.camera_input(
-        "📸 Take a photo or choose one",
-        key="cam_upload"
-    ) or st.file_uploader(
-        "…or pick from your gallery",
-        type=["png", "jpg", "jpeg"],
-        key="file_upload"
-    )
+    uploaded = st.file_uploader("Upload wound image", type=["png","jpg","jpeg"])
 
 with col2:
     st.markdown("""
