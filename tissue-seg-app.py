@@ -45,14 +45,14 @@ except ImportError:
 
 load_dotenv()
 class EnhancedProgressBar:
-    def __init__(self, total_steps=100, is_mobile=False):
+    def __init__(self, total_steps=100):
         self.total_steps = total_steps
         self.current_step = 0
         self.start_time = time.time()
         self.progress_bar = None
         self.status_text = None
         self.progress_container = None
-        self.is_mobile = is_mobile
+        
     def initialize(self):
         """Initialize the enhanced progress bar with custom styling"""
         self.progress_container = st.container()
@@ -201,8 +201,6 @@ class EnhancedProgressBar:
         """Update progress with enhanced information"""
         self.current_step = step
         progress_percent = step / total_steps
-        if self.is_mobile and len(status_message) > 30:
-            status_message = status_message[:27] + "..."
         
         # Update progress bar
         self.progress_bar.progress(progress_percent)
@@ -292,12 +290,6 @@ st.set_page_config(
     page_icon="🩹",
     layout="wide",
     initial_sidebar_state="collapsed"
-)
-# ⬇️  Add immediately after the existing st.set_page_config(…) block
-st.markdown(
-    '<meta name="viewport" content="width=device-width, initial-scale=1.0, '
-    'maximum-scale=1.0, user-scalable=no">',
-    unsafe_allow_html=True
 )
 
 # Create session state variables for models - removed since we're using @st.cache_resource
@@ -1295,22 +1287,15 @@ def generate_pdf_report_section(COL):
                     st.info("Please try the text report option instead.")
     
     st.markdown('</div>', unsafe_allow_html=True)
-# NEW  ➜ collapses into the hamburger menu on desktop; hidden by default on mobile
-if st.sidebar.checkbox("Show Theme Toggle", value=False):
-    if st.button("🌓 Toggle Theme", help="Switch between light and dark theme"):
+# Theme toggle button
+col1, col2, col3 = st.columns([1, 8, 1])
+with col3:
+    if st.button("🌓", help="Toggle theme"):
         st.session_state.dark_mode = not st.session_state.dark_mode
         st.experimental_rerun()
-        st.sidebar.checkbox("👓 Mobile view", key="mobile_view", on_change=st.experimental_rerun)
 
 # Get theme colors AFTER session state is initialized
 COL = get_theme_colors()
-if 'mobile_view' not in st.session_state:
-    st.session_state.mobile_view = False
-is_mobile = st.session_state.mobile_view
-# Mobile detector (simple manual switch – replace later with UA sniff if you like)
-is_mobile = st.session_state.get("mobile_view", False)
-st.session_state.mobile_view = st.checkbox("Mobile View", value=is_mobile, key="mobile_view")
-is_mobile = st.session_state.mobile_view   # keep a clean boolean
 
 # Enhanced CSS with theme support (keeping the same CSS as before)
 st.markdown(f"""
@@ -2295,73 +2280,60 @@ st.markdown("""
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ──── Upload & Analysis ────────────────────────────────────────
-# ─── 3. UPLOAD SECTION  (REPLACE your current upload block) ──
-# ─── Upload & Analysis ───────────────────────────────────────
-if is_mobile:
-    uploaded = st.file_uploader("Upload wound image", ["png","jpg","jpeg"])
-    with st.expander("📸 Image Guidelines"):
-        st.markdown("- Good lighting & focus\n- Wound clearly visible\n- Consistent distance\n- Include reference scale\n- Clean wound area")
-else:
-    col1, col2 = st.columns([2,1])
-    with col1:
-        uploaded = st.file_uploader("Upload wound image", ["png","jpg","jpeg"])
-    with col2:
-        st.markdown("""<div class="guidelines-box"><h4>📸 Image Guidelines</h4>
-                       <ul><li>Good lighting & focus</li><li>Wound clearly visible</li>
-                       <li>Consistent distance</li><li>Include reference scale</li>
-                       <li>Clean wound area</li></ul></div>""",
-                     unsafe_allow_html=True)
+col1, col2 = st.columns([2, 1]) 
 
-# ─── Upload-handler block ──────────────────────────────────────────
+with col1:
+    uploaded = st.file_uploader("Upload wound image", type=["png","jpg","jpeg"])
+
+with col2:
+    st.markdown("""
+    <div class="guidelines-box">
+        <h4>📸 Image Guidelines</h4>
+        <ul>
+            <li>Good lighting & focus</li>
+            <li>Wound clearly visible</li>
+            <li>Consistent distance</li>
+            <li>Include reference scale</li>
+            <li>Clean wound area</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
 if uploaded:
     try:
-        # 1️⃣  Timestamp helper (uses pandas if available)
+        # Add missing import for pandas at the top if not already imported
         try:
             import pandas as pd
-            timestamp_str = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-        except ImportError:                                 # fallback
+            timestamp_str = pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')
+        except ImportError:
+            # Fallback if pandas not available
             from datetime import datetime
-            timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
 
-        # 2️⃣  Load → resize (keeps RAM low)
-        pil_img       = Image.open(uploaded).convert("RGB")
-        orig_bgr      = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
-        orig_bgr      = resize_image_if_needed(orig_bgr, MAX_IMAGE_SIZE)
-        pil_img       = Image.fromarray(cv2.cvtColor(orig_bgr, cv2.COLOR_BGR2RGB))
-
-        clear_memory()                                     # tidy CUDA/CPU
-
-        # 3️⃣  Responsive thumbnail for display
-        max_display_size = 400 if is_mobile else 800       # phone vs desktop
-        pil_img_display  = pil_img.copy()
-        if (pil_img_display.width  > max_display_size or
-            pil_img_display.height > max_display_size):
-            pil_img_display.thumbnail(
-                (max_display_size, max_display_size),
-                Image.Resampling.LANCZOS
-            )
-
-        # 4️⃣  Show image in nice container
-        st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
-        st.markdown('<div class="img-container">',  unsafe_allow_html=True)
-
-        st.image(pil_img_display, caption="Uploaded Wound Image")  # ← NOW USES responsive copy
-
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    except Exception as e:
-        st.error(f"Error processing image: {e}")
-        st.exception(e)
+        # Read and resize image if needed to reduce memory usage
+        pil_img = Image.open(uploaded).convert("RGB")
+        orig_bgr = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+        
+        # Resize if too large
+        orig_bgr = resize_image_if_needed(orig_bgr, MAX_IMAGE_SIZE)
+        pil_img = Image.fromarray(cv2.cvtColor(orig_bgr, cv2.COLOR_BGR2RGB))
+        
+        # Clear memory
         clear_memory()
 
+        # Display uploaded image
+        st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
+        st.markdown('<div class="img-container">', unsafe_allow_html=True)
+        st.image(pil_img, caption="Uploaded Wound Image")
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # Analysis button
         st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
         if st.button("🚀 Analyze Wound", help="Click to run comprehensive AI analysis"):
             
             # Initialize enhanced progress bar
-            progress_tracker = EnhancedProgressBar(is_mobile=is_mobile)
+            progress_tracker = EnhancedProgressBar()
             progress_tracker.initialize()
             
             try:
@@ -2497,38 +2469,54 @@ if uploaded:
                 # Clean up images
                 del orig_bgr_resized
                 clear_memory()
-                # Count non-background tissue types (used in the metrics dashboard)
-                tissue_types_count = sum(
-                    1 for t, info in tissue_data.items()
-                    if t != "background" and info["percentage"] > 0
-                )
 
-
-                # ──── Key Metrics Dashboard (Responsive) ──────────────────────────────────
+                # ──── Key Metrics Dashboard ────────────────────────────────────────────────
                 st.markdown('<div class="section-wrapper">', unsafe_allow_html=True)
+                col1, col2, col3, col4, col5 = st.columns(5)
+                tissue_types_count = len([t for t in tissue_data.keys() if t != "background" and tissue_data[t]['percentage'] > 0])
+                dominant_tissue, dominant_percent = get_dominant_tissue(tissue_data)
 
-                # 2 columns on phones, 5 on tablets/desktop
-                cols = st.columns(2) if is_mobile else st.columns(5)
+                with col1:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{ai_health_score:.0f}</div>
+                        <div class="metric-label">AI Health Score</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
-                metrics = [
-                    (f"{ai_health_score:.0f}",        "AI Health Score"),
-                    (f"{open_defect_area:,}",         "Open Defect Area (px)"),
-                    (dominant_tissue.title(),         "Dominant Tissue"),
-                    (str(tissue_types_count),         "Tissue Types"),
-                    (pred_class,                      "Wound Type"),
-                ]
+                with col2:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{open_defect_area:,}</div>
+                        <div class="metric-label">Open Defect Area (px)</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
-                for idx, (value, label) in enumerate(metrics):
-                    with cols[idx % len(cols)]:
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <div class="metric-value">{value}</div>
-                            <div class="metric-label">{label}</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                with col3:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{dominant_tissue.title()}</div>
+                        <div class="metric-label">Dominant Tissue</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with col4:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{tissue_types_count}</div>
+                        <div class="metric-label">Tissue Types</div>
+                    </div>    
+                    """, unsafe_allow_html=True)
+
+                with col5:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{pred_class}</div>
+                        <div class="metric-label">Wound Type</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
                 st.markdown('</div>', unsafe_allow_html=True)
-
 
                 # Store the images for PDF generation
                 if 'analysis_images' not in st.session_state:
