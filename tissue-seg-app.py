@@ -289,7 +289,7 @@ st.set_page_config(
     page_title="Advanced Wound Analysis",
     page_icon="🩹",
     # Wide on desktop, centered on phones
-    layout="centered" if is_mobile else "wide",
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
