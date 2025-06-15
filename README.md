@@ -19,10 +19,7 @@
 
 ### 👥 Development Team
 - **AbdelRahmn Abdelatty El-Sayyad** (A20001136)
-- **Seleem Wael Adel Abdelmonem Mohamed** (221100911)
 - **Mostafa Walid Mostafa Radwan** (A20000908)
-- **Mohamed Yasser Saad** (A20000847)
-- **Mohamed Ayman Bahaa Elnakshbandy** (A20000755)
 
 ---
 
