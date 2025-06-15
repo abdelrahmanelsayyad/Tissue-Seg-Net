@@ -17,10 +17,6 @@
 **Degree:** Bachelor of Science in Computer Engineering  
 **Supervisor:** Dr. Mohammed Abd Elaziz  
 
-### 👥 Development Team
-- **AbdelRahmn Abdelatty El-Sayyad** (A20001136)
-- **Mostafa Walid Mostafa Radwan** (A20000908)
-
 ---
 
 ## 🌟 Project Overview
