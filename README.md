@@ -89,15 +89,15 @@ Our system provides **the digital intelligence layer for wound care** - automati
 └─────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────┐
 │               AI Processing Layer                       │
-│    Tissue Segmentation | Wound Classification          │
+│    Tissue Segmentation | Wound Classification           │
 └─────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────┐
-│              Generative AI Layer                       │
-│           Google Gemini Clinical Assessment            │
+│              Generative AI Layer                        │
+│           Google Gemini Clinical Assessment             │
 └─────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────┐
 │               Data Storage Layer                        │
-│         MongoDB Atlas | Cloudinary Storage             │
+│         MongoDB Atlas | Cloudinary Storage              │
 └─────────────────────────────────────────────────────────┘
 ```
 
