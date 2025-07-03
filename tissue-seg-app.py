@@ -303,7 +303,7 @@ def initialize_gemini():
     """Initialize Gemini AI with API key"""
     try:
         # Configure Gemini API
-        os.environ["GEMINI_API_KEY"] = "AIzaSyA21AIdWr6F0UqlR4FwnIf6r3kinLjHe9Q"
+        os.environ["GEMINI_API_KEY"] = "################"
         genai.configure(api_key=os.environ["GEMINI_API_KEY"])
         
         generation_config = {
@@ -337,11 +337,11 @@ def initialize_gemini():
 
 # Advanced Tissue Analysis Model
 TISSUE_MODEL_PATH = Path("best_model_streamlit.pth")
-TISSUE_MODEL_ID = "1q0xk9wll0eyF3-CKEc5s6MfG0gE_jde1"
+TISSUE_MODEL_ID = "######"
 
 # Wound Classification Model
 CLASSIFICATION_MODEL_PATH = Path("model.pkl")
-CLASSIFICATION_MODEL_ID = "1Itf9SgEjtJwv-7AjY0mWYceDnSX4qIqY"
+CLASSIFICATION_MODEL_ID = "######"
 CLASSIFICATION_MODEL_URL = f"https://drive.google.com/uc?id={CLASSIFICATION_MODEL_ID}"
 
 LOGO_PATH  = Path("GREEN.png")
